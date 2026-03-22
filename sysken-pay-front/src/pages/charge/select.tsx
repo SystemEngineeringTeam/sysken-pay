@@ -13,9 +13,6 @@ export default function ChargeSelectPage() {
   const balance = useBalanceStore((state) => state.balance?.balance ?? 0);
   const saveChargeAmount = useChargeStore((state) => state.setChargeAmount);
   const [chargeAmount, setChargeAmount] = useState("");
-  const handleHome = () => {
-    navigate("/");
-  };
 
   const handleNext = () => {
     const normalizedChargeAmount =
