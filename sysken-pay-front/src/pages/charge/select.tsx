@@ -42,7 +42,7 @@ export default function ChargeSelectPage() {
         </div>
         <SelectButtonGroup onSelectAmount={setChargeAmount} />
       </div>
-      <ArrowButton variant="prev" onClick={handleHome}>
+      <ArrowButton variant="prev" onClick={() => navigate("/charge")}>
         戻る
       </ArrowButton>
       <ArrowButton variant="next" onClick={handleNext}>
