@@ -9,42 +9,92 @@
 src/
 ├── main.tsx                # エントリーポイント
 ├── App.tsx                 # 全体のプロバイダー設定
-├── routes.tsx              # ルーティング定義 (React Router)
+├── routes.tsx              # ルーティング定義
 │
 ├── adapter/                # 【Infra層】 外部通信・実装詳細
-│   ├── api/                # Axios等のクライアント設定
-│   ├── repository/         # APIを叩く実装 (RepositoryImpl)
-│   └── storage/            # LocalStorage操作など
+│   ├── api/
+│   │   └── client.ts       # Axiosインスタンス設定
+│   └── repository/         # APIを叩く実装
+│       ├── ItemRepositoryImpl.ts
+│       ├── UserRepositoryImpl.ts
+│       ├── PurchaseRepositoryImpl.ts
+│       ├── ChargeRepositoryImpl.ts
+│       └── HistoryRepositoryImpl.ts
 │
 ├── usecases/               # 【Application層】 ユーザー操作のシナリオ
-│   ├── CartUsecase.ts      # 「カートに追加」「会計」などの一連の流れ
-│   └── AuthUsecase.ts      # ログイン処理など
+│   ├── CartUsecase.ts      # カート→購入確定の一連の流れ
+│   ├── ChargeUsecase.ts    # チャージ・取り消し
+│   ├── ItemUsecase.ts      # 商品登録・更新・一覧取得
+│   └── UserUsecase.ts      # ユーザー登録・更新・残高照会
 │
 ├── services/               # 【Domain Service】 純粋なビジネスロジック
-│   ├── TaxService.ts       # 税計算 (状態を持たない)
-│   └── DiscountService.ts  # 割引計算
+│   └── CartService.ts      # 合計金額計算・残高チェック
 │
-├── pages/                  # 【UI】 ページコンポーネント (1ページ=1ファイル)
-│   ├── admin/
+├── pages/                  # 【UI】 ページコンポーネント
 │   ├── buy/
-│   └── charge/
+│   │   ├── index.tsx       # 商品スキャン・カート
+│   │   ├── payment.tsx     # 決済方法選択
+│   │   ├── scan.tsx        # 学生証スキャン（シスPay）
+│   │   └── confirm.tsx     # 購入確定
+│   ├── charge/
+│   │   └── index.tsx
+│   ├── history/
+│   │   └── index.tsx
+│   └── admin/
+│       ├── items/
+│       └── users/
 │
 ├── components/             # 【UI】 再利用可能な部品
 │   ├── ui/                 # 汎用パーツ (Button, Input)
 │   ├── layouts/            # ヘッダー, フッター
-│   └── features/           # 特定機能に紐づくパーツ (ProductCardなど)
+│   └── features/           # 特定機能に紐づくパーツ
+│       ├── cart/           # CartItem, CartSummary
+│       ├── item/           # ProductCard, BarcodeScanner
+│       └── charge/         # ChargeForm
 │
-├── store/                  # 【State】 グローバル状態管理 (Zustand/Jotai)
-│   └── useCartStore.ts
+├── store/                  # 【State】 グローバル状態管理
+│   └── useCartStore.ts     # CartItem[] の保持（4画面間で共有）
 │
 ├── hooks/                  # 【Connect】 ViewとUsecaseを繋ぐフック
-│   └── useCart.ts          # UIから呼ばれるカスタムフック
+│   ├── useCart.ts
+│   ├── useCharge.ts
+│   ├── useItem.ts
+│   └── useHistory.ts
 │
 ├── types/                  # 【Domain】 型定義
-│   ├── domain/             # ビジネスロジックで使う型
-│   └── dto/                # APIのリクエスト/レスポンス型
+│   ├── domain/             # フロント専用の型
+│   │   ├── Cart.ts         # CartItem（フロント専用）
+│   │   ├── Item.ts
+│   │   ├── User.ts
+│   │   └── History.ts
+│   └── dto/                # APIと1:1対応する型
+│       ├── core/
+│       │   └── ApiResponse.ts        # ErrorResponse共通型
+│       ├── request/
+│       │   ├── Item/
+│       │   │   ├── CreateItemRequest.ts
+│       │   │   └── UpdateItemRequest.ts
+│       │   ├── User/
+│       │   │   ├── CreateUserRequest.ts
+│       │   │   ├── UpdateUserRequest.ts
+│       │   │   └── ChargeRequest.ts
+│       │   └── Purchase/
+│       │       └── PurchaseRequest.ts
+│       └── response/
+│           ├── Item/
+│           │   ├── ItemResponse.ts
+│           │   └── ItemListResponse.ts
+│           ├── User/
+│           │   ├── UserResponse.ts
+│           │   ├── BalanceResponse.ts
+│           │   └── ChargeResponse.ts
+│           ├── Purchase/
+│           │   └── PurchaseResponse.ts
+│           └── History/
+│               └── HistoryResponse.ts
 │
-└── utils/                  # 汎用ユーティリティ
+└── utils/
+    └── formatCurrency.ts
 
 
 ## ルーティング (Generouted)
