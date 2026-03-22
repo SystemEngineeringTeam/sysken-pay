@@ -1,0 +1,37 @@
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 50vw;
+  margin: 0 auto; // 追加
+  padding-bottom: $px-8;
+  border-bottom: 1px solid $gray-40;
+}
+
+// ...existing code...
+
+.label {
+  font-size: $rem-22;
+  font-weight: bold;
+  color: $gray-100;
+}
+
+.priceContainer {
+  display: flex;
+  align-items: baseline;
+  gap: $px-4;
+  color: $gray-100;
+}
+
+.currency {
+  font-family: var(--font-rounded-m-plus-1c), "M PLUS Rounded 1c", sans-serif;
+  font-size: $rem-16;
+  font-weight: bold;
+}
+
+.price {
+  font-family: var(--font-rounded-m-plus-1c), "M PLUS Rounded 1c", sans-serif;
+  font-size: $rem-32;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+}

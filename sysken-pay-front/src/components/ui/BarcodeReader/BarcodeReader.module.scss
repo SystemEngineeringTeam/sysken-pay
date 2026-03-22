@@ -1,0 +1,61 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: $px-16;
+  box-sizing: border-box;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $px-32 * 2;
+  background-color: $white-10;
+  border-radius: $radius-lg;
+  padding: 0 $px-32 $px-32 * 2;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.placeholder {
+  font-size: $rem-32;
+  font-weight: $bold;
+  color: $blue-40;
+  margin: 0;
+  font-family: $rounded-m-plus1c-bold;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.iconWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $px-32;
+  flex-wrap: wrap;
+
+
+  img {
+    width: 20vw;
+    height: 20vw;
+    max-width: 400px;
+    max-height: 280px;
+    object-fit: contain;
+  }
+}
+
+.hiddenInput {
+  opacity: 0;
+  position: absolute;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}

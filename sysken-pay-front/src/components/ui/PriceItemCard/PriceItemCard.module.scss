@@ -1,0 +1,82 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: $px-16;
+  width: 100%;
+  max-width: $px-32 * 30;
+}
+
+.card {
+  flex: 1;
+  min-width: 0;
+  max-height: $px-32 * 40;
+  background-color: $white;
+  border-radius: $px-12;
+  padding: $px-20 $px-32;
+  box-shadow: 0px $px-2 $px-5 $shadow-20;
+}
+
+.content {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-bottom: $px-12;
+  border-bottom: 1px solid $gray-10;
+}
+
+.title {
+  font-size: $rem-16;
+  font-weight: bold;
+  color: $gray-100;
+}
+
+.priceContainer {
+  display: flex;
+  align-items: baseline;
+  gap: $px-4;
+  color: $gray-100;
+}
+
+.currency {
+  font-size: $rem-18;
+  font-weight: bold;
+}
+
+.price {
+  font-size: $rem-23;
+  font-weight: bold;
+}
+
+.deleteButton {
+  flex-shrink: 0;
+  width: $px-32 * 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: $px-4;
+  background-color: $gray-10;
+  color: $gray-70;
+  font-family: var(--font-rounded-m-plus-1c), "M PLUS Rounded 1c", sans-serif;
+  font-size: $rem-14;
+  font-weight: bold;
+  border: none;
+  border-radius: $px-max;
+  padding: $px-12 $px-20;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0px $px-1 $px-2 $shadow-20;
+    opacity: 0.9;
+  }
+}
+
+.closeIcon {
+  font-size: 2rem;
+  font-weight: normal;
+}

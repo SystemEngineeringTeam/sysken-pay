@@ -1,0 +1,93 @@
+.button{
+  display: inline-block;
+  text-align: center;
+  width: 23vw;
+  height: 10vh;
+  background-color: $blue-40;
+  color: $white;
+  border: $blue-40 solid 1px;
+  border-radius: $px-25;
+  font-size: 2.5vw;
+  font-family: "Noto Sans JP", sans-serif;
+  font-weight: $bold;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0px $px-1 $px-2 $shadow-20;
+    opacity: 0.9;
+  }
+
+  &.large{
+  width: 33vw;
+
+}
+
+
+}
+
+.white{
+  background-color: $white;
+  border: #6b726b solid 1px;
+  color: $blue-40;
+}
+
+.small{
+  width: 17vw;
+  height: 9vh;
+  font-size: 1.9vw;
+  border-radius: $px-15;
+  border: #6b726b solid 1px;
+}
+
+
+
+.back{
+  position: fixed;
+  bottom: 6vh;
+  left: -4vw;
+  display: flex;
+  align-items: center;
+  justify-content:space-between;
+  padding: 0px 40px 0px 80px;
+
+  .backText {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+
+  }
+
+  .leftArrow {
+    width: $px-11;
+    height: $px-11;
+    margin-left: $px-5;
+  }
+
+}
+
+.next{
+    position: fixed;
+    bottom: 6vh;
+    right: -4vw;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0px 80px 0px 40px;
+
+  .nextText {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+
+  .rightArrow {
+    width: $px-11;
+    height: $px-11;
+    margin-right: $px-20;
+  }
+}
