@@ -21,6 +21,7 @@ export type Path =
   | `/buy/confirm`
   | `/buy/list`
   | `/charge`
+  | `/charge/insert`
   | `/charge/select`
 
 export type Params = {
