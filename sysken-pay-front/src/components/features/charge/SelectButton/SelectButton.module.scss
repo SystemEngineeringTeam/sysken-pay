@@ -1,0 +1,36 @@
+.button{
+  display: inline-block;
+  text-align: center;
+  width: 22vw;
+  height: 12vh;
+  background-color: $blue-40;
+  color: $white;
+  border: $blue-40 solid 1px;
+  border-radius: $px-25;
+  font-size: 3.3vw;
+  font-family: "Noto Sans JP", sans-serif;
+  font-weight: $bold;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0px $px-1 $px-2 $shadow-20;
+    opacity: 0.9;
+  }
+
+  &.white{
+    background-color: $white;
+    color: $blue-40;
+    border: $blue-40 solid 1px;
+  }
+}
+
+.group{
+    display: flex;
+    gap: $px-29;
+    justify-content: center;
+    margin: 0 auto;
+}
