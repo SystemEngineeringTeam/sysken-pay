@@ -3,10 +3,21 @@ import { useNavigate } from "react-router-dom";
 import ArrowButton from "../../components/ui/ArrowButton";
 import { PriceLabel } from "../../components/ui/PriceLabel";
 import { useChargeStore } from "../../store/useChargeStore";
+import { useBalanceStore } from "../../store/useBalanceStore";
 
 export default function ChargeInsertPage() {
   const navigate = useNavigate();
   const chargeAmount = useChargeStore((state) => state.chargeAmount);
+  const setBalance = useBalanceStore((state) => state.setBalance);
+
+  const handleNext = (barcode: string) => {
+    // TODO: APIから残高を参照
+    setBalance({
+      userId: barcode,
+      balance: 550,
+    });
+    navigate("/charge/complete");
+  };
 
   return (
     <div className="flex flex-col h-screen overflow-hidden">
@@ -20,7 +31,7 @@ export default function ChargeInsertPage() {
       <ArrowButton variant="prev" onClick={() => navigate("/charge/select")}>
         戻る
       </ArrowButton>
-      <ArrowButton variant="next" onClick={() => navigate("/charge/complete")}>
+      <ArrowButton variant="next" onClick={() => handleNext("user123")}>
         完了
       </ArrowButton>
     </div>
