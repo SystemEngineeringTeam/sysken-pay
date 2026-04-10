@@ -31,7 +31,7 @@ export default function PaymentStartPage() {
         </>
       ) : (
         <>
-          <Header title="シスPay支払い" right="toTop" />
+          <Header title="シス研Pay支払い" right="toTop" />
           <BarcodeReader
             mode="member"
             onScan={handleScan}
