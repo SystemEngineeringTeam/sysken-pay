@@ -2,12 +2,19 @@ import Header from "../../components/layouts/Header/index";
 import { BarcodeReader } from "../../components/ui/BarcodeReader";
 import { useNavigate } from "react-router-dom";
 import ArrowButton from "../../components/ui/ArrowButton";
+import { useBalanceStore } from "../../store/useBalanceStore";
 
 export default function Charge() {
   const navigate = useNavigate();
+  const setBalance = useBalanceStore((state) => state.setBalance);
+
   const handleScan = (barcode: string) => {
-    console.log("スキャンされたバーコード:", barcode);
-    // バーコード処理後の処理
+    // TODO: APIから残高を参照
+    setBalance({
+      userId: barcode,
+      balance: 150,
+    });
+    navigate("/charge/select");
   };
   const handleHome = () => {
     navigate("/");

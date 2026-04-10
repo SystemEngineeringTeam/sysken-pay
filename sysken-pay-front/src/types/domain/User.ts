@@ -5,3 +5,8 @@ export interface User {
   updatedAt: Date;
   deletedAt?: Date;
 }
+
+export interface UserBalance {
+  userId: string; // UUID
+  balance: number;
+}
