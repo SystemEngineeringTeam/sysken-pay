@@ -1,0 +1,802 @@
+openapi: "3.0.3"
+info:
+  title: Sysken Pay API
+  description: 部内決済システム Sysken Pay のバックエンド API
+  version: "1.0.0"
+
+servers:
+  - url: http://localhost:8080
+    description: ローカル開発環境
+
+security: []
+
+tags:
+  - name: user
+    description: ユーザー管理
+  - name: charge
+    description: チャージ管理
+  - name: purchase
+    description: 購入管理
+  - name: balance
+    description: 残高・履歴
+  - name: item
+    description: 商品管理
+  - name: health
+    description: ヘルスチェック
+
+paths:
+  # ==================== User ====================
+  /v1/user:
+    post:
+      tags: [user]
+      summary: ユーザー登録
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostUserRequest"
+      responses:
+        "200":
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostUserResponse"
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/user/{user_id}:
+    patch:
+      tags: [user]
+      summary: ユーザー更新
+      operationId: updateUser
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchUserRequest"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PatchUserResponse"
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ==================== Charge ====================
+  /v1/user/{user_id}/charge:
+    post:
+      tags: [charge]
+      summary: チャージ
+      operationId: chargeAmount
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostChargeRequest"
+      responses:
+        "200":
+          description: チャージ成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChargeResponse"
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/user/{user_id}/charge/cancel:
+    post:
+      tags: [charge]
+      summary: チャージキャンセル
+      operationId: chargeCancel
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostChargeCancelRequest"
+      responses:
+        "200":
+          description: キャンセル成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChargeCancelResponse"
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ==================== Purchase ====================
+  /v1/user/{user_id}/purchase:
+    post:
+      tags: [purchase]
+      summary: 購入
+      operationId: createPurchase
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostPurchaseRequest"
+      responses:
+        "200":
+          description: 購入成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostPurchaseResponse"
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/user/{user_id}/purchase/cancel:
+    post:
+      tags: [purchase]
+      summary: 購入キャンセル
+      operationId: cancelPurchase
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostPurchaseCancelRequest"
+      responses:
+        "200":
+          description: キャンセル成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostPurchaseCancelResponse"
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ==================== Balance ====================
+  /v1/user/{user_id}/balance:
+    get:
+      tags: [balance]
+      summary: 残高取得
+      operationId: getBalance
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetBalanceResponse"
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/user/{user_id}/history:
+    get:
+      tags: [balance]
+      summary: 購入履歴取得
+      operationId: getPurchaseHistories
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+        - name: page
+          in: query
+          description: ページ番号
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          description: 1ページあたりの件数
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 20
+      responses:
+        "200":
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetPurchaseHistoriesResponse"
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ==================== Item ====================
+  /v1/item:
+    post:
+      tags: [item]
+      summary: 商品登録
+      operationId: registerItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostItemRequest"
+      responses:
+        "200":
+          description: 登録成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PostItemResponse"
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      tags: [item]
+      summary: 商品更新
+      operationId: updateItem
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PatchItemRequest"
+      responses:
+        "200":
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PatchItemResponse"
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    get:
+      tags: [item]
+      summary: 全商品取得
+      operationId: getAllItems
+      responses:
+        "200":
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetAllItemsResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/item/{jan_code}:
+    get:
+      tags: [item]
+      summary: JANコードで商品取得
+      operationId: getItemByJanCode
+      parameters:
+        - name: jan_code
+          in: path
+          required: true
+          description: JANコード（8桁または13桁）
+          schema:
+            type: string
+            pattern: "^[0-9]{8}$|^[0-9]{13}$"
+      responses:
+        "200":
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GetItemResponse"
+        "400":
+          description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # ==================== Health ====================
+  /v1/health:
+    get:
+      tags: [health]
+      summary: ヘルスチェック
+      operationId: healthCheck
+      responses:
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "OK"
+
+components:
+  parameters:
+    UserId:
+      name: user_id
+      in: path
+      required: true
+      description: ユーザーID
+      schema:
+        type: string
+        maxLength: 20
+
+  schemas:
+    # ==================== Request Schemas ====================
+    PostUserRequest:
+      type: object
+      required: [user_id, user_name]
+      properties:
+        user_id:
+          type: string
+          maxLength: 20
+          description: ユーザーID
+        user_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: ユーザー名
+
+    PatchUserRequest:
+      type: object
+      required: [user_name]
+      properties:
+        user_name:
+          type: string
+          minLength: 1
+          maxLength: 50
+          description: ユーザー名
+
+    PostChargeRequest:
+      type: object
+      required: [amount]
+      properties:
+        amount:
+          type: integer
+          enum: [500, 1000, 2000]
+          description: チャージ金額（500, 1000, 2000 のいずれか）
+
+    PostChargeCancelRequest:
+      type: object
+      required: [amount]
+      properties:
+        amount:
+          type: integer
+          enum: [500, 1000, 2000]
+          description: キャンセル金額（500, 1000, 2000 のいずれか）
+
+    PostItemRequest:
+      type: object
+      required: [jan_code, item_name, price]
+      properties:
+        jan_code:
+          type: string
+          pattern: "^[0-9]{8}$|^[0-9]{13}$"
+          description: JANコード（8桁または13桁）
+        item_name:
+          type: string
+          minLength: 1
+          description: 商品名
+        price:
+          type: integer
+          minimum: 0
+          description: 価格
+
+    PatchItemRequest:
+      type: object
+      required: [jan_code, item_name, price]
+      properties:
+        jan_code:
+          type: string
+          pattern: "^[0-9]{8}$|^[0-9]{13}$"
+          description: JANコード（8桁または13桁）
+        item_name:
+          type: string
+          minLength: 1
+          description: 商品名
+        price:
+          type: integer
+          minimum: 0
+          description: 価格
+
+    PurchaseItem:
+      type: object
+      required: [item_id, quantity]
+      properties:
+        item_id:
+          type: integer
+          minimum: 1
+          description: 商品ID
+        quantity:
+          type: integer
+          minimum: 1
+          description: 数量
+
+    PostPurchaseRequest:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/PurchaseItem"
+
+    PostPurchaseCancelRequest:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/PurchaseItem"
+
+    # ==================== Response Schemas ====================
+    PostUserResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        user_id:
+          type: string
+        user_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+
+    PatchUserResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        user_id:
+          type: string
+        user_name:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+
+    ChargeResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        charge_id:
+          type: integer
+        charge_amount:
+          type: integer
+        user_id:
+          type: string
+        balance:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+
+    ChargeCancelResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        charge_id:
+          type: integer
+        canceled_amount:
+          type: integer
+        user_id:
+          type: string
+        balance:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+
+    PostItemResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        id:
+          type: integer
+        jan_code:
+          type: string
+        item_name:
+          type: string
+        price:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+
+    PatchItemResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        id:
+          type: integer
+        jan_code:
+          type: string
+        item_name:
+          type: string
+        price:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+
+    GetItemResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        item_id:
+          type: integer
+        jan_code:
+          type: string
+        item_name:
+          type: string
+        price:
+          type: integer
+
+    GetAllItemsResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              item_id:
+                type: integer
+              jan_code:
+                type: string
+              item_name:
+                type: string
+              price:
+                type: integer
+
+    PostPurchaseResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        id:
+          type: integer
+        user_id:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseItem"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+
+    PostPurchaseCancelResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        id:
+          type: integer
+        user_id:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/PurchaseItem"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+
+    GetBalanceResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        user_id:
+          type: string
+        balance:
+          type: integer
+
+    HistoryItem:
+      type: object
+      properties:
+        item_name:
+          type: string
+        quantity:
+          type: integer
+        price:
+          type: integer
+        purchase_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T00:00:00.000Z"
+
+    PageInfo:
+      type: object
+      properties:
+        prev_page:
+          type: integer
+          nullable: true
+          description: 前のページ番号（存在しない場合は省略）
+        next_page:
+          type: integer
+          nullable: true
+          description: 次のページ番号（存在しない場合は省略）
+        total_page:
+          type: integer
+          description: 総ページ数
+
+    GetPurchaseHistoriesResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        histories:
+          type: array
+          items:
+            $ref: "#/components/schemas/HistoryItem"
+        total:
+          type: integer
+          description: 合計金額
+        page:
+          $ref: "#/components/schemas/PageInfo"
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        message:
+          type: string
+          description: エラーメッセージ
