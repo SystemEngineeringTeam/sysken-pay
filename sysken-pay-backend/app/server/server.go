@@ -92,29 +92,25 @@ func Run(db *sql.DB) error {
 	// v1 エンドポイント
 	r.Route("/v1", func(r chi.Router) {
 		// ユーザー関連
-		r.Route("/user", func(r chi.Router) {
-			r.Post("/", userHandler.RegisterUser)
-			r.Patch("/{user_id}", userHandler.UpdateUser)
-			r.Post("/{user_id}/charge", chargeHandler.ChargeAmount)
-			r.Post("/{user_id}/charge/cancel", chargeHandler.ChargeCancel)
-			r.Post("/{user_id}/purchase", purchaseHandler.CreatePurchase)
-			r.Post("/{user_id}/purchase/cancel", purchaseHandler.CancelPurchase)
-			r.Get("/{user_id}/balance", balanceHandler.GetBalance)
-			r.Get("/{user_id}/history", balanceHandler.GetPurchaseHistories)
+		r.Post("/user", userHandler.RegisterUser)
+		r.Route("/user/{user_id}", func(r chi.Router) {
+			r.Patch("/", userHandler.UpdateUser)
+			r.Post("/charge", chargeHandler.ChargeAmount)
+			r.Post("/charge/cancel", chargeHandler.ChargeCancel)
+			r.Post("/purchase", purchaseHandler.CreatePurchase)
+			r.Post("/purchase/cancel", purchaseHandler.CancelPurchase)
+			r.Get("/balance", balanceHandler.GetBalance)
+			r.Get("/history", balanceHandler.GetPurchaseHistories)
 		})
 
 		// 商品関連
-		r.Route("/item", func(r chi.Router) {
-			r.Post("/", itemHandler.ResisterItem)
-			r.Patch("/", itemHandler.UpdateItem)
-			r.Get("/{jan_code}", itemHandler.GetItemByJanCode)
-			r.Get("/", itemHandler.GetAllItems)
-		})
+		r.Post("/item", itemHandler.ResisterItem)
+		r.Patch("/item", itemHandler.UpdateItem)
+		r.Get("/item", itemHandler.GetAllItems)
+		r.Get("/item/{jan_code}", itemHandler.GetItemByJanCode)
 
 		// ヘルスチェック
-		r.Route("/health", func(r chi.Router) {
-			r.Get("/", health.Check)
-		})
+		r.Get("/health", health.Check)
 	})
 
 	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)

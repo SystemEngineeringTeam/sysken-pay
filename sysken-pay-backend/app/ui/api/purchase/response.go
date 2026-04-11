@@ -5,14 +5,13 @@ import (
 )
 
 type PostPurchaseResponse struct {
-	Status string `json:"status"`
-	Id     int    `json:"id"`
-	UserId string `json:"user_id"`
-	Items  []struct {
+	Status  string `json:"status"`
+	Balance int    `json:"balance"`
+	UserId  string `json:"user_id"`
+	Items   []struct {
 		ItemId   int `json:"item_id"`
 		Quantity int `json:"quantity"`
 	} `json:"items"`
-	CreatedAt string `json:"created_at"`
 }
 
 func toPostPurchaseResponse(p *purchase.Purchase) *PostPurchaseResponse {
@@ -27,11 +26,10 @@ func toPostPurchaseResponse(p *purchase.Purchase) *PostPurchaseResponse {
 	}
 
 	return &PostPurchaseResponse{
-		Status:    "success",
-		Id:        p.ID(),
-		UserId:    p.UserID(),
-		Items:     items,
-		CreatedAt: p.CreatedAt().Format("2006-01-02T15:04:05.000Z"),
+		Status:  "success",
+		Balance: p.Balance(),
+		UserId:  p.UserID(),
+		Items:   items,
 	}
 }
 

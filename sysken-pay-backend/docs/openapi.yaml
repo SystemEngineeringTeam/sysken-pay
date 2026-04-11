@@ -573,10 +573,6 @@ components:
           type: string
           format: date-time
           example: "2025-01-01T00:00:00.000Z"
-        updated_at:
-          type: string
-          format: date-time
-          example: "2025-01-01T00:00:00.000Z"
 
     ChargeResponse:
       type: object
@@ -703,18 +699,15 @@ components:
         status:
           type: string
           example: "success"
-        id:
+        balance:
           type: integer
+          description: 残金
         user_id:
           type: string
         items:
           type: array
           items:
             $ref: "#/components/schemas/PurchaseItem"
-        created_at:
-          type: string
-          format: date-time
-          example: "2025-01-01T00:00:00.000Z"
 
     PostPurchaseCancelResponse:
       type: object
