@@ -36,7 +36,7 @@ export default function UserRegisterNamePage(): JSX.Element {
         <div className={styles.field}>
           <Input
             label="名前"
-            placeholder="シス研太郎"
+            placeholder="k24000_シス研太郎"
             value={name}
             onChange={handleNameChange}
           />
