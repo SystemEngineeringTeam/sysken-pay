@@ -2,18 +2,17 @@
   display: flex;
   position: fixed;
   bottom: 6vh;
-  text-align: center;
   align-items: center;
+  justify-content: center;
+  gap: 1vw;
   background-color: $white;
   color: $blue-40;
   width: 17vw;
   height: 9vh;
   font-size: 1.9vw;
-  border-radius: 30px;
+  border-radius: 999px;
   border: #6b726b solid 1px;
-  font-family: "Noto Sans JP", sans-serif;
   font-weight: $bold;
-  justify-content: space-between;
 
   &:hover {
     opacity: 0.85;
@@ -27,25 +26,24 @@
 
   &.prev {
     left: -4vw;
-    padding: 0px 40px 0px 100px;
+    padding: 0 0 0 4vw;
   }
 
   &.next {
     right: -4vw;
-    padding: 0px 100px 0px 40px;
+    padding: 0 4vw 0 0;
     background-color: $blue-40;
     color: $white;
   }
 
-  .arrowIcon {
-    width: 22px;
-    height: 22px;
-
+  svg {
     &.rightArrow {
-      margin-right: 44px;
+      transform: scaleX(-1);
+      color: $white;
     }
+
     &.leftArrow {
-      margin-left: 10px;
+      color: #6b726b;
     }
   }
 }
