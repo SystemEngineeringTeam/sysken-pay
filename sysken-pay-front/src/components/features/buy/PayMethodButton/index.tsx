@@ -6,13 +6,13 @@ export function PayMethodButtonGroup(): JSX.Element {
   return (
     <div className={styles.group}>
       <PayMethodButton type="cash" />
-      <PayMethodButton type="syspay" />
+      <PayMethodButton type="syskenpay" />
     </div>
   );
 }
 
 interface PayMethodButtonProps {
-  type: "cash" | "syspay";
+  type: "cash" | "syskenpay";
 }
 
 function PayMethodButton({ type }: PayMethodButtonProps): JSX.Element {
@@ -20,19 +20,19 @@ function PayMethodButton({ type }: PayMethodButtonProps): JSX.Element {
   const isCash = type === "cash";
 
   function handleClick() {
-    navigate(isCash ? "/buy/cash" : "/buy/syspay");
+    navigate(isCash ? "/buy/cash" : "/buy/syskenpay");
   }
 
   return (
     <button
-      className={isCash ? styles.cashButton : styles.syspayButton}
+      className={isCash ? styles.cashButton : styles.syskenpayButton}
       onClick={handleClick}
     >
       <div className={styles.content}>
         <img
           src={isCash ? "/icons/Cash.svg" : "/icons/BlueBarcode.svg"}
-          alt={isCash ? "Cash" : "SysPay"}
-          className={isCash ? styles.cashIcon : styles.syspayIcon}
+          alt={isCash ? "Cash" : "SyskenPay"}
+          className={isCash ? styles.cashIcon : styles.syskenpayIcon}
         />
         {isCash ? "現金" : "シス研Pay"}
       </div>

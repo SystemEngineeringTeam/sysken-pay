@@ -31,7 +31,6 @@ export default function ItemRegisterPage(): JSX.Element {
           onScan={handleScan}
           placeholder="商品のバーコードをかざしてください"
         />
-
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/admin/menu")}>
         戻る

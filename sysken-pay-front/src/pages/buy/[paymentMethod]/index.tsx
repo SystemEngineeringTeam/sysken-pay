@@ -23,7 +23,7 @@ export default function PaymentStartPage(): JSX.Element {
       if (!data?.user_id) throw new Error("ユーザーが見つかりませんでした");
       setScannedUser({ user_id: data.user_id });
       setBalance(data);
-      navigate("/buy/syspay/confirm");
+      navigate(`/buy/${paymentMethod}/confirm`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "ユーザー情報の取得に失敗しました");
     }

@@ -1,4 +1,5 @@
 import type { JSX } from "react";
+import { useState } from "react";
 import { BarcodeReader } from "../../../components/ui/BarcodeReader";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../components/layouts/Header";
@@ -10,6 +11,7 @@ import styles from "./index.module.scss";
 export default function ItemUpdatePage(): JSX.Element {
   const navigate = useNavigate();
   const setSelectedItem = useItemStore((state) => state.setSelectedItem);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleScan(barcode: string) {
     try {
@@ -18,7 +20,7 @@ export default function ItemUpdatePage(): JSX.Element {
       setSelectedItem(data);
       navigate("/admin/item-update/info");
     } catch (e) {
-      console.error(e);
+      setError(e instanceof Error ? e.message : "商品の取得に失敗しました");
     }
   }
 
@@ -31,6 +33,7 @@ export default function ItemUpdatePage(): JSX.Element {
           onScan={handleScan}
           placeholder="商品のバーコードをかざしてください"
         />
+        {error && <p>{error}</p>}
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/admin/menu")}>
         戻る

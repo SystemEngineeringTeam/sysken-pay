@@ -1,12 +1,12 @@
 import { useTotalPrice } from "../../../../hooks/useTotalPrice";
 import { PriceLabel } from "../../../ui/PriceLabel";
-import styles from "./SysPayConfirm.module.scss";
+import styles from "./SyskenPayConfirm.module.scss";
 
-interface SysPayConfirmProps {
+interface SyskenPayConfirmProps {
   balance: number; // シスPay残高
 }
 
-export default function SysPayConfirm({ balance }: SysPayConfirmProps) {
+export default function SyskenPayConfirm({ balance }: SyskenPayConfirmProps) {
   const totalPrice = useTotalPrice();
   const shortage = Math.max(0, totalPrice - balance); // 不足額
   const remaining = Math.max(0, balance - totalPrice); // 支払い後残高
