@@ -48,6 +48,13 @@
     max-height: 280px;
     object-fit: contain;
   }
+
+  .readerIcon {
+    transform: translateY(2.5rem) rotate(5deg);
+  }
+  .modeIcon {
+    transform: translateY(-2.5rem) rotate(7deg);
+  }
 }
 
 .hiddenInput {
