@@ -1,4 +1,4 @@
-import { useState, type JSX, type KeyboardEvent } from "react";
+import { useState, useRef, useCallback, type JSX, type KeyboardEvent } from "react";
 import styles from "./BarcodeReader.module.scss";
 import { Input } from "../Input";
 
@@ -10,6 +10,11 @@ interface BarcodeReaderProps {
 
 export function BarcodeReader({ mode, onScan, placeholder }: BarcodeReaderProps): JSX.Element {
   const [inputValue, setInputValue] = useState("");
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const focusInput = useCallback(() => {
+    containerRef.current?.querySelector("input")?.focus();
+  }, []);
 
   function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter" && inputValue.trim()) {
@@ -23,21 +28,16 @@ export function BarcodeReader({ mode, onScan, placeholder }: BarcodeReaderProps)
       ? "商品のバーコードをかざしてください"
       : "学生証のナンバーをかざしてください";
 
-  const ICONIFY_BASE = "https://api.iconify.design";
-  const ICON_COLOR = encodeURIComponent("#6B7280");
-
   const modeIcon =
-    mode === "product"
-      ? `${ICONIFY_BASE}/mdi/barcode-scan.svg?color=${ICON_COLOR}`
-      : `${ICONIFY_BASE}/mdi/card-account-details-outline.svg?color=${ICON_COLOR}`;
+    mode === "product" ? "/icons/Barcord.svg" : "/icons/MemberCard.svg";
 
   return (
-    <div className={styles.container}>
+    <div ref={containerRef} className={styles.container} onClick={focusInput}>
       <div className={styles.content}>
         <p className={styles.placeholder}>{placeholder || defaultPlaceholder}</p>
         <div className={styles.iconWrapper}>
           <img
-            src={`${ICONIFY_BASE}/material-symbols/barcode-reader-outline.svg?color=${ICON_COLOR}`}
+            src="/icons/BarcordReader.svg"
             alt="バーコードリーダー"
             className={styles.readerIcon}
           />
@@ -53,6 +53,7 @@ export function BarcodeReader({ mode, onScan, placeholder }: BarcodeReaderProps)
         className={styles.hiddenInput}
         onChange={setInputValue}
         onKeyDown={handleKeyDown}
+        onBlur={focusInput}
         value={inputValue}
         type="text"
       />

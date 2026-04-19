@@ -8,6 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "preview:pi": "vite preview --host 0.0.0.0 --port 3000",
     "generate:api": "openapi-typescript ../sysken-pay-backend/docs/openapi.yaml -o src/types/api-schema.d.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",

@@ -6,10 +6,13 @@ import Button from "../../../components/ui/Button";
 import { CompletionModal } from "../../../components/ui/CompletionModal";
 import Header from "../../../components/layouts/Header";
 import ArrowButton from "../../../components/ui/ArrowButton";
+import { useUserStore } from "../../../store/useUserStore";
+import { UserRepositoryImpl } from "../../../adapter/repository/UserRepositoryImpl";
 import styles from "./name.module.scss";
 
 export default function UserRegisterNamePage(): JSX.Element {
   const navigate = useNavigate();
+  const scannedUser = useUserStore((state) => state.scannedUser);
   const [name, setName] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -19,19 +22,30 @@ export default function UserRegisterNamePage(): JSX.Element {
     if (errorMessage) setErrorMessage("");
   }
 
-  function handleRegister() {
+  async function handleRegister() {
     if (!name.trim()) {
       setErrorMessage("名前を入力してください");
       return;
     }
-    setErrorMessage("");
-    setShowModal(true);
+    if (!scannedUser?.user_id) {
+      setErrorMessage("ユーザー情報が見つかりません。再度バーコードをスキャンしてください");
+      return;
+    }
+    try {
+      await UserRepositoryImpl.registerUser({
+        user_id: scannedUser.user_id,
+        user_name: name,
+      });
+      setErrorMessage("");
+      setShowModal(true);
+    } catch (e) {
+      setErrorMessage(e instanceof Error ? e.message : "登録に失敗しました");
+    }
   }
 
   return (
     <div className={styles.container}>
       <Header title="ユーザー登録" />
-
       <div className={styles.content}>
         <div className={styles.field}>
           <Input
@@ -43,22 +57,17 @@ export default function UserRegisterNamePage(): JSX.Element {
           {errorMessage && <p className={styles.error}>{errorMessage}</p>}
         </div>
       </div>
-
       <div className={styles.buttonWrapper}>
         <Button size="md" onClick={handleRegister}>
           登録
         </Button>
       </div>
-      <ArrowButton
-        variant="prev"
-        onClick={() => navigate("/admin/user-register")}
-      >
+      <ArrowButton variant="prev" onClick={() => navigate("/admin/user-register")}>
         戻る
       </ArrowButton>
-
       {showModal && (
         <CompletionModal
-          mode={"userRegister"}
+          mode="userRegister"
           name={name}
           onClose={() => navigate("/admin/menu")}
         />
