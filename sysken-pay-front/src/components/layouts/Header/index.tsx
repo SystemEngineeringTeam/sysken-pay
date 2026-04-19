@@ -3,8 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import styles from "./Header.module.scss";
 import { useState } from "react";
 
-const ICONS_BASE = "https://raw.githubusercontent.com/sana-sagegami/sysken-pay/main/public/icons";
-
 interface HeaderProps {
   title: string;
   right?: "setting" | "toTop" | "none";
@@ -26,16 +24,12 @@ function Header({ title, right = "none", shadow = false }: HeaderProps): JSX.Ele
       style={{ boxShadow: shadow ? "0 1.8px 9px 0 #17223330" : "none" }}
     >
       <div className={styles.left}>
-        <img src={`${ICONS_BASE}/Sysken.png`} alt="Icon" className={styles.icon} />
+        <img src="/icons/Sysken.png" alt="Icon" className={styles.icon} />
         <h1 className={styles.title}>{title}</h1>
       </div>
       {right === "setting" && (
         <Link to="/admin" className={styles.settingLink}>
-          <img
-            src={`${ICONS_BASE}/Setting.svg`}
-            alt="Setting"
-            className={styles.setting}
-          />
+          <img src="/icons/Setting.svg" alt="Setting" className={styles.setting} />
         </Link>
       )}
       {right === "toTop" && (

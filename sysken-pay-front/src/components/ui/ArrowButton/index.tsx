@@ -2,8 +2,6 @@ import type { JSX } from "react";
 import type { AriaButtonOptions } from "react-aria";
 import styles from "./ArrowButton.module.scss";
 
-const ICONS_BASE = "https://raw.githubusercontent.com/sana-sagegami/sysken-pay/main/public/icons";
-
 interface ArrowButtonProps extends React.PropsWithChildren<
   AriaButtonOptions<"button">
 > {
@@ -25,19 +23,11 @@ export default function ArrowButton(props: ArrowButtonProps): JSX.Element {
   return (
     <button className={className} onClick={onClick}>
       {variant === "prev" && (
-        <img
-          src={`${ICONS_BASE}/LeftArrow.svg`}
-          alt="leftArrow"
-          className={styles.leftArrow}
-        />
+        <img src="/icons/LeftArrow.svg" alt="leftArrow" className={styles.leftArrow} />
       )}
       {children}
       {variant === "next" && (
-        <img
-          src={`${ICONS_BASE}/RightArrow.svg`}
-          alt="rightArrow"
-          className={styles.rightArrow}
-        />
+        <img src="/icons/RightArrow.svg" alt="rightArrow" className={styles.rightArrow} />
       )}
     </button>
   );

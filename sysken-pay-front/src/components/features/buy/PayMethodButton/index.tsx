@@ -2,8 +2,6 @@ import type { JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./PayMethodButton.module.scss";
 
-const ICONS_BASE = "https://raw.githubusercontent.com/sana-sagegami/sysken-pay/main/public/icons";
-
 export function PayMethodButtonGroup(): JSX.Element {
   return (
     <div className={styles.group}>
@@ -32,17 +30,13 @@ function PayMethodButton({ type }: PayMethodButtonProps): JSX.Element {
     >
       <div className={styles.content}>
         <img
-          src={isCash ? `${ICONS_BASE}/Cash.svg` : `${ICONS_BASE}/BlueBarcode.svg`}
+          src={isCash ? "/icons/Cash.svg" : "/icons/BlueBarcode.svg"}
           alt={isCash ? "Cash" : "SysPay"}
           className={isCash ? styles.cashIcon : styles.syspayIcon}
         />
         {isCash ? "現金" : "シス研Pay"}
       </div>
-      <img
-        src={`${ICONS_BASE}/LeftArrow.svg`}
-        alt="arrow"
-        className={styles.arrow}
-      />
+      <img src="/icons/LeftArrow.svg" alt="arrow" className={styles.arrow} />
     </button>
   );
 }
