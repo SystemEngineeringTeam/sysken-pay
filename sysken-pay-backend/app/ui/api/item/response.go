@@ -5,7 +5,7 @@ import "sysken-pay-api/app/domain/object/item"
 // PostItemResponse Response: 商品登録のレスポンス
 type PostItemResponse struct {
 	Status    string `json:"status"`
-	Id        int    `json:"id"`
+	ID        int    `json:"id"`
 	JanCode   string `json:"jan_code"`
 	ItemName  string `json:"item_name"`
 	Price     int    `json:"price"`
@@ -16,7 +16,7 @@ type PostItemResponse struct {
 func toPostItemResponse(item *item.Item) *PostItemResponse {
 	return &PostItemResponse{
 		Status:    "success",
-		Id:        item.ID(),
+		ID:        item.ID(),
 		JanCode:   item.JanCode(),
 		ItemName:  item.Name(),
 		Price:     item.Price(),
@@ -28,7 +28,7 @@ func toPostItemResponse(item *item.Item) *PostItemResponse {
 // PatchItemResponse Response: 商品更新のレスポンス
 type PatchItemResponse struct {
 	Status    string `json:"status"`
-	Id        int    `json:"id"`
+	ID        int    `json:"id"`
 	JanCode   string `json:"jan_code"`
 	ItemName  string `json:"item_name"`
 	Price     int    `json:"price"`
@@ -39,7 +39,7 @@ type PatchItemResponse struct {
 func toPatchItemResponse(item *item.Item) *PatchItemResponse {
 	return &PatchItemResponse{
 		Status:    "success",
-		Id:        item.ID(),
+		ID:        item.ID(),
 		JanCode:   item.JanCode(),
 		ItemName:  item.Name(),
 		Price:     item.Price(),
@@ -51,7 +51,7 @@ func toPatchItemResponse(item *item.Item) *PatchItemResponse {
 // GetItemResponse Response: 商品取得のレスポンス
 type GetItemResponse struct {
 	Status   string `json:"status"`
-	ItemId   int    `json:"item_id"`
+	ItemID   int    `json:"item_id"`
 	JanCode  string `json:"jan_code"`
 	ItemName string `json:"item_name"`
 	Price    int    `json:"price"`
@@ -60,7 +60,7 @@ type GetItemResponse struct {
 func toGetItemResponse(item *item.Item) *GetItemResponse {
 	return &GetItemResponse{
 		Status:   "success",
-		ItemId:   item.ID(),
+		ItemID:   item.ID(),
 		JanCode:  item.JanCode(),
 		ItemName: item.Name(),
 		Price:    item.Price(),
@@ -69,7 +69,7 @@ func toGetItemResponse(item *item.Item) *GetItemResponse {
 
 // GetAllItemsResponse Response: 商品取得のレスポンス
 type GetAllItemResponse struct {
-	ItemId   int    `json:"item_id"`
+	ItemID   int    `json:"item_id"`
 	JanCode  string `json:"jan_code"`
 	ItemName string `json:"item_name"`
 	Price    int    `json:"price"`
@@ -77,7 +77,7 @@ type GetAllItemResponse struct {
 
 func toGetAllItemResponse(item *item.Item) *GetAllItemResponse {
 	return &GetAllItemResponse{
-		ItemId:   item.ID(),
+		ItemID:   item.ID(),
 		JanCode:  item.JanCode(),
 		ItemName: item.Name(),
 		Price:    item.Price(),

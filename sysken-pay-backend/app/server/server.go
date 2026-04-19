@@ -93,8 +93,8 @@ func Run(db *sql.DB) error {
 	r.Route("/v1", func(r chi.Router) {
 		// ユーザー関連
 		r.Post("/user", userHandler.RegisterUser)
+		r.Patch("/user/{user_id}", userHandler.UpdateUser)
 		r.Route("/user/{user_id}", func(r chi.Router) {
-			r.Patch("/", userHandler.UpdateUser)
 			r.Post("/charge", chargeHandler.ChargeAmount)
 			r.Post("/charge/cancel", chargeHandler.ChargeCancel)
 			r.Post("/purchase", purchaseHandler.CreatePurchase)
