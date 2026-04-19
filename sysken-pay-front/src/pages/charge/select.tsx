@@ -6,13 +6,19 @@ import { PriceLabel } from "../../components/ui/PriceLabel";
 import { Input } from "../../components/ui/Input";
 import { useBalanceStore } from "../../store/useBalanceStore";
 import { useState } from "react";
+import { useChargeStore } from "../../store/useChargeStore";
 
 export default function ChargeSelectPage() {
   const navigate = useNavigate();
   const balance = useBalanceStore((state) => state.balance?.balance ?? 0);
+  const saveChargeAmount = useChargeStore((state) => state.setChargeAmount);
   const [chargeAmount, setChargeAmount] = useState("");
-  const handleHome = () => {
-    navigate("/");
+
+  const handleNext = () => {
+    const normalizedChargeAmount =
+      Number(chargeAmount.replace(/[^\d]/g, "")) || 0;
+    saveChargeAmount(normalizedChargeAmount);
+    navigate("/charge/insert");
   };
 
   return (
@@ -33,10 +39,10 @@ export default function ChargeSelectPage() {
         </div>
         <SelectButtonGroup onSelectAmount={setChargeAmount} />
       </div>
-      <ArrowButton variant="prev" onClick={handleHome}>
+      <ArrowButton variant="prev" onClick={() => navigate("/charge")}>
         戻る
       </ArrowButton>
-      <ArrowButton variant="next" onClick={() => navigate("/charge/insert")}>
+      <ArrowButton variant="next" onClick={handleNext}>
         次へ
       </ArrowButton>
     </div>
