@@ -12,7 +12,7 @@ export default function Charge() {
     // TODO: APIから残高を参照
     setBalance({
       userId: barcode,
-      balance: 150,
+      balance: 550,
     });
     navigate("/charge/select");
   };
