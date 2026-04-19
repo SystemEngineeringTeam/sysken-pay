@@ -46,7 +46,7 @@ func (h *purchaseHandlerImpl) CreatePurchase(w http.ResponseWriter, r *http.Requ
 
 	inputs := make([]purchase.PurchaseItemInput, len(req.Items))
 	for i, item := range req.Items {
-		inputs[i] = purchase.PurchaseItemInput{ItemID: item.ItemId, Quantity: item.Quantity}
+		inputs[i] = purchase.PurchaseItemInput{ItemID: item.ItemID, Quantity: item.Quantity}
 	}
 
 	ctx := r.Context()
@@ -81,7 +81,7 @@ func (h *purchaseHandlerImpl) CancelPurchase(w http.ResponseWriter, r *http.Requ
 
 	inputs := make([]purchase.PurchaseItemInput, len(req.Items))
 	for i, item := range req.Items {
-		inputs[i] = purchase.PurchaseItemInput{ItemID: item.ItemId, Quantity: item.Quantity}
+		inputs[i] = purchase.PurchaseItemInput{ItemID: item.ItemID, Quantity: item.Quantity}
 	}
 
 	ctx := r.Context()
@@ -92,7 +92,7 @@ func (h *purchaseHandlerImpl) CancelPurchase(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	res := toPostPurchaseResponse(canceledPurchase)
+	res := toPostPurchaseCancelResponse(canceledPurchase)
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
