@@ -18,7 +18,7 @@ export default function ChargeSelectPage(): JSX.Element {
   const [errorMessage, setErrorMessage] = useState("");
 
   function handleAmountChange(value: string) {
-    setChargeAmount(value);
+    setChargeAmount(value.replace(/[^\d]/g, ""));
     if (errorMessage) setErrorMessage("");
   }
 
@@ -48,7 +48,7 @@ export default function ChargeSelectPage(): JSX.Element {
             {errorMessage && <p className={styles.error}>{errorMessage}</p>}
           </div>
         </div>
-        <SelectButtonGroup onSelectAmount={handleAmountChange} />
+        <SelectButtonGroup selectedAmount={chargeAmount} onSelectAmount={handleAmountChange} />
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/charge")}>
         戻る

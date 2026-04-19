@@ -2,25 +2,31 @@ import type { JSX } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { BarcodeReader } from "../../../components/ui/BarcodeReader";
 import { useUserStore } from "../../../store/useUserStore";
+import { useBalanceStore } from "../../../store/useBalanceStore";
+import { UserRepositoryImpl } from "../../../adapter/repository/UserRepositoryImpl";
 import Header from "../../../components/layouts/Header";
 import Total from "../../../components/features/buy/Total";
 import ArrowButton from "../../../components/ui/ArrowButton";
+import { useState } from "react";
 import styles from "./index.module.scss";
 
 export default function PaymentStartPage(): JSX.Element {
   const { paymentMethod } = useParams();
   const navigate = useNavigate();
   const setScannedUser = useUserStore((state) => state.setScannedUser);
+  const setBalance = useBalanceStore((state) => state.setBalance);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleScan(barcode: string) {
-    // TODO: APIからUser情報を取得
-    setScannedUser({
-      userId: barcode,
-      userName: "さな",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    navigate("/buy/syspay/confirm");
+  async function handleScan(barcode: string) {
+    try {
+      const data = await UserRepositoryImpl.getBalance(barcode);
+      if (!data?.user_id) throw new Error("ユーザーが見つかりませんでした");
+      setScannedUser({ user_id: data.user_id });
+      setBalance(data);
+      navigate("/buy/syspay/confirm");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "ユーザー情報の取得に失敗しました");
+    }
   }
 
   return (
@@ -38,6 +44,7 @@ export default function PaymentStartPage(): JSX.Element {
             onScan={handleScan}
             placeholder="学生証のバーコードをかざしてください"
           />
+          {error && <p>{error}</p>}
         </>
       )}
       <ArrowButton variant="prev" onClick={() => navigate("/buy/confirm")}>

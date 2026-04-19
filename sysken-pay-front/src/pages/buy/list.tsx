@@ -2,14 +2,14 @@ import type { JSX } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ItemList } from "../../components/features/buy/ItemList";
-import { useItemStore } from "../../store/useItemStore";
+import { useCartStore } from "../../store/useCartStore";
 import Header from "../../components/layouts/Header";
 import ArrowButton from "../../components/ui/ArrowButton";
 import styles from "./list.module.scss";
 
 export default function BuyListPage(): JSX.Element {
   const navigate = useNavigate();
-  const { items, removeItem } = useItemStore();
+  const { cartItems: items, removeItem } = useCartStore();
   const [errorMessage, setErrorMessage] = useState("");
 
   function handleNext() {

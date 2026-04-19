@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useTotalPrice } from "../../../../hooks/useTotalPrice";
+import { useCartStore } from "../../../../store/useCartStore";
 import { PriceLabel } from "../../../ui/PriceLabel";
 import Button from "../../../ui/Button";
 import styles from "./Total.module.scss";
@@ -7,19 +8,16 @@ import styles from "./Total.module.scss";
 interface TotalProps {
   title: string;
   label: string;
-  showButton?: boolean; // 完了ボタンの有無（デフォルト: false）
+  showButton?: boolean;
 }
 
-export default function Total({
-  title,
-  label,
-  showButton = false,
-}: TotalProps) {
+export default function Total({ title, label, showButton = false }: TotalProps) {
   const navigate = useNavigate();
   const totalPrice = useTotalPrice();
+  const clearCart = useCartStore((state) => state.clearCart);
 
   const handleCashComplete = () => {
-    // TODO: 決済API呼び出し
+    clearCart();
     navigate("/buy/complete");
   };
 

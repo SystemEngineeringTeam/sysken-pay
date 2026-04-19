@@ -8,18 +8,16 @@ import ArrowButton from "../../../components/ui/ArrowButton";
 import styles from "./index.module.scss";
 
 export default function UserRegisterPage(): JSX.Element {
-  const [mode] = useState<"product" | "member">("member");
   const navigate = useNavigate();
   const setScannedUser = useUserStore((state) => state.setScannedUser);
+  const [error, setError] = useState<string | null>(null);
 
   function handleScan(barcode: string) {
-    // TODO: APIからUser情報を取得
-    setScannedUser({
-      userId: barcode,
-      userName: "さな",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
+    if (!barcode) {
+      setError("バーコードを読み取れませんでした");
+      return;
+    }
+    setScannedUser({ user_id: barcode });
     navigate("/admin/user-register/name");
   }
 
@@ -28,10 +26,11 @@ export default function UserRegisterPage(): JSX.Element {
       <Header title="ユーザー登録" />
       <div className={styles.content}>
         <BarcodeReader
-          mode={mode}
+          mode="member"
           onScan={handleScan}
           placeholder="学生証のバーコードをかざしてください"
         />
+        {error && <p>{error}</p>}
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/admin")}>
         戻る

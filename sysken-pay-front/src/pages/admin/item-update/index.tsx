@@ -1,28 +1,25 @@
 import type { JSX } from "react";
-import { useState } from "react";
 import { BarcodeReader } from "../../../components/ui/BarcodeReader";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../components/layouts/Header";
 import { useItemStore } from "../../../store/useItemStore";
+import { ItemRepositoryImpl } from "../../../adapter/repository/ItemRepositoryImpl";
 import ArrowButton from "../../../components/ui/ArrowButton";
 import styles from "./index.module.scss";
 
 export default function ItemUpdatePage(): JSX.Element {
-  const [mode] = useState<"product" | "member">("product");
   const navigate = useNavigate();
-  const updateItem = useItemStore((state) => state.updateItem);
+  const setSelectedItem = useItemStore((state) => state.setSelectedItem);
 
-  function handleScan(barcode: string) {
-    // TODO: barcodeを使ってAPIから商品情報を取得してupdateItem
-    updateItem({
-      id: barcode,
-      janCode: barcode,
-      name: "商品名",
-      price: 100,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    navigate("/admin/item-update/info");
+  async function handleScan(barcode: string) {
+    try {
+      const data = await ItemRepositoryImpl.getItemByJanCode(barcode);
+      if (!data?.item_id) throw new Error("商品が見つかりませんでした");
+      setSelectedItem(data);
+      navigate("/admin/item-update/info");
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   return (
@@ -30,7 +27,7 @@ export default function ItemUpdatePage(): JSX.Element {
       <Header title="商品更新" />
       <div className={styles.content}>
         <BarcodeReader
-          mode={mode}
+          mode="product"
           onScan={handleScan}
           placeholder="商品のバーコードをかざしてください"
         />

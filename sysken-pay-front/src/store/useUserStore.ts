@@ -1,5 +1,7 @@
 import { create } from "zustand";
-import type { User } from "../types/domain/User";
+import type { components } from "../types/api-schema";
+
+type User = components["schemas"]["PostUserResponse"];
 
 type UserStore = {
   scannedUser: User | null;

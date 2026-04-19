@@ -1,6 +1,5 @@
-import { useState, type JSX } from "react";
+import { useState, type JSX, type KeyboardEvent } from "react";
 import styles from "./BarcodeReader.module.scss";
-import { useBarcodeReader } from "../../../hooks/useBarcodeReader";
 import { Input } from "../Input";
 
 interface BarcodeReaderProps {
@@ -10,15 +9,11 @@ interface BarcodeReaderProps {
 }
 
 export function BarcodeReader({ mode, onScan, placeholder }: BarcodeReaderProps): JSX.Element {
-  const { handleBarcodeScan } = useBarcodeReader(mode);
-
   const [inputValue, setInputValue] = useState("");
 
-  function handleInput(value: string) {
-    setInputValue(value);
-    if (value) {
-      handleBarcodeScan(value);
-      onScan(value);
+  function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" && inputValue.trim()) {
+      onScan(inputValue.trim());
       setInputValue("");
     }
   }
@@ -56,7 +51,8 @@ export function BarcodeReader({ mode, onScan, placeholder }: BarcodeReaderProps)
       <Input
         autoFocus
         className={styles.hiddenInput}
-        onChange={handleInput}
+        onChange={setInputValue}
+        onKeyDown={handleKeyDown}
         value={inputValue}
         type="text"
       />

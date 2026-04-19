@@ -17,8 +17,8 @@ export default function Admin(): JSX.Element {
   }
 
   function handleSubmit() {
-    if (!password.trim()) {
-      setErrorMessage("パスワードを入力してください");
+    if (password !== "setsetset") {
+      setErrorMessage("パスワードが違います");
       return;
     }
     setErrorMessage("");

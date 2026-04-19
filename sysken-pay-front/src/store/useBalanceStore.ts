@@ -1,9 +1,11 @@
 import { create } from "zustand";
-import type { UserBalance } from "../types/domain/User";
+import type { components } from "../types/api-schema";
+
+type Balance = components["schemas"]["GetBalanceResponse"];
 
 type BalanceStore = {
-  balance: UserBalance | null;
-  setBalance: (balance: UserBalance) => void;
+  balance: Balance | null;
+  setBalance: (balance: Balance) => void;
   clearBalance: () => void;
 };
 

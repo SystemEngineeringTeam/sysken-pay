@@ -1,6 +1,10 @@
 import { useState, useCallback } from "react";
-import type { User } from "../types/domain/User";
-import type { Item } from "../types/domain/Item";
+import { UserRepositoryImpl } from "../adapter/repository/UserRepositoryImpl";
+import { ItemRepositoryImpl } from "../adapter/repository/ItemRepositoryImpl";
+import type { components } from "../types/api-schema";
+
+type User = components["schemas"]["GetBalanceResponse"];
+type Item = components["schemas"]["GetItemResponse"];
 
 export function useBarcodeReader(mode: "product" | "member") {
   const [user, setUser] = useState<User | null>(null);
@@ -15,34 +19,12 @@ export function useBarcodeReader(mode: "product" | "member") {
 
       try {
         if (mode === "product") {
-          // JANコードから商品情報を取得
-          // const response = await fetchItemByJanCode(barcode);
-          // const data = await response.json();
-
-          // ダミーデータ（実装時はAPIレスポンスに置き換え）
-          const data: Item = {
-            id: "item-1",
-            janCode: barcode,
-            name: "商品名",
-            price: 1000,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-
+          const data = await ItemRepositoryImpl.getItemByJanCode(barcode);
+          if (!data?.item_id) throw new Error("商品が見つかりませんでした");
           setItem(data);
         } else {
-          // 学生証番号からユーザー情報を取得
-          // const response = await fetchUserByMemberId(barcode);
-          // const data = await response.json();
-
-          // ダミーデータ（実装時はAPIレスポンスに置き換え）
-          const data: User = {
-            userId: barcode,
-            userName: "山田太郎",
-            createdAt: new Date(),
-            updatedAt: new Date(),
-          };
-
+          const data = await UserRepositoryImpl.getBalance(barcode);
+          if (!data?.user_id) throw new Error("ユーザーが見つかりませんでした");
           setUser(data);
         }
       } catch (err) {
@@ -62,12 +44,5 @@ export function useBarcodeReader(mode: "product" | "member") {
     setError(null);
   }, []);
 
-  return {
-    user,
-    item,
-    isLoading,
-    error,
-    handleBarcodeScan,
-    reset,
-  };
+  return { user, item, isLoading, error, handleBarcodeScan, reset };
 }

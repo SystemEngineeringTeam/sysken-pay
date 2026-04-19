@@ -8,8 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "generate:api": "openapi-typescript http://localhost:8080/openapi.yaml -o src/types/api-schema.d.ts"
-    },
+    "generate:api": "openapi-typescript ../sysken-pay-backend/docs/openapi.yaml -o src/types/api-schema.d.ts"
+  },
   "dependencies": {
     "openapi-fetch": "^0.17.0",
     "react": "^19.2.0",

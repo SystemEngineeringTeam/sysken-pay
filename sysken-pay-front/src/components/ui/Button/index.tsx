@@ -5,13 +5,19 @@ import styles from "./Button.module.scss";
 interface ButtonProps extends React.PropsWithChildren<
   AriaButtonOptions<"button">
 > {
-  size?: "md" | "lg"; //デフォルト:medium , medium:普通のボタン, large:大きいボタン
+  size?: "sm" | "md" | "lg";
+  selected?: boolean;
   onClick?: () => void;
 }
 
 export default function Button(props: ButtonProps): JSX.Element {
-  const { children, size = "md", onClick } = props;
-  const className = [styles.button, size === "lg" && styles.large]
+  const { children, size = "md", selected = false, onClick } = props;
+  const className = [
+    styles.button,
+    size === "lg" && styles.large,
+    size === "sm" && styles.small,
+    size === "sm" && selected && styles.selected,
+  ]
     .filter(Boolean)
     .join(" ");
 

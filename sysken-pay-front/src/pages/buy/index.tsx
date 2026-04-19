@@ -3,26 +3,26 @@ import { useState } from "react";
 import { BarcodeReader } from "../../components/ui/BarcodeReader";
 import Header from "../../components/layouts/Header";
 import { useNavigate } from "react-router-dom";
-import { useItemStore } from "../../store/useItemStore";
+import { useCartStore } from "../../store/useCartStore";
+import { ItemRepositoryImpl } from "../../adapter/repository/ItemRepositoryImpl";
 import ArrowButton from "../../components/ui/ArrowButton";
 import styles from "./index.module.scss";
 
 export default function Buy(): JSX.Element {
   const [mode] = useState<"product" | "member">("product");
   const navigate = useNavigate();
-  const addItem = useItemStore((state) => state.addItem);
+  const addItem = useCartStore((state) => state.addItem);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleScan(barcode: string) {
-    // TODO: barcodeを使ってAPIから商品情報を取得してaddItem
-    addItem({
-      id: barcode,
-      name: "商品名",
-      price: 100,
-      janCode: barcode,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    navigate("/buy/list");
+  async function handleScan(barcode: string) {
+    try {
+      const data = await ItemRepositoryImpl.getItemByJanCode(barcode);
+      if (!data?.item_id) throw new Error("商品が見つかりませんでした");
+      addItem(data);
+      navigate("/buy/list");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "商品の取得に失敗しました");
+    }
   }
 
   return (
@@ -34,6 +34,7 @@ export default function Buy(): JSX.Element {
           onScan={handleScan}
           placeholder="商品のバーコードをかざしてください"
         />
+        {error && <p>{error}</p>}
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/")}>
         戻る

@@ -40,5 +40,3 @@ function PayMethodButton({ type }: PayMethodButtonProps): JSX.Element {
     </button>
   );
 }
-
-export default PayMethodButton;
