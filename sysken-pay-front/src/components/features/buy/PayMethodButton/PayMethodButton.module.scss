@@ -1,6 +1,6 @@
 .group {
   display: flex;
-  gap: $px-32 * 2;
+  gap: 128px;
   width: 85vw;
   justify-content: center;
   margin: 0 auto;
@@ -18,7 +18,7 @@
   font-size: 4vw;
   font-weight: bold;
   border: none;
-  border-radius: $px-13;
+  border-radius: 26px;
   cursor: pointer;
   transition: opacity 0.15s ease, transform 0.15s ease;
 
@@ -36,7 +36,7 @@
   align-items: center;
   justify-content: center;
   margin-left: 3vw;
-  gap: $px-12;
+  gap: 24px;
 }
 
 .cashIcon,
@@ -47,8 +47,8 @@
 }
 
 .arrow {
-  width: $px-32;
-  height: $px-32;
+  width: 64px;
+  height: 64px;
   margin: 3vw;
   transform: rotate(180deg);
 }

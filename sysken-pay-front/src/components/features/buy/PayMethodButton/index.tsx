@@ -1,8 +1,10 @@
+import type { JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "./PayMethodButton.module.scss";
 
-// 2個セットで使うラッパーコンポーネント
-export function PayMethodButtonGroup() {
+const ICONS_BASE = "https://raw.githubusercontent.com/sana-sagegami/sysken-pay/main/public/icons";
+
+export function PayMethodButtonGroup(): JSX.Element {
   return (
     <div className={styles.group}>
       <PayMethodButton type="cash" />
@@ -10,18 +12,18 @@ export function PayMethodButtonGroup() {
     </div>
   );
 }
+
 interface PayMethodButtonProps {
   type: "cash" | "syspay";
 }
 
-
-function PayMethodButton({ type }: PayMethodButtonProps) {
+function PayMethodButton({ type }: PayMethodButtonProps): JSX.Element {
   const navigate = useNavigate();
   const isCash = type === "cash";
 
-  const handleClick = () => {
+  function handleClick() {
     navigate(isCash ? "/buy/cash" : "/buy/syspay");
-  };
+  }
 
   return (
     <button
@@ -30,20 +32,19 @@ function PayMethodButton({ type }: PayMethodButtonProps) {
     >
       <div className={styles.content}>
         <img
-          src={isCash ? "/icons/Cash.svg" : "/icons/BlueBarcode.svg"}
+          src={isCash ? `${ICONS_BASE}/Cash.svg` : `${ICONS_BASE}/BlueBarcode.svg`}
           alt={isCash ? "Cash" : "SysPay"}
           className={isCash ? styles.cashIcon : styles.syspayIcon}
         />
         {isCash ? "現金" : "シス研Pay"}
       </div>
       <img
-        src="/icons/LeftArrow.svg"
+        src={`${ICONS_BASE}/LeftArrow.svg`}
         alt="arrow"
         className={styles.arrow}
       />
     </button>
   );
 }
-
 
 export default PayMethodButton;

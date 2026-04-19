@@ -3,8 +3,8 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: $px-32 * 2;
-  gap: $px-32;
+  padding-top: 128px;
+  gap: 64px;
 }
 
 .title {
@@ -16,13 +16,13 @@
 
 .priceWrapper {
   width: 100%;
-	justify-content: center;
-	justify-items: center;
+  justify-content: center;
+  justify-items: center;
 }
 
 .buttonWrapper {
   position: fixed;
-  bottom: $px-32;
+  bottom: 64px;
   left: 50%;
   transform: translateX(-50%);
 }

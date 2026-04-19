@@ -1,0 +1,44 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 10vh;
+  padding-left: 15vw;
+  padding-right: 15vw;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.row {
+  display: flex;
+  gap: 1.5rem;
+}
+
+.field {
+  flex: 1;
+}
+
+.error {
+  margin-top: 0.25rem;
+  color: $red-100;
+  font-size: 0.875rem;
+  font-weight: $bold;
+}
+
+.buttonWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 4vh;
+}

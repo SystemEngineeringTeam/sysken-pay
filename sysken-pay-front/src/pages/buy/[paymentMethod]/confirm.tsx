@@ -1,23 +1,41 @@
+import type { JSX } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../components/layouts/Header";
 import Button from "../../../components/ui/Button";
 import ArrowButton from "../../../components/ui/ArrowButton";
 import SysPayConfirm from "../../../components/features/buy/SysPayConfirm";
+import { useTotalPrice } from "../../../hooks/useTotalPrice";
+import styles from "./confirm.module.scss";
 
-export default function SysPayConfirmPage() {
+export default function SysPayConfirmPage(): JSX.Element {
   const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState("");
 
   // TODO: APIからユーザーの残高を取得
   const balance = 1000;
+  const totalPrice = useTotalPrice();
+
+  function handlePurchase() {
+    if (balance < totalPrice) {
+      setErrorMessage(
+        `残高が不足しています（不足額: ￥${totalPrice - balance}）`
+      );
+      return;
+    }
+    setErrorMessage("");
+    navigate("/buy/complete");
+  }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className={styles.container}>
       <Header title="購入確定" right="toTop" />
-      <div className="flex-1 flex flex-col items-center justify-start gap-8">
+      <div className={styles.content}>
         <SysPayConfirm balance={balance} />
+        {errorMessage && <p className={styles.error}>{errorMessage}</p>}
       </div>
-      <div className="flex justify-center pb-19">
-        <Button onClick={() => navigate("/buy/complete")}>購入</Button>
+      <div className={styles.buttonWrapper}>
+        <Button onClick={handlePurchase}>購入</Button>
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/buy/syspay")}>
         戻る

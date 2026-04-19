@@ -1,28 +1,29 @@
+import type { JSX } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../components/layouts/Header/index";
 import { BarcodeReader } from "../../components/ui/BarcodeReader";
-import { useNavigate } from "react-router-dom";
 import ArrowButton from "../../components/ui/ArrowButton";
 import { useBalanceStore } from "../../store/useBalanceStore";
+import styles from "./index.module.scss";
 
-export default function Charge() {
+export default function ChargePage(): JSX.Element {
   const navigate = useNavigate();
   const setBalance = useBalanceStore((state) => state.setBalance);
 
-  const handleScan = (barcode: string) => {
+  function handleScan(barcode: string) {
     // TODO: APIから残高を参照
-    setBalance({
-      userId: barcode,
-      balance: 550,
-    });
+    setBalance({ userId: barcode, balance: 550 });
     navigate("/charge/select");
-  };
-  const handleHome = () => {
+  }
+
+  function handleHome() {
     navigate("/");
-  };
+  }
+
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className={styles.container}>
       <Header title="チャージ" />
-      <div className="flex-1 flex flex-col items-center justify-center">
+      <div className={styles.content}>
         <BarcodeReader
           mode="member"
           onScan={handleScan}

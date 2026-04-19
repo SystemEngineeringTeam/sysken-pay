@@ -1,23 +1,29 @@
+import type { JSX } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import { useBalanceStore } from "../../store/useBalanceStore";
+import { useChargeStore } from "../../store/useChargeStore";
+import styles from "./complete.module.scss";
 
-export default function Charge() {
+export default function ChargeCompletePage(): JSX.Element {
   const navigate = useNavigate();
+  const balance = useBalanceStore((state) => state.balance?.balance ?? 0);
+  const clearChargeAmount = useChargeStore((state) => state.clearChargeAmount);
 
-  const handleHome = () => {
+  useEffect(() => {
+    clearChargeAmount();
+  }, [clearChargeAmount]);
+
+  function handleHome() {
     navigate("/");
-  };
+  }
+
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <div className="flex flex-col items-center justify-center gap-8 h-full">
-        <div className="text-6xl font-bold  text-[#454a53] mb-13 mt-50">
-          チャージが完了しました
-        </div>
-        <div className="text-4xl font-bold  text-[#BD2929] mb-20">
-          現在のカード残高　￥
-          {useBalanceStore((state) => state.balance?.balance ?? 0)}
-        </div>
+    <div className={styles.container}>
+      <div className={styles.content}>
+        <div className={styles.title}>チャージが完了しました</div>
+        <div className={styles.balance}>現在のカード残高  ￥{balance}</div>
         <Button onClick={handleHome}>ホームへ戻る</Button>
       </div>
     </div>

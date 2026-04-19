@@ -1,15 +1,17 @@
+import type { JSX } from "react";
 import { useNavigate } from "react-router-dom";
-import Headers from "../../components/layouts/Header/index";
+import Header from "../../components/layouts/Header/index";
 import Button from "../../components/ui/Button/index";
 import ArrowButton from "../../components/ui/ArrowButton";
+import styles from "./menu.module.scss";
 
-export default function Admin() {
+export default function AdminMenu(): JSX.Element {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
-      <Headers title="管理者" />
-      <div className="flex-1 flex flex-col items-center justify-center gap-10 mb-20">
+    <div className={styles.container}>
+      <Header title="管理者" />
+      <div className={styles.content}>
         <Button size="md" onClick={() => navigate("/admin/user-register")}>
           ユーザー登録
         </Button>
@@ -20,10 +22,7 @@ export default function Admin() {
           商品更新
         </Button>
       </div>
-      <ArrowButton
-        variant="prev"
-        onClick={() => navigate("/admin")}
-      >
+      <ArrowButton variant="prev" onClick={() => navigate("/admin")}>
         戻る
       </ArrowButton>
     </div>

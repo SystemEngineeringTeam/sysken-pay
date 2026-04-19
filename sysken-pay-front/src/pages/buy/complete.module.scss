@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.title {
+  font-size: 3vw;
+  font-weight: $bold;
+  color: $blue-40;
+  margin: 0;
+}
+
+.message {
+  font-size: 1.5vw;
+  color: $gray-40;
+  text-align: center;
+  line-height: 1.6;
+  margin: 0;
+}

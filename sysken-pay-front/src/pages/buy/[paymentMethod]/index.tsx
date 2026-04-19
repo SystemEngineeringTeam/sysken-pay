@@ -1,17 +1,18 @@
+import type { JSX } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { BarcodeReader } from "../../../components/ui/BarcodeReader";
 import { useUserStore } from "../../../store/useUserStore";
 import Header from "../../../components/layouts/Header";
 import Total from "../../../components/features/buy/Total";
 import ArrowButton from "../../../components/ui/ArrowButton";
+import styles from "./index.module.scss";
 
-export default function PaymentStartPage() {
+export default function PaymentStartPage(): JSX.Element {
   const { paymentMethod } = useParams();
   const navigate = useNavigate();
   const setScannedUser = useUserStore((state) => state.setScannedUser);
 
-  // syspay: 学生証スキャン後に確認画面へ
-  const handleScan = (barcode: string) => {
+  function handleScan(barcode: string) {
     // TODO: APIからUser情報を取得
     setScannedUser({
       userId: barcode,
@@ -20,10 +21,10 @@ export default function PaymentStartPage() {
       updatedAt: new Date(),
     });
     navigate("/buy/syspay/confirm");
-  };
+  }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className={styles.container}>
       {paymentMethod === "cash" ? (
         <>
           <Header title="現金支払い" right="toTop" />

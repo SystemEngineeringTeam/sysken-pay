@@ -1,0 +1,30 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2rem;
+  height: 100%;
+}
+
+.title {
+  font-size: 3.75rem;
+  font-weight: $bold;
+  color: $gray-100;
+  margin-bottom: 3.25rem;
+  margin-top: 12.5rem;
+}
+
+.balance {
+  font-size: 2.25rem;
+  font-weight: $bold;
+  color: #bd2929;
+  margin-bottom: 5rem;
+}

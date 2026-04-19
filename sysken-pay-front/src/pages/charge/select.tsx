@@ -1,43 +1,54 @@
-import Header from "../../components/layouts/Header/index";
+import type { JSX } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Header from "../../components/layouts/Header/index";
 import ArrowButton from "../../components/ui/ArrowButton";
 import { SelectButtonGroup } from "../../components/features/charge/SelectButton";
 import { PriceLabel } from "../../components/ui/PriceLabel";
 import { Input } from "../../components/ui/Input";
 import { useBalanceStore } from "../../store/useBalanceStore";
-import { useState } from "react";
 import { useChargeStore } from "../../store/useChargeStore";
+import styles from "./select.module.scss";
 
-export default function ChargeSelectPage() {
+export default function ChargeSelectPage(): JSX.Element {
   const navigate = useNavigate();
   const balance = useBalanceStore((state) => state.balance?.balance ?? 0);
   const saveChargeAmount = useChargeStore((state) => state.setChargeAmount);
   const [chargeAmount, setChargeAmount] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleNext = () => {
-    const normalizedChargeAmount =
-      Number(chargeAmount.replace(/[^\d]/g, "")) || 0;
+  function handleAmountChange(value: string) {
+    setChargeAmount(value);
+    if (errorMessage) setErrorMessage("");
+  }
+
+  function handleNext() {
+    const normalizedChargeAmount = Number(chargeAmount.replace(/[^\d]/g, ""));
+    if (!normalizedChargeAmount || normalizedChargeAmount < 1) {
+      setErrorMessage("1円以上の金額を入力または選択してください");
+      return;
+    }
+    setErrorMessage("");
     saveChargeAmount(normalizedChargeAmount);
     navigate("/charge/insert");
-  };
+  }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className={styles.container}>
       <Header title="チャージ金額" />
-      <div className="flex-1 flex flex-col items-center justify-center gap-8 pb-[10vh]">
-        <div className="flex flex-col items-center gap-4 pb-[7vh]">
+      <div className={styles.content}>
+        <div className={styles.inner}>
           <PriceLabel label="残高" price={balance} />
-          <div className="text-4xl font-bold text-center my-4 text-[#454a53]">
-            チャージ金額を選択してください
-          </div>
-          <div className="w-3/4 mx-auto">
+          <div className={styles.title}>チャージ金額を選択してください</div>
+          <div className={styles.inputWrapper}>
             <Input
               value={chargeAmount === "" ? "" : `￥${chargeAmount}`}
-              onChange={setChargeAmount}
+              onChange={handleAmountChange}
             />
+            {errorMessage && <p className={styles.error}>{errorMessage}</p>}
           </div>
         </div>
-        <SelectButtonGroup onSelectAmount={setChargeAmount} />
+        <SelectButtonGroup onSelectAmount={handleAmountChange} />
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/charge")}>
         戻る

@@ -1,3 +1,4 @@
+import type { JSX } from "react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "../../../components/ui/Input";
@@ -5,33 +6,45 @@ import Button from "../../../components/ui/Button";
 import { CompletionModal } from "../../../components/ui/CompletionModal";
 import Header from "../../../components/layouts/Header";
 import ArrowButton from "../../../components/ui/ArrowButton";
+import styles from "./name.module.scss";
 
-export default function UserRegisterPage() {
+export default function UserRegisterNamePage(): JSX.Element {
   const navigate = useNavigate();
   const [name, setName] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleRegister = () => {
-    if (!name.trim()) return;
+  function handleNameChange(value: string) {
+    setName(value);
+    if (errorMessage) setErrorMessage("");
+  }
+
+  function handleRegister() {
+    if (!name.trim()) {
+      setErrorMessage("名前を入力してください");
+      return;
+    }
+    setErrorMessage("");
     setShowModal(true);
-  };
+  }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className={styles.container}>
       <Header title="ユーザー登録" />
 
-      <div className="flex-1 flex flex-col items-center justify-start pt-[18vh]">
-        <div className="flex flex-col gap-3">
+      <div className={styles.content}>
+        <div className={styles.field}>
           <Input
             label="名前"
             placeholder="シス研太郎"
             value={name}
-            onChange={setName}
+            onChange={handleNameChange}
           />
+          {errorMessage && <p className={styles.error}>{errorMessage}</p>}
         </div>
       </div>
 
-      <div className="flex justify-center mb-[4vh]">
+      <div className={styles.buttonWrapper}>
         <Button size="md" onClick={handleRegister}>
           登録
         </Button>

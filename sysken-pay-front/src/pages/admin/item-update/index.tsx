@@ -1,17 +1,18 @@
+import type { JSX } from "react";
 import { useState } from "react";
 import { BarcodeReader } from "../../../components/ui/BarcodeReader";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../components/layouts/Header";
 import { useItemStore } from "../../../store/useItemStore";
 import ArrowButton from "../../../components/ui/ArrowButton";
+import styles from "./index.module.scss";
 
-export default function ItemUpdatePage() {
+export default function ItemUpdatePage(): JSX.Element {
   const [mode] = useState<"product" | "member">("product");
   const navigate = useNavigate();
   const updateItem = useItemStore((state) => state.updateItem);
 
-  const handleScan = (barcode: string) => {
-    console.log("スキャンされたバーコード:", barcode);
+  function handleScan(barcode: string) {
     // TODO: barcodeを使ってAPIから商品情報を取得してupdateItem
     updateItem({
       id: barcode,
@@ -22,12 +23,12 @@ export default function ItemUpdatePage() {
       updatedAt: new Date(),
     });
     navigate("/admin/item-update/info");
-  };
+  }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden">
+    <div className={styles.container}>
       <Header title="商品更新" />
-      <div className="flex flex-1 items-center justify-center">
+      <div className={styles.content}>
         <BarcodeReader
           mode={mode}
           onScan={handleScan}

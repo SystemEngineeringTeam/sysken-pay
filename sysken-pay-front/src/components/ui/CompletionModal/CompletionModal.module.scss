@@ -10,47 +10,47 @@
 
 .modal {
   background-color: $white;
-  border-radius: $px-12;
-  padding: $px-32 $px-24;
+  border-radius: 24px;
+  padding: 64px 48px;
   width: 90%;
-  max-width: $px-32 * 12;
+  max-width: 768px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: $px-16;
-  box-shadow: 0px $px-4 $px-16 $shadow-40;
+  gap: 32px;
+  box-shadow: 0px 8px 32px $shadow-40;
 }
 
 .message {
   text-align: center;
-  font-size: $rem-20;
+  font-size: 2.5rem;
   font-weight: $bold;
   color: $gray-100;
   line-height: 2;
 }
 
 .name {
-  font-size: $rem-32;
+  font-size: 4rem;
   font-weight: $extra-bold;
   color: $blue-40;
 }
 
 .san {
-  font-size: $rem-32;
+  font-size: 4rem;
   font-weight: $extra-bold;
   color: $gray-100;
 }
 
 .button {
   width: 100%;
-  max-width: $px-32 * 8;
-  padding: $px-8 $px-16;
+  max-width: 512px;
+  padding: 16px 32px;
   background-color: $blue-40;
   color: $white;
-  font-size: $rem-10;
+  font-size: 1.25rem;
   font-weight: $bold;
   border: none;
-  border-radius: $px-max;
+  border-radius: 9999px;
   cursor: pointer;
   transition: opacity 0.2s ease;
 

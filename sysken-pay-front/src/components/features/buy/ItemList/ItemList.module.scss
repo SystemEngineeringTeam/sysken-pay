@@ -3,14 +3,14 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
-  padding: $px-10 $px-24;
+  padding: 20px 48px;
 }
 
 .title {
-  font-size: $rem-25;
+  font-size: 3.125rem;
   font-weight: bold;
   color: $blue-40;
-  margin-bottom: $px-24;
+  margin-bottom: 48px;
   text-align: center;
 }
 
@@ -18,10 +18,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: $px-12;
+  gap: 24px;
   width: 100%;
-  max-width: $px-32 * 22;
-  max-height: calc($px-32 * 4 * 4 + $px-12 * 3);
+  max-width: 1408px;
+  max-height: 1096px;
   overflow-y: auto;
-	margin-left: $px-32 * 2.5;
+  margin-left: 160px;
 }

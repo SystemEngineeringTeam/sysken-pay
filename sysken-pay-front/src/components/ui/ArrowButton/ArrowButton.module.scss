@@ -1,5 +1,5 @@
-.arrowButton{
-  display: flex; 
+.arrowButton {
+  display: flex;
   position: fixed;
   bottom: 6vh;
   text-align: center;
@@ -9,12 +9,11 @@
   width: 17vw;
   height: 9vh;
   font-size: 1.9vw;
-  border-radius: $px-15;
+  border-radius: 30px;
   border: #6b726b solid 1px;
   font-family: "Noto Sans JP", sans-serif;
   font-weight: $bold;
-  justify-content:space-between;
-
+  justify-content: space-between;
 
   &:hover {
     opacity: 0.85;
@@ -22,34 +21,31 @@
 
   &:active {
     transform: scale(0.97);
-    box-shadow: 0px $px-1 $px-2 $shadow-20;
+    box-shadow: 0px 2px 4px $shadow-20;
     opacity: 0.9;
   }
 
-  &.prev{
+  &.prev {
     left: -4vw;
     padding: 0px 40px 0px 100px;
   }
 
-  &.next{
+  &.next {
     right: -4vw;
     padding: 0px 100px 0px 40px;
     background-color: $blue-40;
     color: $white;
   }
 
-  .arrowIcon{
-    width: $px-11;
-    height: $px-11;
+  .arrowIcon {
+    width: 22px;
+    height: 22px;
 
     &.rightArrow {
-        margin-right: $px-22;
+      margin-right: 44px;
     }
     &.leftArrow {
-        margin-left: $px-5;
+      margin-left: 10px;
     }
+  }
 }
-
-}
-
-

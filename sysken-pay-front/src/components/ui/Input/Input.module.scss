@@ -1,18 +1,18 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: $px-2;
+  gap: 4px;
   width: 100%;
 
   .labelContainer {
     display: flex;
     align-items: flex-start;
     flex-wrap: nowrap;
-    gap: $px-2;
+    gap: 4px;
 
     .label {
       font-family: var(--font-rounded-m-plus-1c), "M PLUS Rounded 1c";
-      font-size: $rem-20;
+      font-size: 2.5rem;
       font-weight: $bold;
       line-height: 1.2;
       color: $gray-100;
@@ -22,7 +22,7 @@
 
     .required {
       font-family: var(--font-rounded-m-plus-1c), "M PLUS Rounded 1c";
-      font-size: $rem-10;
+      font-size: 1.25rem;
       font-weight: $bold;
       line-height: 1.2;
       color: $red-100;
@@ -32,7 +32,7 @@
 
     .errorMessage {
       font-family: var(--font-rounded-m-plus-1c), "M PLUS Rounded 1c";
-      font-size: $rem-9;
+      font-size: 1.125rem;
       font-weight: $bold;
       line-height: 1.2;
       color: $red-100;
@@ -53,13 +53,13 @@
 
   .inputWrapper {
     position: relative;
-    width: $percent-10;
+    width: 100%;
   }
 
   .rightIcon {
     position: absolute;
-    right: $px-12;
-    top: $percent-5;
+    right: 24px;
+    top: 50%;
     transform: translateY(-40%);
     display: flex;
     align-items: center;
@@ -70,14 +70,13 @@
   .input {
     width: 100%;
     height: 10vh;
-    padding: $px-6;
-    font-size: $rem-26;
+    padding: 12px;
+    font-size: 3.25rem;
     font-weight: $medium;
     line-height: 1.4;
     color: $gray-100;
     background-color: $white;
-    border: $gray-100;
-    border-radius: $px-6;
+    border-radius: 12px;
     outline: none;
     transition: all 0.2s ease;
     box-sizing: border-box;
@@ -114,12 +113,12 @@
     }
 
     &.radiusFull {
-      border-radius: $px-max;
-      height: $px-16;
-      margin-top: $px-2;
+      border-radius: 9999px;
+      height: 32px;
+      margin-top: 4px;
       background-color: $gray-5;
       border: 2px solid $gray-10;
-      padding-right: $px-20;
+      padding-right: 40px;
     }
   }
 }

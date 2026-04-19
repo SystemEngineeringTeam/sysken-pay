@@ -1,23 +1,37 @@
+import type { JSX } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ItemList } from "../../components/features/buy/ItemList";
 import { useItemStore } from "../../store/useItemStore";
 import Header from "../../components/layouts/Header";
 import ArrowButton from "../../components/ui/ArrowButton";
+import styles from "./list.module.scss";
 
-export default function BuyListPage() {
+export default function BuyListPage(): JSX.Element {
   const navigate = useNavigate();
   const { items, removeItem } = useItemStore();
+  const [errorMessage, setErrorMessage] = useState("");
+
+  function handleNext() {
+    if (items.length === 0) {
+      setErrorMessage("商品を1点以上スキャンしてください");
+      return;
+    }
+    setErrorMessage("");
+    navigate("/buy/confirm");
+  }
 
   return (
-    <div className="flex flex-col h-screen overflow-hidde">
+    <div className={styles.container}>
       <Header title="商品購入" right="toTop" />
-      <div className="flex-1 flex flex-col items-center justify-start pt-10 gap-4 overflow-hidden">
+      <div className={styles.content}>
         <ItemList Items={items} onDelete={removeItem} />
+        {errorMessage && <p className={styles.error}>{errorMessage}</p>}
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/buy")}>
         戻る
       </ArrowButton>
-      <ArrowButton variant="next" onClick={() => navigate("/buy/confirm")}>
+      <ArrowButton variant="next" onClick={handleNext}>
         次へ
       </ArrowButton>
     </div>

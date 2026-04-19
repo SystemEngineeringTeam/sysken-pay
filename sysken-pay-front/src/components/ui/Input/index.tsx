@@ -10,6 +10,7 @@ interface InputProps
   radiusFull?: boolean;
   rightIcon?: React.ReactNode;
   isDisabled?: boolean;
+  className?: string;
 }
 
 export function Input(props: InputProps): JSX.Element {
@@ -29,6 +30,7 @@ export function Input(props: InputProps): JSX.Element {
     radiusFull = false,
     rightIcon,
     type,
+    className,
   } = props;
 
   useEffect(() => {
@@ -92,7 +94,7 @@ export function Input(props: InputProps): JSX.Element {
           {...restInputProps}
           className={`${styles.input} ${radiusFull ? styles.radiusFull : ""} ${
             hasError ? styles.error : ""
-          }`}
+          } ${className ?? ""}`}
           ref={ref}
           type={isPassword && isPasswordVisible ? "text" : type}
         />

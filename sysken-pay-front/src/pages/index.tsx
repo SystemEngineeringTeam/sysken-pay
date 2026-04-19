@@ -1,12 +1,13 @@
+import type { JSX } from "react";
 import Header from "../components/layouts/Header";
 import { HomeButtons } from "../components/features/home/HomeButtons";
+import styles from "./index.module.scss";
 
-export default function Home() {
+export default function Home(): JSX.Element {
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
+    <div className={styles.container}>
       <Header title="シス研Pay" right="setting" shadow={true} />
-
-      <main className="flex flex-1 flex-col items-center justify-center gap-[48px] p-6">
+      <main className={styles.main}>
         <HomeButtons />
       </main>
     </div>
