@@ -7,7 +7,6 @@
 ```text
 src/
 ├── main.tsx                    # エントリーポイント
-├── App.tsx                     # 全体のプロバイダー設定
 │
 ├── adapter/                    # 【Infra層】 外部通信の実装
 │   ├── api/
@@ -38,6 +37,7 @@ src/
 │
 ├── pages/                      # 【UI】 ページコンポーネント（Generouted自動ルーティング）
 │   ├── index.tsx               # / トップ
+│   ├── 404.tsx                 # 404ページ
 │   ├── buy/
 │   │   ├── index.tsx           # /buy 商品バーコードスキャン
 │   │   ├── list.tsx            # /buy/list カート確認
@@ -47,7 +47,7 @@ src/
 │   │       ├── index.tsx       # /buy/:paymentMethod 学生証スキャン or 現金投入
 │   │       └── confirm.tsx     # /buy/:paymentMethod/confirm シスPay購入確定
 │   ├── charge/
-│   │   ├── index.tsx           # /charge 学生証スキャン
+│   │   ├── index.tsx           # /charge パスワード認証 → 学生証スキャン
 │   │   ├── select.tsx          # /charge/select チャージ金額選択
 │   │   ├── insert.tsx          # /charge/insert 現金投入・API実行
 │   │   └── complete.tsx        # /charge/complete チャージ完了
@@ -77,19 +77,34 @@ src/
 │   ├── layouts/
 │   │   └── Header/             # ページヘッダー
 │   └── features/               # 特定機能に紐づくパーツ
+│       ├── home/
+│       │   └── HomeButtons/    # トップページのボタン群
 │       ├── buy/
 │       │   ├── ItemList/       # カートアイテム一覧
 │       │   ├── Total/          # 合計金額・現金完了ボタン
 │       │   ├── SyskenPayConfirm/  # シスPay残高・不足額表示
-│       │   └── PayMethodButton/
+│       │   └── PayMethodButton/   # 決済方法選択ボタン
 │       └── charge/
 │           └── SelectButton/   # チャージ金額選択ボタン群
 │
 ├── types/
 │   └── api-schema.d.ts         # OpenAPIから自動生成された型（編集禁止）
 │
-├── test/
-│   └── setup.ts                # Vitestセットアップ（jest-dom）
+├── test/                       # テストファイル（集約管理）
+│   ├── setup.ts                # Vitestセットアップ（jest-dom）
+│   ├── repository/
+│   │   ├── UserRepositoryImpl.test.ts
+│   │   ├── ItemRepositoryImpl.test.ts
+│   │   ├── ChargeRepositoryImpl.test.ts
+│   │   └── PurchaseRepositoryImpl.test.ts
+│   ├── store/
+│   │   └── useCartStore.test.ts
+│   ├── services/
+│   │   └── CartService.test.ts
+│   └── components/
+│       ├── Button.test.tsx
+│       ├── PriceLabel.test.tsx
+│       └── CompletionModal.test.tsx
 │
 └── docs/
     └── ARCHITECTURE.md         # 本ファイル
@@ -97,7 +112,7 @@ src/
 
 ## 型戦略
 
-`src/types/domain/` は廃止し、`api-schema.d.ts` の型をそのまま全レイヤーで使用しています。
+`api-schema.d.ts` の型をそのまま全レイヤーで使用しています。
 
 ```ts
 // 例：APIスキーマ型を直接利用
@@ -112,6 +127,15 @@ type Balance = components["schemas"]["GetBalanceResponse"];
 npm run generate:api  # openapi.yaml → api-schema.d.ts
 ```
 
+## 環境変数
+
+`.env` に以下の変数を設定してください（`.env.sample` 参照）。
+
+| 変数名 | 説明 |
+|:---|:---|
+| `VITE_API_URL` | バックエンドAPIのURL（例: `http://localhost:8080`） |
+| `VITE_ADMIN_PASSWORD` | 管理者・チャージ画面のパスワード |
+
 ## ルーティング (Generouted)
 
 `src/pages` のファイル構成がそのままURLになります。
@@ -121,6 +145,7 @@ npm run generate:api  # openapi.yaml → api-schema.d.ts
 | `src/pages/index.tsx` | `/` |
 | `src/pages/buy/index.tsx` | `/buy` |
 | `src/pages/buy/[paymentMethod]/index.tsx` | `/buy/:paymentMethod` |
+| `src/pages/charge/index.tsx` | `/charge` |
 | `src/pages/admin/index.tsx` | `/admin` |
 
 ## バーコードスキャンの仕組み
@@ -138,7 +163,7 @@ npm test          # テスト実行
 npm run test:ui   # ブラウザUIで実行
 ```
 
-テストファイルはテスト対象と同ディレクトリに配置します（例: `CartService.test.ts`）。
+テストファイルはすべて `src/test/` に集約しています。
 
 ## Storybook
 
