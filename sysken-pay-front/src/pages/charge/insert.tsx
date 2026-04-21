@@ -19,7 +19,7 @@ export default function ChargeInsertPage(): JSX.Element {
   const setBalance = useBalanceStore((state) => state.setBalance);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleNext() {
+  const handleNext = async () => {
     const userId = balance?.user_id;
     if (!userId) {
       setError("ユーザー情報が見つかりません");

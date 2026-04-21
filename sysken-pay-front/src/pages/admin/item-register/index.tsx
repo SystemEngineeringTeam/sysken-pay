@@ -11,7 +11,7 @@ import styles from "./index.module.scss";
 export default function ItemRegisterPage(): JSX.Element {
   const navigate = useNavigate();
   const setSelectedItem = useItemStore((state) => state.setSelectedItem);
-  async function handleScan(barcode: string) {
+  const handleScan = async (barcode: string) => {
     try {
       const data = await ItemRepositoryImpl.getItemByJanCode(barcode);
       setSelectedItem(data ?? { jan_code: barcode });

@@ -13,7 +13,7 @@ export default function ItemUpdatePage(): JSX.Element {
   const setSelectedItem = useItemStore((state) => state.setSelectedItem);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleScan(barcode: string) {
+  const handleScan = async (barcode: string) => {
     try {
       const data = await ItemRepositoryImpl.getItemByJanCode(barcode);
       if (!data?.item_id) throw new Error("商品が見つかりませんでした");

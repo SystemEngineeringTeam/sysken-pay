@@ -17,7 +17,7 @@ export default function PaymentStartPage(): JSX.Element {
   const setBalance = useBalanceStore((state) => state.setBalance);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleScan(barcode: string) {
+  const handleScan = async (barcode: string) => {
     try {
       const data = await UserRepositoryImpl.getBalance(barcode);
       if (!data?.user_id) throw new Error("ユーザーが見つかりませんでした");

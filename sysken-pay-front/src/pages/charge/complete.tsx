@@ -15,7 +15,7 @@ export default function ChargeCompletePage(): JSX.Element {
     clearChargeAmount();
   }, [clearChargeAmount]);
 
-  function handleHome() {
+  const handleHome = () => {
     navigate("/");
   }
 

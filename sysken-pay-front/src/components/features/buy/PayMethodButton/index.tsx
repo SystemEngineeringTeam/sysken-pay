@@ -19,7 +19,7 @@ function PayMethodButton({ type }: PayMethodButtonProps): JSX.Element {
   const navigate = useNavigate();
   const isCash = type === "cash";
 
-  function handleClick() {
+  const handleClick = () => {
     navigate(isCash ? "/buy/cash" : "/buy/syskenpay");
   }
 

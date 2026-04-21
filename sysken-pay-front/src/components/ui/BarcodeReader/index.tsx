@@ -16,7 +16,7 @@ export function BarcodeReader({ mode, onScan, placeholder }: BarcodeReaderProps)
     containerRef.current?.querySelector("input")?.focus();
   }, []);
 
-  function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+  const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim()) {
       onScan(inputValue.trim());
       setInputValue("");

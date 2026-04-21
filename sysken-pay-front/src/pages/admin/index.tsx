@@ -12,11 +12,11 @@ export default function Admin(): JSX.Element {
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  function handleHome() {
+  const handleHome = () => {
     navigate("/");
   }
 
-  function handleSubmit() {
+  const handleSubmit = () => {
     if (password !== import.meta.env.VITE_ADMIN_PASSWORD) {
       setErrorMessage("パスワードが違います");
       return;
@@ -25,7 +25,7 @@ export default function Admin(): JSX.Element {
     navigate("/admin/menu");
   }
 
-  function handlePasswordChange(value: string) {
+  const handlePasswordChange = (value: string) => {
     setPassword(value);
     if (errorMessage) setErrorMessage("");
   }

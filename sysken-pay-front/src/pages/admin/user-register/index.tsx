@@ -12,7 +12,7 @@ export default function UserRegisterPage(): JSX.Element {
   const setScannedUser = useUserStore((state) => state.setScannedUser);
   const [error, setError] = useState<string | null>(null);
 
-  function handleScan(barcode: string) {
+  const handleScan = (barcode: string) => {
     if (!barcode) {
       setError("バーコードを読み取れませんでした");
       return;

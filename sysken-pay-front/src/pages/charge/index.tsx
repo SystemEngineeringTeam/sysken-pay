@@ -20,7 +20,7 @@ export default function ChargePage(): JSX.Element {
   const [errorMessage, setErrorMessage] = useState("");
   const [scanError, setScanError] = useState<string | null>(null);
 
-  function handleSubmit() {
+  const handleSubmit = () => {
     if (password !== import.meta.env.VITE_ADMIN_PASSWORD) {
       setErrorMessage("パスワードが違います");
       return;
@@ -29,12 +29,12 @@ export default function ChargePage(): JSX.Element {
     setAuthenticated(true);
   }
 
-  function handlePasswordChange(value: string) {
+  const handlePasswordChange = (value: string) => {
     setPassword(value);
     if (errorMessage) setErrorMessage("");
   }
 
-  async function handleScan(barcode: string) {
+  const handleScan = async (barcode: string) => {
     try {
       const data = await UserRepositoryImpl.getBalance(barcode);
       if (!data?.user_id) throw new Error("ユーザーが見つかりませんでした");

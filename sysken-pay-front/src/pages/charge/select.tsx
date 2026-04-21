@@ -17,12 +17,12 @@ export default function ChargeSelectPage(): JSX.Element {
   const [chargeAmount, setChargeAmount] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  function handleAmountChange(value: string) {
+  const handleAmountChange = (value: string) => {
     setChargeAmount(value.replace(/[^\d]/g, ""));
     if (errorMessage) setErrorMessage("");
   }
 
-  function handleNext() {
+  const handleNext = () => {
     const normalizedChargeAmount = Number(chargeAmount.replace(/[^\d]/g, ""));
     if (!normalizedChargeAmount || normalizedChargeAmount < 1) {
       setErrorMessage("1円以上の金額を入力または選択してください");

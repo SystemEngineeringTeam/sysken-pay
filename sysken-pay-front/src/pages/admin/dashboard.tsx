@@ -8,7 +8,7 @@ import styles from "./dashboard.module.scss";
 export default function AdminDashboard(): JSX.Element {
   const navigate = useNavigate();
 
-  function handleAdmin() {
+  const handleAdmin = () => {
     navigate("/admin");
   }
 

@@ -13,7 +13,7 @@ function Header({ title, right = "none", shadow = false }: HeaderProps): JSX.Ele
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
 
-  function handleConfirm() {
+  const handleConfirm = () => {
     setShowConfirm(false);
     navigate("/");
   }

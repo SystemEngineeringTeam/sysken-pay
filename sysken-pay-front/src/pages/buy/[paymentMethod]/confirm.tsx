@@ -23,7 +23,7 @@ export default function SyskenPayConfirmPage(): JSX.Element {
   const setBalance = useBalanceStore((state) => state.setBalance);
   const totalPrice = useTotalPrice();
 
-  async function handlePurchase() {
+  const handlePurchase = async () => {
     if (balance < totalPrice) {
       setErrorMessage(`残高が不足しています（不足額: ￥${totalPrice - balance}）`);
       return;

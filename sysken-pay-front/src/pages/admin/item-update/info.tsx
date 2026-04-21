@@ -19,7 +19,7 @@ export default function ItemUpdateInfoPage(): JSX.Element {
   const [showModal, setShowModal] = useState(false);
   const [errors, setErrors] = useState<{ name?: string; price?: string; api?: string }>({});
 
-  async function handleRegister() {
+  const handleRegister = async () => {
     const newErrors: typeof errors = {};
     if (!name.trim()) newErrors.name = "商品名を入力してください";
     const parsedPrice = Number(price);

@@ -25,12 +25,12 @@ export default function UserRegisterNamePage(): JSX.Element {
       .catch(() => setAlreadyRegistered(false));
   }, [scannedUser?.user_id]);
 
-  function handleNameChange(value: string) {
+  const handleNameChange = (value: string) => {
     setName(value);
     if (errorMessage) setErrorMessage("");
   }
 
-  async function handleRegister() {
+  const handleRegister = async () => {
     if (!name.trim()) {
       setErrorMessage("名前を入力してください");
       return;

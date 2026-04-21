@@ -12,7 +12,7 @@ export default function BuyListPage(): JSX.Element {
   const { cartItems: items, removeItem, clearCart } = useCartStore();
   const [errorMessage, setErrorMessage] = useState("");
 
-  function handleNext() {
+  const handleNext = () => {
     if (items.length === 0) {
       setErrorMessage("商品を1点以上スキャンしてください");
       return;
