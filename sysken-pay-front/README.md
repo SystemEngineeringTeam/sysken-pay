@@ -1,73 +1,120 @@
-# React + TypeScript + Vite
+# シス研Pay フロントエンド
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+システム研究会部室で運営されているシス研商店のための、決済・購買管理Webアプリケーションです。
 
-Currently, two official plugins are available:
+## 概要
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 商品購入（カート機能付き）
+- 残高チャージ
+- 管理者機能（商品登録・更新、ユーザー登録）
 
-## React Compiler
+## 技術スタック
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+| カテゴリ | 技術 |
+|---|---|
+| フレームワーク | React 19 + TypeScript |
+| ビルドツール | Vite |
+| スタイリング | Tailwind CSS + SCSS |
+| 状態管理 | Zustand |
+| ルーティング | react-router-dom v7 + generouted（ファイルベース） |
+| API通信 | openapi-fetch（OpenAPIスキーマから型生成） |
+| UIコンポーネント | React Aria |
+| テスト | Vitest + Testing Library + Storybook（Playwright） |
 
-## Expanding the ESLint configuration
+## ディレクトリ構成
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```
+src/
+├── adapter/          # 外部との境界層（API / リポジトリ / ストレージ）
+├── components/
+│   ├── features/     # 機能別コンポーネント（buy / charge / home）
+│   ├── layouts/      # ヘッダー等のレイアウト
+│   └── ui/           # 汎用UIコンポーネント
+├── hooks/            # カスタムフック
+├── pages/            # ファイルベースルーティングのページ
+│   ├── index.tsx     # ホーム
+│   ├── buy/          # 商品購入フロー
+│   ├── charge/       # 残高チャージフロー
+│   └── admin/        # 管理者画面
+├── services/         # ドメインロジック（カートなど）
+├── store/            # Zustandストア
+├── styles/           # SCSSデザイントークン
+├── types/            # 型定義（api-schema.d.ts はOpenAPIから自動生成）
+└── test/             # テストセットアップ
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## セットアップ
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+### 必要な環境
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+- Node.js 18+
+- pnpm
+
+### インストール
+
+```bash
+pnpm install
+```
+
+### 開発サーバー起動
+
+```bash
+pnpm dev
+```
+
+### ビルド
+
+```bash
+pnpm build
+```
+
+### プレビュー
+
+```bash
+pnpm preview
+```
+
+Raspberry Pi等での公開用（0.0.0.0:3000）:
+
+```bash
+pnpm preview:pi
+```
+
+## APIスキーマの型生成
+
+バックエンドのOpenAPIスキーマから型を自動生成します。バックエンドリポジトリが `../sysken-pay-backend` に存在する必要があります。
+
+```bash
+pnpm generate:api
+```
+
+生成先: `src/types/api-schema.d.ts`
+
+## テスト
+
+```bash
+# 全テスト実行
+pnpm test
+
+# UIモードで実行
+pnpm test:ui
+```
+
+## Storybook
+
+```bash
+# 起動
+pnpm storybook
+
+# ビルド
+pnpm build-storybook
+```
+
+## 環境変数
+
+`.env` ファイルをプロジェクトルートに作成してください。
+
+```env
+VITE_API_BASE_URL=http://localhost:8080   # バックエンドAPIのURL
+VITE_ADMIN_PASSWORD=your_password         # 管理者パスワード
 ```
