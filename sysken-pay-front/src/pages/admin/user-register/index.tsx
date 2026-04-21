@@ -32,7 +32,7 @@ export default function UserRegisterPage(): JSX.Element {
         />
         {error && <p>{error}</p>}
       </div>
-      <ArrowButton variant="prev" onClick={() => navigate("/admin")}>
+      <ArrowButton variant="prev" onClick={() => navigate("/admin/menu")}>
         戻る
       </ArrowButton>
     </div>

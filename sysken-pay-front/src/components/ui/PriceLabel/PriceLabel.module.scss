@@ -2,10 +2,10 @@
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  width: 50vw;
+  width: 50rem;
   margin: 0 auto;
-  padding-bottom: 16px;
-  border-bottom: 1px solid $gray-40;
+  padding: 0 2.5rem 0rem;
+  border-bottom: 0.06rem solid $gray-40;
 }
 
 .label {
@@ -17,7 +17,7 @@
 .priceContainer {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 0.5rem;
   color: $gray-100;
 }
 

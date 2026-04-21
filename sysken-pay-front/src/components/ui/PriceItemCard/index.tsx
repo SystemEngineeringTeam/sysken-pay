@@ -9,7 +9,6 @@ type Props = {
 export const PriceItemCard = ({ title, price, onDelete }: Props) => {
   return (
     <div className={styles.wrapper}>
-      {/* 白いカード部分 */}
       <div className={styles.card}>
         <div className={styles.content}>
           <span className={styles.title}>{title}</span>
@@ -20,7 +19,7 @@ export const PriceItemCard = ({ title, price, onDelete }: Props) => {
         </div>
       </div>
 
-      {/* 削除ボタン（onDeleteが渡された時だけ表示） */}
+      {/* 削除ボタン */}
       {onDelete && (
         <button
           className={styles.deleteButton}

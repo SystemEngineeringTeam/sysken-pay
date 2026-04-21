@@ -14,6 +14,7 @@ export default function ProductRegisterPage(): JSX.Element {
   const navigate = useNavigate();
   const selectedItem = useItemStore((state) => state.selectedItem);
 
+  const alreadyRegistered = !!selectedItem?.item_id;
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -51,21 +52,31 @@ export default function ProductRegisterPage(): JSX.Element {
       <div className={styles.content}>
         <div className={styles.formGroup}>
           <Input label="JANコード" value={selectedItem?.jan_code ?? ""} isDisabled />
-          <div className={styles.row}>
-            <div className={styles.field}>
-              <Input label="商品名" placeholder="コーラ" value={name} onChange={setName} />
-              {errors.name && <p className={styles.error}>{errors.name}</p>}
+          {alreadyRegistered ? (
+            <div className={styles.alreadyRegistered}>
+              <span>この商品は登録済みです</span>
             </div>
-            <div className={styles.field}>
-              <Input label="値段" placeholder="100" value={price} onChange={setPrice} />
-              {errors.price && <p className={styles.error}>{errors.price}</p>}
-            </div>
-          </div>
-          {errors.api && <p className={styles.error}>{errors.api}</p>}
+          ) : (
+            <>
+              <div className={styles.row}>
+                <div className={styles.field}>
+                  <Input label="商品名" placeholder="コーラ" value={name} onChange={setName} />
+                  {errors.name && <p className={styles.error}>{errors.name}</p>}
+                </div>
+                <div className={styles.field}>
+                  <Input label="値段" placeholder="100" value={price} onChange={setPrice} />
+                  {errors.price && <p className={styles.error}>{errors.price}</p>}
+                </div>
+              </div>
+              {errors.api && <p className={styles.error}>{errors.api}</p>}
+            </>
+          )}
         </div>
       </div>
       <div className={styles.buttonWrapper}>
-        <Button size="md" onClick={handleRegister}>登録</Button>
+        {!alreadyRegistered && (
+          <Button size="md" onClick={handleRegister}>登録</Button>
+        )}
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/admin/item-register")}>
         戻る

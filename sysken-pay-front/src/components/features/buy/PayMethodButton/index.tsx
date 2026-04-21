@@ -34,7 +34,7 @@ function PayMethodButton({ type }: PayMethodButtonProps): JSX.Element {
           alt={isCash ? "Cash" : "SyskenPay"}
           className={isCash ? styles.cashIcon : styles.syskenpayIcon}
         />
-        {isCash ? "現金" : "シス研Pay"}
+        {isCash ? <span className={styles.cashLabel}>現金</span> : <span className={styles.syskenpayLabel}>シス研Pay</span>}
       </div>
       <img src="/icons/LeftArrow.svg" alt="arrow" className={styles.arrow} />
     </button>

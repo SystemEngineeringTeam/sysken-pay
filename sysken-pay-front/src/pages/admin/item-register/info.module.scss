@@ -10,9 +10,9 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
-  padding-top: 10vh;
-  padding-left: 15vw;
-  padding-right: 15vw;
+  padding-top: 5rem;
+  padding-left: 16rem;
+  padding-right: 16rem;
 }
 
 .formGroup {
@@ -37,8 +37,25 @@
   font-weight: $bold;
 }
 
+.alreadyRegistered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2.5rem 3rem;
+  width: 40rem;
+  margin: 0 auto;
+  background-color: $red-10;
+  border: 0.125rem solid $red-100;
+  border-radius: 1rem;
+  color: $red-100;
+  font-size: 1.75rem;
+  font-weight: $bold;
+  text-align: center;
+}
+
 .buttonWrapper {
   display: flex;
   justify-content: center;
-  margin-bottom: 4vh;
+  margin-bottom: 2rem;
 }

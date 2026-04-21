@@ -1,15 +1,15 @@
 .checkoutButton {
   width: 90%;
-  max-width: 1408px;
-  height: 512px;
+  max-width: 88rem;
+  height: 32rem;
   background-color: $white;
   color: $blue-40;
   font-size: 6.8rem;
   font-weight: bold;
-  border: 20px solid $blue-40;
-  border-radius: 42px;
+  border: 1.25rem solid $blue-40;
+  border-radius: 2.625rem;
   cursor: pointer;
-  box-shadow: 0px 4px 10px $shadow-20;
+  box-shadow: 0 0.25rem 0.625rem $shadow-20;
   transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 
   &:hover {
@@ -18,23 +18,23 @@
 
   &:active {
     transform: scale(0.97);
-    box-shadow: 0px 2px 4px $shadow-20;
+    box-shadow: 0 0.125rem 0.25rem $shadow-20;
     opacity: 0.9;
   }
 }
 
 .chargeButton {
   width: 90%;
-  max-width: 1408px;
-  height: 160px;
+  max-width: 88rem;
+  height: 10rem;
   background-color: $blue-40;
   color: $white;
   font-size: 4.0625rem;
   font-weight: bold;
   border: none;
-  border-radius: 24px;
+  border-radius: 1.5rem;
   cursor: pointer;
-  box-shadow: 0px 4px 10px $shadow-20;
+  box-shadow: 0 0.25rem 0.625rem $shadow-20;
   transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 
   &:hover {
@@ -43,7 +43,7 @@
 
   &:active {
     transform: scale(0.97);
-    box-shadow: 0px 2px 4px $shadow-20;
+    box-shadow: 0 0.125rem 0.25rem $shadow-20;
     opacity: 0.9;
   }
 }

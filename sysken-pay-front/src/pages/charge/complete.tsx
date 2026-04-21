@@ -24,7 +24,7 @@ export default function ChargeCompletePage(): JSX.Element {
       <div className={styles.content}>
         <div className={styles.title}>チャージが完了しました</div>
         <div className={styles.balance}>現在のカード残高  ￥{balance}</div>
-        <Button onClick={handleHome}>ホームへ戻る</Button>
+        <Button size="lg" onClick={handleHome}>ホームへ戻る</Button>
       </div>
     </div>
   );

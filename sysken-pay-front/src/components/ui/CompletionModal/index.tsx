@@ -16,6 +16,8 @@ export const CompletionModal = ({ mode, name, price, onClose }: Props) => {
 
   const action = mode === "itemUpdate" ? "更新" : "登録";
 
+  const isAdmin = mode === "itemRegister" || mode === "itemUpdate";
+
   return (
     <div className={styles.overlay}>
       <div className={styles.modal}>
@@ -23,8 +25,8 @@ export const CompletionModal = ({ mode, name, price, onClose }: Props) => {
           <span className={styles.name}>{highlight}</span>
           <br />の{action}が完了しました
         </p>
-        <Button size="lg" onClick={onClose}>
-          ホームへ戻る
+        <Button size="md" onClick={onClose}>
+          {isAdmin ? "メニューへ戻る" : "ホームへ戻る"}
         </Button>
       </div>
     </div>

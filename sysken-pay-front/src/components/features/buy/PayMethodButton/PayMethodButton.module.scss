@@ -1,7 +1,7 @@
 .group {
   display: flex;
-  gap: 128px;
-  width: 85vw;
+  gap: 8rem;
+  width: 85%;
   justify-content: center;
   margin: 0 auto;
 }
@@ -12,13 +12,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 22vh;
+  height: 14rem;
   background-color: $gray-5;
   color: $blue-40;
-  font-size: 4vw;
+  font-size: 2.5rem;
   font-weight: bold;
   border: none;
-  border-radius: 26px;
+  border-radius: 1.625rem;
   cursor: pointer;
   transition: opacity 0.15s ease, transform 0.15s ease;
 
@@ -35,20 +35,28 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-left: 3vw;
-  gap: 24px;
+  margin-left: 1.5rem;
+  gap: 1.5rem;
 }
 
 .cashIcon,
 .syskenpayIcon {
-  width: 6vw;
-  height: 12vh;
+  width: 10rem;
+  height: 7rem;
   object-fit: contain;
 }
 
+.cashLabel {
+  font-size: 5rem;
+}
+
+.syskenpayLabel {
+  font-size: 5rem;
+}
+
 .arrow {
-  width: 64px;
-  height: 64px;
-  margin: 3vw;
+  width: 5rem;
+  height: 5rem;
+  margin-right: 3rem;
   transform: rotate(180deg);
 }

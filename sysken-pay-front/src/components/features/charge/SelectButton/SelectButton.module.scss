@@ -1,13 +1,13 @@
 .button {
   display: inline-block;
   text-align: center;
-  width: 22vw;
-  height: 12vh;
+  width: 14rem;
+  height: 7rem;
   background-color: $blue-40;
   color: $white;
   border: $blue-40 solid 1px;
   border-radius: 50px;
-  font-size: 3.3vw;
+  font-size: 2.25rem;
   font-family: "Noto Sans JP", sans-serif;
   font-weight: $bold;
 
@@ -17,7 +17,7 @@
 
   &:active {
     transform: scale(0.97);
-    box-shadow: 0px 2px 4px $shadow-20;
+    box-shadow: 0 0.125rem 0.25rem $shadow-20;
     opacity: 0.9;
   }
 
@@ -30,7 +30,7 @@
 
 .group {
   display: flex;
-  gap: 58px;
+  gap: 3.625rem;
   justify-content: center;
   margin: 0 auto;
 }

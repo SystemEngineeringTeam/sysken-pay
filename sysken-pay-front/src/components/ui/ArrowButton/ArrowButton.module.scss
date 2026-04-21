@@ -1,15 +1,15 @@
 .arrowButton {
   display: flex;
   position: fixed;
-  bottom: 6vh;
+  bottom: 3rem;
   align-items: center;
   justify-content: center;
-  gap: 1vw;
+  gap: 0.75rem;
   background-color: $white;
   color: $blue-40;
-  width: 17vw;
-  height: 9vh;
-  font-size: 1.9vw;
+  width: 15rem;
+  height: 6.5rem;
+  font-size: 2.5rem;
   border-radius: 999px;
   border: #6b726b solid 1px;
   font-weight: $bold;
@@ -20,20 +20,26 @@
 
   &:active {
     transform: scale(0.97);
-    box-shadow: 0px 2px 4px $shadow-20;
+    box-shadow: 0 0.125rem 0.25rem $shadow-20;
     opacity: 0.9;
   }
 
   &.prev {
-    left: -4vw;
-    padding: 0 0 0 4vw;
+    left: -2.5rem;
+    padding: 0 0 0 2.5rem;
   }
 
   &.next {
-    right: -4vw;
-    padding: 0 4vw 0 0;
+    right: -2.5rem;
+    padding: 0 2.5rem 0 0;
     background-color: $blue-40;
     color: $white;
+  }
+
+  .leftArrow,
+  .rightArrow {
+    width: 2rem;
+    height: 2rem;
   }
 
   svg {

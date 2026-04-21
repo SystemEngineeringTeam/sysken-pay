@@ -1,27 +1,26 @@
 .wrapper {
   display: flex;
   align-items: center;
-  gap: 32px;
-  width: 100%;
-  max-width: 1920px;
+  gap: 2rem;
+  width: 80rem;
 }
 
 .card {
   flex: 1;
   min-width: 0;
-  max-height: 2560px;
+  max-height: 160rem;
   background-color: $white;
-  border-radius: 24px;
-  padding: 40px 64px;
-  box-shadow: 0px 4px 10px $shadow-20;
+  border-radius: 1.5rem;
+  border: $gray-30 solid 1px;
+  padding: 2.5rem 4rem;
+  box-shadow: 0 0.25rem 0.625rem $shadow-20;
 }
 
 .content {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  padding-bottom: 24px;
-  border-bottom: 1px solid $gray-10;
+  border-bottom: 0.0625rem solid $gray-10;
 }
 
 .title {
@@ -33,7 +32,7 @@
 .priceContainer {
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 0.5rem;
   color: $gray-100;
 }
 
@@ -49,11 +48,11 @@
 
 .deleteButton {
   flex-shrink: 0;
-  width: 192px;
+  width: 10rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 0.5rem;
   background-color: $gray-10;
   color: $gray-70;
   font-family: var(--font-rounded-m-plus-1c), "M PLUS Rounded 1c", sans-serif;
@@ -61,7 +60,7 @@
   font-weight: bold;
   border: none;
   border-radius: 9999px;
-  padding: 24px 40px;
+  padding: 1rem 2rem;
   cursor: pointer;
   transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
 
@@ -71,7 +70,7 @@
 
   &:active {
     transform: scale(0.97);
-    box-shadow: 0px 2px 4px $shadow-20;
+    box-shadow: 0 0.125rem 0.25rem $shadow-20;
     opacity: 0.9;
   }
 }

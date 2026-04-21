@@ -9,7 +9,7 @@ import styles from "./list.module.scss";
 
 export default function BuyListPage(): JSX.Element {
   const navigate = useNavigate();
-  const { cartItems: items, removeItem } = useCartStore();
+  const { cartItems: items, removeItem, clearCart } = useCartStore();
   const [errorMessage, setErrorMessage] = useState("");
 
   function handleNext() {
@@ -28,7 +28,7 @@ export default function BuyListPage(): JSX.Element {
         <ItemList Items={items} onDelete={removeItem} />
         {errorMessage && <p className={styles.error}>{errorMessage}</p>}
       </div>
-      <ArrowButton variant="prev" onClick={() => navigate("/buy")}>
+      <ArrowButton variant="prev" onClick={() => { clearCart(); navigate("/buy"); }}>
         戻る
       </ArrowButton>
       <ArrowButton variant="next" onClick={handleNext}>

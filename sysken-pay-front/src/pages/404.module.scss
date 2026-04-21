@@ -12,11 +12,11 @@
   align-items: center;
   text-align: center;
   gap: 1.5rem;
-  width: 50vw;
+  width: 32rem;
 }
 
 .code {
-  font-size: 8vw;
+  font-size: 6rem;
   font-weight: $bold;
   color: $blue-40;
   margin: 0;
@@ -24,14 +24,14 @@
 }
 
 .title {
-  font-size: 2.5vw;
+  font-size: 1.75rem;
   font-weight: $bold;
   color: $gray-100;
   margin: 0;
 }
 
 .message {
-  font-size: 1.5vw;
+  font-size: 1.125rem;
   color: $gray-40;
   margin: 0;
 }

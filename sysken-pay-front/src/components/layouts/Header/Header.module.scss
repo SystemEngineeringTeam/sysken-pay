@@ -2,10 +2,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 13vh;
-  padding: 0 3.5vw 0 1.3vw;
+  height: 7rem;
+  padding: 0 1.5rem;
   background-color: $white-10;
-  box-shadow: 0 2px 10px 0 #17223330;
+  box-shadow: 0 0.125rem 0.625rem 0 #17223330;
   position: relative;
   z-index: 10;
 
@@ -14,23 +14,24 @@
     align-items: center;
 
     .icon {
-      width: 64px;
-      height: 64px;
+      width: 4rem;
+      height: 4rem;
       transform: rotate(55deg);
-      margin-top: 10px;
+      margin-top: 0.625rem;
     }
 
     .title {
       color: $blue-40;
-      font-size: 2vw;
-      margin: 1.5vw;
+      font-size: 2rem;
+      margin: 1rem;
+      margin-top: 1.5rem;
       font-weight: bold;
     }
   }
 
   .toTop {
     color: $gray-70;
-    font-size: 2vw;
+    font-size: 2rem;
     font-weight: bold;
   }
 
@@ -52,8 +53,8 @@
   }
 
   .setting {
-    width: 76.8px;
-    height: 76.8px;
+    width: 4.8rem;
+    height: 4.8rem;
   }
 }
 
@@ -85,15 +86,15 @@
 
 .dialog {
   background-color: $white;
-  border-radius: 24px;
-  padding: 64px;
+  border-radius: 1.5rem;
+  padding: 4rem;
   width: 90%;
   max-width: 768px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 48px;
-  box-shadow: 0px 8px 32px $shadow-40;
+  gap: 3rem;
+  box-shadow: 0 0.5rem 2rem $shadow-40;
 }
 
 .dialogMessage {
@@ -106,14 +107,14 @@
 
 .dialogButtons {
   display: flex;
-  gap: 24px;
+  gap: 1.5rem;
   width: 100%;
   justify-content: center;
 }
 
 .cancelButton {
   flex: 1;
-  padding: 20px 32px;
+  padding: 1.25rem 2rem;
   background-color: $gray-10;
   color: $gray-70;
   font-size: 1.5rem;
@@ -130,7 +131,7 @@
 
 .confirmButton {
   flex: 1;
-  padding: 20px 32px;
+  padding: 1.25rem 2rem;
   background-color: $blue-40;
   color: $white;
   font-size: 1.5rem;

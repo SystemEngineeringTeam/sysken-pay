@@ -11,7 +11,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 18vh;
+  padding-top: 9rem;
 }
 
 .field {
@@ -25,6 +25,21 @@
   font-size: 1rem;
   font-weight: $bold;
   margin: 0;
+}
+
+.alreadyRegistered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2.5rem 3rem;
+  background-color: $red-10;
+  border: 0.125rem solid $red-100;
+  border-radius: 1rem;
+  color: $red-100;
+  font-size: 1.75rem;
+  font-weight: $bold;
+  text-align: center;
 }
 
 .buttonWrapper {

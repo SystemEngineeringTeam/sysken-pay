@@ -10,5 +10,43 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
+  padding-top: 8rem;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3.75rem;
+}
+
+.title {
+  font-size: 3rem;
+  color: $blue-40;
+  font-weight: $bold;
+  margin: 0;
+}
+
+.inputWrapper {
+  width: 50rem;
+}
+
+.error {
+  margin-top: 0.75rem;
+  padding: 0.75rem 1.25rem;
+  background-color: $red-10;
+  border: 0.125rem solid $red-100;
+  border-radius: 0.5rem;
+  color: $red-100;
+  font-size: 1.25rem;
+  font-weight: $bold;
+  text-align: center;
+}
+
+.buttonWrapper {
+  position: fixed;
+  bottom: 3rem;
+  left: 50%;
+  transform: translateX(-50%);
 }

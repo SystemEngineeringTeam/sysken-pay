@@ -17,7 +17,7 @@ export default function Admin(): JSX.Element {
   }
 
   function handleSubmit() {
-    if (password !== "setsetset") {
+    if (password !== "setset") {
       setErrorMessage("パスワードが違います");
       return;
     }
@@ -41,6 +41,8 @@ export default function Admin(): JSX.Element {
             {errorMessage && <p className={styles.error}>{errorMessage}</p>}
           </div>
         </div>
+      </div>
+      <div className={styles.buttonWrapper}>
         <Button size="md" onClick={handleSubmit}>
           決定
         </Button>
