@@ -17,7 +17,7 @@ export default function Admin(): JSX.Element {
   }
 
   function handleSubmit() {
-    if (password !== "setset") {
+    if (password !== import.meta.env.VITE_ADMIN_PASSWORD) {
       setErrorMessage("パスワードが違います");
       return;
     }

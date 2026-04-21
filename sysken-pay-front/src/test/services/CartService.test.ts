@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { CartService } from "./CartService";
-import type { CartItem } from "../store/useCartStore";
+import { CartService } from "@/services/CartService";
+import type { CartItem } from "@/store/useCartStore";
 
 const makeCartItem = (item_id: number, price: number, quantity: number): CartItem => ({
   item: { item_id, item_name: `商品${item_id}`, price, jan_code: "0000000000000" },

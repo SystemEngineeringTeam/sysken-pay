@@ -21,7 +21,7 @@ export default function ChargePage(): JSX.Element {
   const [scanError, setScanError] = useState<string | null>(null);
 
   function handleSubmit() {
-    if (password !== "setset") {
+    if (password !== import.meta.env.VITE_ADMIN_PASSWORD) {
       setErrorMessage("パスワードが違います");
       return;
     }

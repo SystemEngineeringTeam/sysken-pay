@@ -11,7 +11,6 @@
     gap: 0.25rem;
 
     .label {
-      font-family: var(--font-rounded-m-plus-1c), "M PLUS Rounded 1c";
       font-size: 2.5rem;
       font-weight: $bold;
       line-height: 1.2;
@@ -21,7 +20,6 @@
     }
 
     .required {
-      font-family: var(--font-rounded-m-plus-1c), "M PLUS Rounded 1c";
       font-size: 1.25rem;
       font-weight: $bold;
       line-height: 1.2;
@@ -31,7 +29,6 @@
     }
 
     .errorMessage {
-      font-family: var(--font-rounded-m-plus-1c), "M PLUS Rounded 1c";
       font-size: 1.125rem;
       font-weight: $bold;
       line-height: 1.2;

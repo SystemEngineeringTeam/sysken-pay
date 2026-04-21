@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { useCartStore } from "./useCartStore";
-import type { Item } from "./useCartStore";
+import { useCartStore } from "@/store/useCartStore";
+import type { Item } from "@/store/useCartStore";
 
 const item1: Item = { item_id: 1, item_name: "コーラ", price: 100, jan_code: "111" };
 const item2: Item = { item_id: 2, item_name: "お茶", price: 150, jan_code: "222" };

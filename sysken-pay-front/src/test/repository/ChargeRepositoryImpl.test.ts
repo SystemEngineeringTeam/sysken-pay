@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ChargeRepositoryImpl } from "./ChargeRepositoryImpl";
+import { ChargeRepositoryImpl } from "../../adapter/repository/ChargeRepositoryImpl";
 
 const mockPost = vi.hoisted(() => vi.fn());
 
-vi.mock("../api/client", () => ({
+vi.mock("@/adapter/api/client", () => ({
   apiClient: { POST: mockPost },
 }));
 

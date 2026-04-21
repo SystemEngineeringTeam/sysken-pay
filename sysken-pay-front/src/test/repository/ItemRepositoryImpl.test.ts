@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ItemRepositoryImpl } from "./ItemRepositoryImpl";
+import { ItemRepositoryImpl } from "@/adapter/repository/ItemRepositoryImpl";
 
 const mockGet = vi.hoisted(() => vi.fn());
 
-vi.mock("../api/client", () => ({
+vi.mock("@/adapter/api/client", () => ({
   apiClient: { GET: mockGet },
 }));
 
