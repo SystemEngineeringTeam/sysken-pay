@@ -16,9 +16,32 @@
 }
 
 .error {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: $red-10;
+  border: 0.125rem solid $red-100;
+  border-radius: 1rem;
   color: $red-100;
-  font-size: 1rem;
+  font-size: 1.8rem;
   font-weight: $bold;
   text-align: center;
+  padding: 1.25rem 2rem;
   margin: 0;
+  max-width: 60rem;
+  width: 100%;
+  box-sizing: border-box;
+  animation: fadeIn 0.2s ease-out;
+  will-change: opacity, transform;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
