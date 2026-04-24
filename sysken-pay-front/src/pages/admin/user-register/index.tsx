@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BarcodeReader } from "../../../components/ui/BarcodeReader";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../components/layouts/Header";
@@ -10,7 +10,12 @@ import styles from "./index.module.scss";
 export default function UserRegisterPage(): JSX.Element {
   const navigate = useNavigate();
   const setScannedUser = useUserStore((state) => state.setScannedUser);
+  const clearScannedUser = useUserStore((state) => state.clearScannedUser);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    clearScannedUser();
+  }, [clearScannedUser]);
 
   const handleScan = (barcode: string) => {
     if (!barcode) {

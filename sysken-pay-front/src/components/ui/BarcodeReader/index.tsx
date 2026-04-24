@@ -16,9 +16,12 @@ export function BarcodeReader({ mode, onScan, placeholder }: BarcodeReaderProps)
     containerRef.current?.querySelector("input")?.focus();
   }, []);
 
+  const toHalfWidth = (str: string) =>
+    str.replace(/[！-～]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
+
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim()) {
-      onScan(inputValue.trim());
+      onScan(toHalfWidth(inputValue.trim()));
       setInputValue("");
     }
   }
