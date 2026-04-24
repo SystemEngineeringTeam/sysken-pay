@@ -44,7 +44,7 @@ export default function PaymentStartPage(): JSX.Element {
             onScan={handleScan}
             placeholder="学生証のバーコードをかざしてください"
           />
-          {error && <p>{error}</p>}
+          {error && <p className={styles.error}>{error}</p>}
         </>
       )}
       <ArrowButton variant="prev" onClick={() => navigate("/buy/confirm")}>

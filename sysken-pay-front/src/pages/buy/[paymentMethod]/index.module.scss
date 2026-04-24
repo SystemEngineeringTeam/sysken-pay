@@ -4,3 +4,38 @@
   height: 100vh;
   overflow: hidden;
 }
+
+.error {
+  position: fixed;
+  bottom: 12rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  background-color: $red-10;
+  border: 0.125rem solid $red-100;
+  border-radius: 1rem;
+  color: $red-100;
+  font-size: 1.8rem;
+  font-weight: $bold;
+  text-align: center;
+  padding: 1.25rem 2rem;
+  margin: 0;
+  width: calc(100% - 4rem);
+  max-width: 60rem;
+  box-sizing: border-box;
+  animation: fadeIn 0.2s ease-out;
+  will-change: opacity, transform;
+  z-index: 10;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(0.5rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}

@@ -44,7 +44,7 @@ export default function ChargeInsertPage(): JSX.Element {
       <div className={styles.content}>
         <div className={styles.instruction}>箱にお金を入れてください</div>
         <PriceLabel label="チャージ金額" price={chargeAmount} />
-        {error && <p>{error}</p>}
+        {error && <p className={styles.error}>{error}</p>}
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/charge/select")}>
         戻る

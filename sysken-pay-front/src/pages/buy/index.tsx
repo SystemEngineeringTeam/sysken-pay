@@ -17,7 +17,7 @@ export default function Buy(): JSX.Element {
   const handleScan = async (barcode: string) => {
     try {
       const data = await ItemRepositoryImpl.getItemByJanCode(barcode);
-      if (!data?.item_id) throw new Error("商品が見つかりませんでした");
+      if (!data?.item_id) throw new Error("商品が見つかりませんでした。ご不明の際は担当者にご連絡ください。");
       addItem(data);
       navigate("/buy/list");
     } catch (e) {
@@ -34,7 +34,7 @@ export default function Buy(): JSX.Element {
           onScan={handleScan}
           placeholder="商品のバーコードをかざしてください"
         />
-        {error && <p>{error}</p>}
+        {error && <p className={styles.error}>{error}</p>}
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/")}>
         戻る
