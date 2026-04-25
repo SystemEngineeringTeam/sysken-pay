@@ -1,9 +1,10 @@
 import type { JSX } from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { BarcodeReader } from "../../../components/ui/BarcodeReader";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../components/layouts/Header";
 import { useUserStore } from "../../../store/useUserStore";
+import { UserRepositoryImpl } from "../../../adapter/repository/UserRepositoryImpl";
 import ArrowButton from "../../../components/ui/ArrowButton";
 import styles from "./index.module.scss";
 
@@ -13,17 +14,20 @@ export default function UserRegisterPage(): JSX.Element {
   const clearScannedUser = useUserStore((state) => state.clearScannedUser);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    clearScannedUser();
-  }, [clearScannedUser]);
-
-  const handleScan = (barcode: string) => {
+  const handleScan = async (barcode: string) => {
     if (!barcode) {
       setError("バーコードを読み取れませんでした");
       return;
     }
-    setScannedUser({ user_id: barcode });
-    navigate("/admin/user-register/name");
+    setError(null);
+    clearScannedUser();
+    try {
+      await UserRepositoryImpl.getBalance(barcode);
+      setError("このユーザーはすでに登録済みです");
+    } catch {
+      setScannedUser({ user_id: barcode });
+      navigate("/admin/user-register/name");
+    }
   }
 
   return (

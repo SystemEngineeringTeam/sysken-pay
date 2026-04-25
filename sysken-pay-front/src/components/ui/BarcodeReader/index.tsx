@@ -53,6 +53,7 @@ export function BarcodeReader({ mode, onScan, placeholder }: BarcodeReaderProps)
       </div>
       <Input
         autoFocus
+        aria-label="バーコードスキャン入力"
         className={styles.hiddenInput}
         onChange={setInputValue}
         onKeyDown={handleKeyDown}

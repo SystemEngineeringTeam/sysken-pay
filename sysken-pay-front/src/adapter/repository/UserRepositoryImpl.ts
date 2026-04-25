@@ -29,6 +29,7 @@ export const UserRepositoryImpl = {
       params: { path: { user_id: userId } },
     });
     if (error) throw new Error(error.message);
+    if (!data?.user_id) throw new Error("ユーザーが見つかりませんでした");
     return data;
   },
 };

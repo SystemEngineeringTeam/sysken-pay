@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "../../../components/ui/Input";
 import Button from "../../../components/ui/Button";
@@ -16,14 +16,6 @@ export default function UserRegisterNamePage(): JSX.Element {
   const [name, setName] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [alreadyRegistered, setAlreadyRegistered] = useState(false);
-
-  useEffect(() => {
-    if (!scannedUser?.user_id) return;
-    UserRepositoryImpl.getBalance(scannedUser.user_id)
-      .then(() => setAlreadyRegistered(true))
-      .catch(() => setAlreadyRegistered(false));
-  }, [scannedUser?.user_id]);
 
   const handleNameChange = (value: string) => {
     setName(value);
@@ -55,28 +47,20 @@ export default function UserRegisterNamePage(): JSX.Element {
     <div className={styles.container}>
       <Header title="ユーザー登録" />
       <div className={styles.content}>
-        {alreadyRegistered ? (
-          <div className={styles.alreadyRegistered}>
-            <span>このユーザーは登録済みです</span>
-          </div>
-        ) : (
-          <div className={styles.field}>
-            <Input
-              label="名前"
-              placeholder="k24000_シス研太郎"
-              value={name}
-              onChange={handleNameChange}
-            />
-            {errorMessage && <p className={styles.error}>{errorMessage}</p>}
-          </div>
-        )}
+        <div className={styles.field}>
+          <Input
+            label="名前"
+            placeholder="k24000_シス研太郎"
+            value={name}
+            onChange={handleNameChange}
+          />
+          {errorMessage && <p className={styles.error}>{errorMessage}</p>}
+        </div>
       </div>
       <div className={styles.buttonWrapper}>
-        {!alreadyRegistered && (
-          <Button size="md" onClick={handleRegister}>
-            登録
-          </Button>
-        )}
+        <Button size="md" onClick={handleRegister}>
+          登録
+        </Button>
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/admin/user-register")}>
         戻る
