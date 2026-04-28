@@ -14,6 +14,8 @@ export type Path =
   | `/admin/menu`
   | `/admin/user-register`
   | `/admin/user-register/name`
+  | `/admin/user-update`
+  | `/admin/user-update/name`
   | `/buy`
   | `/buy/:paymentMethod`
   | `/buy/:paymentMethod/confirm`

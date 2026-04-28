@@ -1,7 +1,7 @@
 import Button from "../Button";
 import styles from "./CompletionModal.module.scss";
 
-type Mode = "userRegister" | "itemRegister" | "itemUpdate";
+type Mode = "userRegister" | "userUpdate" | "itemRegister" | "itemUpdate";
 
 type Props = {
   mode: Mode;
@@ -12,11 +12,13 @@ type Props = {
 
 export const CompletionModal = ({ mode, name, price, onClose }: Props) => {
   const highlight =
-    mode === "userRegister" ? `${name}さん` : `${name} ¥${price}`;
+    mode === "userRegister" || mode === "userUpdate"
+      ? `${name}さん`
+      : `${name} ¥${price}`;
 
-  const action = mode === "itemUpdate" ? "更新" : "登録";
+  const action = mode === "itemUpdate" || mode === "userUpdate" ? "更新" : "登録";
 
-  const isAdmin = mode === "itemRegister" || mode === "itemUpdate";
+  const isAdmin = mode === "itemRegister" || mode === "itemUpdate" || mode === "userUpdate";
 
   return (
     <div className={styles.overlay}>
