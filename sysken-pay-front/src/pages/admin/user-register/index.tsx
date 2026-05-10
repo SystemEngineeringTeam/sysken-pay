@@ -22,13 +22,13 @@ export default function UserRegisterPage(): JSX.Element {
     setError(null);
     clearScannedUser();
     try {
-      await UserRepositoryImpl.getBalance(barcode);
+      await UserRepositoryImpl.getUser(barcode);
       setError("このユーザーはすでに登録済みです");
     } catch {
       setScannedUser({ user_id: barcode });
       navigate("/admin/user-register/name");
     }
-  }
+  };
 
   return (
     <div className={styles.container}>

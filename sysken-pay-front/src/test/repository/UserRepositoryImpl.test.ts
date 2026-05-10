@@ -16,6 +16,24 @@ beforeEach(() => {
 });
 
 describe("UserRepositoryImpl", () => {
+  describe("getUser", () => {
+    it("ユーザー取得が成功する", async () => {
+      const response = { status: "success", user_id: "k24000", user_name: "シス研太郎" };
+      mockGet.mockResolvedValue({ data: response, error: undefined });
+
+      const result = await UserRepositoryImpl.getUser("k24000");
+      expect(result).toEqual(response);
+      expect(mockGet).toHaveBeenCalledWith("/v1/user/{user_id}", {
+        params: { path: { user_id: "k24000" } },
+      });
+    });
+
+    it("エラー時に例外を投げる", async () => {
+      mockGet.mockResolvedValue({ data: undefined, error: { message: "ユーザーが見つかりません" } });
+      await expect(UserRepositoryImpl.getUser("k99999")).rejects.toThrow("ユーザーが見つかりません");
+    });
+  });
+
   describe("registerUser", () => {
     it("ユーザー登録が成功する", async () => {
       const response = { status: "success", user_id: "k24000", user_name: "シス研太郎" };

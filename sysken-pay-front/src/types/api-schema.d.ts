@@ -28,7 +28,8 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        get?: never;
+        /** ユーザー取得 */
+        get: operations["getUser"];
         put?: never;
         post?: never;
         delete?: never;
@@ -260,6 +261,17 @@ export interface components {
              */
             created_at?: string;
         };
+        GetUserResponse: {
+            /** @example success */
+            status?: string;
+            user_id?: string;
+            user_name?: string;
+            /**
+             * Format: date-time
+             * @example 2025-01-01T00:00:00.000Z
+             */
+            created_at?: string;
+        };
         PatchUserResponse: {
             /** @example success */
             status?: string;
@@ -445,6 +457,56 @@ export interface operations {
             };
             /** @description リクエスト不正 */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getUser: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ユーザーID */
+                user_id: components["parameters"]["UserId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 取得成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GetUserResponse"];
+                };
+            };
+            /** @description リクエスト不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description ユーザーが存在しない */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

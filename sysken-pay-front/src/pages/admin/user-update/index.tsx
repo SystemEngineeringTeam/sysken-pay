@@ -22,13 +22,13 @@ export default function UserUpdatePage(): JSX.Element {
     setError(null);
     clearScannedUser();
     try {
-      await UserRepositoryImpl.getBalance(barcode);
+      await UserRepositoryImpl.getUser(barcode);
       setScannedUser({ user_id: barcode });
       navigate("/admin/user-update/name");
     } catch {
       setError("このユーザーは登録されていません");
     }
-  }
+  };
 
   return (
     <div className={styles.container}>

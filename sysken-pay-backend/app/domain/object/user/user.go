@@ -2,9 +2,13 @@ package user
 
 import (
 	"errors"
+	"regexp"
 	"time"
 	"unicode/utf8"
 )
+
+// 学籍番号フォーマット: 2桁の数字 + 1文字のアルファベット + 数字 (例: 20K23099)
+var userIDPattern = regexp.MustCompile(`^\d{2}[A-Za-z]\d+$`)
 
 //TODO モデル（データベースに入れる型を宣言する）
 //データベースの制約通りになるようにエラーハンドリングをガチる
@@ -26,6 +30,10 @@ func (p *User) SetUserID(userID string) error {
 	// userIDは20文字以下であること
 	if utf8.RuneCountInString(userID) > 20 {
 		return errors.New("userID must be 20 characters or less")
+	}
+	// 学籍番号フォーマット (例: 20K23099)
+	if !userIDPattern.MatchString(userID) {
+		return errors.New("userID must be in student ID format (e.g., 20K23099)")
 	}
 
 	p.userID = userID

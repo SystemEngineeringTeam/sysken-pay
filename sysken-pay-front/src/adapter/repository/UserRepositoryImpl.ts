@@ -2,6 +2,17 @@ import { apiClient } from "../api/client";
 import type { components } from "../../types/api-schema";
 
 export const UserRepositoryImpl = {
+  getUser: async (
+    userId: string
+  ): Promise<components["schemas"]["GetUserResponse"]> => {
+    const { data, error } = await apiClient.GET("/v1/user/{user_id}", {
+      params: { path: { user_id: userId } },
+    });
+    if (error) throw new Error(error.message);
+    if (!data?.user_id) throw new Error("ユーザーが見つかりませんでした");
+    return data;
+  },
+
   registerUser: async (
     body: components["schemas"]["PostUserRequest"]
   ): Promise<components["schemas"]["PostUserResponse"]> => {

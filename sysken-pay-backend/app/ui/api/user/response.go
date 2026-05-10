@@ -20,6 +20,22 @@ func toPostUserResponse(user *user.User) *PostUserResponse {
 	}
 }
 
+type GetUserResponse struct {
+	Status    string `json:"status"`
+	UserID    string `json:"user_id"`
+	UserName  string `json:"user_name"`
+	CreatedAt string `json:"created_at"`
+}
+
+func toGetUserResponse(user *user.User) *GetUserResponse {
+	return &GetUserResponse{
+		Status:    "success",
+		UserID:    user.ID(),
+		UserName:  user.UserName(),
+		CreatedAt: user.CreatedAt().Format("2006-01-02T15:04:05.000Z"),
+	}
+}
+
 type PatchUserResponse struct {
 	Status    string `json:"status"`
 	UserID    string `json:"user_id"`

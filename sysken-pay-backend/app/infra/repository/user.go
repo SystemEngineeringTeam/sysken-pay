@@ -22,6 +22,37 @@ func NewUserProfileRepository(db *sql.DB) *UserRepositoryImpl {
 	return &UserRepositoryImpl{db: db}
 }
 
+func (r *UserRepositoryImpl) GetUserByID(ctx context.Context, userID string) (*user.User, error) {
+	executor := getExecutor(ctx, r.db)
+
+	row := executor.QueryRowContext(ctx, `
+	SELECT id, name, created_at, updated_at, deleted_at
+	FROM `+"`user`"+`
+	WHERE id = ? AND deleted_at IS NULL
+	`, userID)
+
+	var (
+		id        string
+		name      string
+		createdAt time.Time
+		updatedAt time.Time
+		deletedAt sql.NullTime
+	)
+	if err := row.Scan(&id, &name, &createdAt, &updatedAt, &deletedAt); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	var deleted time.Time
+	if deletedAt.Valid {
+		deleted = deletedAt.Time
+	}
+
+	return user.NewUserFromDB(id, name, createdAt, updatedAt, deleted)
+}
+
 func (r *UserRepositoryImpl) InsertUser(
 	ctx context.Context, u *user.User) (*user.User, error) {
 
