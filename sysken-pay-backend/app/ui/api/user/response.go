@@ -2,6 +2,7 @@ package user
 
 import (
 	"sysken-pay-api/app/domain/object/user"
+	"sysken-pay-api/app/ui/api/pkg/timefmt"
 )
 
 type PostUserResponse struct {
@@ -16,7 +17,7 @@ func toPostUserResponse(user *user.User) *PostUserResponse {
 		Status:    "success",
 		UserID:    user.ID(),
 		UserName:  user.UserName(),
-		CreatedAt: user.CreatedAt().Format("2006-01-02T15:04:05.000Z"),
+		CreatedAt: timefmt.JST(user.CreatedAt()),
 	}
 }
 
@@ -32,7 +33,7 @@ func toGetUserResponse(user *user.User) *GetUserResponse {
 		Status:    "success",
 		UserID:    user.ID(),
 		UserName:  user.UserName(),
-		CreatedAt: user.CreatedAt().Format("2006-01-02T15:04:05.000Z"),
+		CreatedAt: timefmt.JST(user.CreatedAt()),
 	}
 }
 
@@ -48,6 +49,6 @@ func toPatchUserResponse(user *user.User) *PatchUserResponse {
 		Status:    "success",
 		UserID:    user.ID(),
 		UserName:  user.UserName(),
-		CreatedAt: user.CreatedAt().Format("2006-01-02T15:04:05.000Z"),
+		CreatedAt: timefmt.JST(user.CreatedAt()),
 	}
 }

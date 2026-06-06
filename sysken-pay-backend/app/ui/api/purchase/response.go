@@ -2,6 +2,7 @@ package purchase
 
 import (
 	"sysken-pay-api/app/domain/object/purchase"
+	"sysken-pay-api/app/ui/api/pkg/timefmt"
 )
 
 type PostPurchaseResponse struct {
@@ -60,6 +61,6 @@ func toPostPurchaseCancelResponse(p *purchase.Purchase) *PostPurchaseCancelRespo
 		ID:        p.ID(),
 		UserID:    p.UserID(),
 		Items:     items,
-		CreatedAt: p.CreatedAt().Format("2006-01-02T15:04:05.000Z"),
+		CreatedAt: timefmt.JST(p.CreatedAt()),
 	}
 }

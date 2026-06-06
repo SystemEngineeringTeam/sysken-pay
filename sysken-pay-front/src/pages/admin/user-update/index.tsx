@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../../components/layouts/Header";
 import { useUserStore } from "../../../store/useUserStore";
 import { UserRepositoryImpl } from "../../../adapter/repository/UserRepositoryImpl";
+import { ApiError } from "../../../adapter/api/ApiError";
 import ArrowButton from "../../../components/ui/ArrowButton";
 import styles from "./index.module.scss";
 
@@ -25,8 +26,16 @@ export default function UserUpdatePage(): JSX.Element {
       await UserRepositoryImpl.getUser(barcode);
       setScannedUser({ user_id: barcode });
       navigate("/admin/user-update/name");
-    } catch {
-      setError("このユーザーは登録されていません");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 400) {
+        setError("バーコードの形式が正しくありません");
+        return;
+      }
+      if (err instanceof ApiError && err.status === 404) {
+        setError("このユーザーは登録されていません");
+        return;
+      }
+      setError("ユーザー確認に失敗しました");
     }
   };
 

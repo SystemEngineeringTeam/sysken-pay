@@ -458,10 +458,12 @@ components:
       name: user_id
       in: path
       required: true
-      description: ユーザーID
+      description: "ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番）"
       schema:
         type: string
+        pattern: "^[0-9]{2}[A-Za-z][0-9]+$"
         maxLength: 20
+        example: "20K23099"
 
   schemas:
     # ==================== Request Schemas ====================
@@ -471,8 +473,10 @@ components:
       properties:
         user_id:
           type: string
+          pattern: "^[0-9]{2}[A-Za-z][0-9]+$"
           maxLength: 20
-          description: ユーザーID
+          example: "20K23099"
+          description: "ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番）"
         user_name:
           type: string
           minLength: 1
@@ -588,7 +592,7 @@ components:
         created_at:
           type: string
           format: date-time
-          example: "2025-01-01T00:00:00.000Z"
+          example: "2025-01-01T09:00:00.000+09:00"
 
     GetUserResponse:
       type: object
@@ -603,7 +607,7 @@ components:
         created_at:
           type: string
           format: date-time
-          example: "2025-01-01T00:00:00.000Z"
+          example: "2025-01-01T09:00:00.000+09:00"
 
     PatchUserResponse:
       type: object
@@ -618,7 +622,7 @@ components:
         created_at:
           type: string
           format: date-time
-          example: "2025-01-01T00:00:00.000Z"
+          example: "2025-01-01T09:00:00.000+09:00"
 
     ChargeResponse:
       type: object
@@ -637,7 +641,7 @@ components:
         created_at:
           type: string
           format: date-time
-          example: "2025-01-01T00:00:00.000Z"
+          example: "2025-01-01T09:00:00.000+09:00"
 
     ChargeCancelResponse:
       type: object
@@ -656,7 +660,7 @@ components:
         created_at:
           type: string
           format: date-time
-          example: "2025-01-01T00:00:00.000Z"
+          example: "2025-01-01T09:00:00.000+09:00"
 
     PostItemResponse:
       type: object
@@ -675,11 +679,11 @@ components:
         created_at:
           type: string
           format: date-time
-          example: "2025-01-01T00:00:00.000Z"
+          example: "2025-01-01T09:00:00.000+09:00"
         updated_at:
           type: string
           format: date-time
-          example: "2025-01-01T00:00:00.000Z"
+          example: "2025-01-01T09:00:00.000+09:00"
 
     PatchItemResponse:
       type: object
@@ -698,11 +702,11 @@ components:
         created_at:
           type: string
           format: date-time
-          example: "2025-01-01T00:00:00.000Z"
+          example: "2025-01-01T09:00:00.000+09:00"
         updated_at:
           type: string
           format: date-time
-          example: "2025-01-01T00:00:00.000Z"
+          example: "2025-01-01T09:00:00.000+09:00"
 
     GetItemResponse:
       type: object
@@ -772,7 +776,7 @@ components:
         created_at:
           type: string
           format: date-time
-          example: "2025-01-01T00:00:00.000Z"
+          example: "2025-01-01T09:00:00.000+09:00"
 
     GetBalanceResponse:
       type: object
@@ -797,7 +801,7 @@ components:
         purchase_at:
           type: string
           format: date-time
-          example: "2025-01-01T00:00:00.000Z"
+          example: "2025-01-01T09:00:00.000+09:00"
 
     PageInfo:
       type: object

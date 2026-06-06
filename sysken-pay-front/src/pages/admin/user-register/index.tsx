@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import Header from "../../../components/layouts/Header";
 import { useUserStore } from "../../../store/useUserStore";
 import { UserRepositoryImpl } from "../../../adapter/repository/UserRepositoryImpl";
+import { ApiError } from "../../../adapter/api/ApiError";
 import ArrowButton from "../../../components/ui/ArrowButton";
 import styles from "./index.module.scss";
 
@@ -24,9 +25,17 @@ export default function UserRegisterPage(): JSX.Element {
     try {
       await UserRepositoryImpl.getUser(barcode);
       setError("このユーザーはすでに登録済みです");
-    } catch {
-      setScannedUser({ user_id: barcode });
-      navigate("/admin/user-register/name");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 404) {
+        setScannedUser({ user_id: barcode });
+        navigate("/admin/user-register/name");
+        return;
+      }
+      if (err instanceof ApiError && err.status === 400) {
+        setError("バーコードの形式が正しくありません");
+        return;
+      }
+      setError("ユーザー確認に失敗しました");
     }
   };
 

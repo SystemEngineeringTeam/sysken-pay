@@ -1,6 +1,9 @@
 package item
 
-import "sysken-pay-api/app/domain/object/item"
+import (
+	"sysken-pay-api/app/domain/object/item"
+	"sysken-pay-api/app/ui/api/pkg/timefmt"
+)
 
 // PostItemResponse Response: 商品登録のレスポンス
 type PostItemResponse struct {
@@ -20,8 +23,8 @@ func toPostItemResponse(item *item.Item) *PostItemResponse {
 		JanCode:   item.JanCode(),
 		ItemName:  item.Name(),
 		Price:     item.Price(),
-		CreatedAt: item.CreatedAt().Format("2006-01-02T15:04:05.000Z"),
-		UpdatedAt: item.UpdatedAt().Format("2006-01-02T15:04:05.000Z"),
+		CreatedAt: timefmt.JST(item.CreatedAt()),
+		UpdatedAt: timefmt.JST(item.UpdatedAt()),
 	}
 }
 
@@ -43,8 +46,8 @@ func toPatchItemResponse(item *item.Item) *PatchItemResponse {
 		JanCode:   item.JanCode(),
 		ItemName:  item.Name(),
 		Price:     item.Price(),
-		CreatedAt: item.CreatedAt().Format("2006-01-02T15:04:05.000Z"),
-		UpdatedAt: item.UpdatedAt().Format("2006-01-02T15:04:05.000Z"),
+		CreatedAt: timefmt.JST(item.CreatedAt()),
+		UpdatedAt: timefmt.JST(item.UpdatedAt()),
 	}
 }
 

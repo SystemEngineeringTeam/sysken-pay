@@ -1,15 +1,26 @@
 import { apiClient } from "../api/client";
+import { ApiError } from "../api/ApiError";
 import type { components } from "../../types/api-schema";
 
 export const UserRepositoryImpl = {
   getUser: async (
     userId: string
   ): Promise<components["schemas"]["GetUserResponse"]> => {
-    const { data, error } = await apiClient.GET("/v1/user/{user_id}", {
-      params: { path: { user_id: userId } },
-    });
-    if (error) throw new Error(error.message);
-    if (!data?.user_id) throw new Error("ユーザーが見つかりませんでした");
+    const { data, error, response } = await apiClient.GET(
+      "/v1/user/{user_id}",
+      {
+        params: { path: { user_id: userId } },
+      }
+    );
+    if (error) {
+      throw new ApiError(
+        error.message ?? "ユーザー取得に失敗しました",
+        response.status
+      );
+    }
+    if (!data?.user_id) {
+      throw new ApiError("ユーザーが見つかりませんでした", response.status);
+    }
     return data;
   },
 
