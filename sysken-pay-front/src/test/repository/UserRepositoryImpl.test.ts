@@ -64,8 +64,23 @@ describe("UserRepositoryImpl", () => {
       });
     });
 
-    it("エラー時に例外を投げる", async () => {
-      mockPost.mockResolvedValue({ data: undefined, error: { message: "登録失敗" } });
+    it("409 のとき status=409 の ApiError を投げる", async () => {
+      mockPost.mockResolvedValue({
+        data: undefined,
+        error: { message: "user already exists" },
+        response: { status: 409 },
+      });
+      const promise = UserRepositoryImpl.registerUser({ user_id: "20K24042", user_name: "シス研太郎" });
+      await expect(promise).rejects.toBeInstanceOf(ApiError);
+      await expect(promise).rejects.toMatchObject({ status: 409, message: "user already exists" });
+    });
+
+    it("エラー時に ApiError を投げる", async () => {
+      mockPost.mockResolvedValue({
+        data: undefined,
+        error: { message: "登録失敗" },
+        response: { status: 500 },
+      });
       await expect(
         UserRepositoryImpl.registerUser({ user_id: "k24000", user_name: "シス研太郎" })
       ).rejects.toThrow("登録失敗");

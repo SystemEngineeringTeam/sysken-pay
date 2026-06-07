@@ -27,8 +27,15 @@ export const UserRepositoryImpl = {
   registerUser: async (
     body: components["schemas"]["PostUserRequest"]
   ): Promise<components["schemas"]["PostUserResponse"]> => {
-    const { data, error } = await apiClient.POST("/v1/user", { body });
-    if (error) throw new Error(error.message);
+    const { data, error, response } = await apiClient.POST("/v1/user", {
+      body,
+    });
+    if (error) {
+      throw new ApiError(
+        error.message ?? "ユーザー登録に失敗しました",
+        response.status
+      );
+    }
     return data;
   },
 

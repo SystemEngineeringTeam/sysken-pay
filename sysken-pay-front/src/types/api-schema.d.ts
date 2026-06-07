@@ -199,7 +199,10 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         PostUserRequest: {
-            /** @description ユーザーID */
+            /**
+             * @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番）
+             * @example 20K23099
+             */
             user_id: string;
             /** @description ユーザー名 */
             user_name: string;
@@ -257,7 +260,7 @@ export interface components {
             user_name?: string;
             /**
              * Format: date-time
-             * @example 2025-01-01T00:00:00.000Z
+             * @example 2025-01-01T09:00:00.000+09:00
              */
             created_at?: string;
         };
@@ -268,7 +271,7 @@ export interface components {
             user_name?: string;
             /**
              * Format: date-time
-             * @example 2025-01-01T00:00:00.000Z
+             * @example 2025-01-01T09:00:00.000+09:00
              */
             created_at?: string;
         };
@@ -279,7 +282,7 @@ export interface components {
             user_name?: string;
             /**
              * Format: date-time
-             * @example 2025-01-01T00:00:00.000Z
+             * @example 2025-01-01T09:00:00.000+09:00
              */
             created_at?: string;
         };
@@ -292,7 +295,7 @@ export interface components {
             balance?: number;
             /**
              * Format: date-time
-             * @example 2025-01-01T00:00:00.000Z
+             * @example 2025-01-01T09:00:00.000+09:00
              */
             created_at?: string;
         };
@@ -305,7 +308,7 @@ export interface components {
             balance?: number;
             /**
              * Format: date-time
-             * @example 2025-01-01T00:00:00.000Z
+             * @example 2025-01-01T09:00:00.000+09:00
              */
             created_at?: string;
         };
@@ -318,12 +321,12 @@ export interface components {
             price?: number;
             /**
              * Format: date-time
-             * @example 2025-01-01T00:00:00.000Z
+             * @example 2025-01-01T09:00:00.000+09:00
              */
             created_at?: string;
             /**
              * Format: date-time
-             * @example 2025-01-01T00:00:00.000Z
+             * @example 2025-01-01T09:00:00.000+09:00
              */
             updated_at?: string;
         };
@@ -336,12 +339,12 @@ export interface components {
             price?: number;
             /**
              * Format: date-time
-             * @example 2025-01-01T00:00:00.000Z
+             * @example 2025-01-01T09:00:00.000+09:00
              */
             created_at?: string;
             /**
              * Format: date-time
-             * @example 2025-01-01T00:00:00.000Z
+             * @example 2025-01-01T09:00:00.000+09:00
              */
             updated_at?: string;
         };
@@ -379,7 +382,7 @@ export interface components {
             items?: components["schemas"]["PurchaseItem"][];
             /**
              * Format: date-time
-             * @example 2025-01-01T00:00:00.000Z
+             * @example 2025-01-01T09:00:00.000+09:00
              */
             created_at?: string;
         };
@@ -395,7 +398,7 @@ export interface components {
             price?: number;
             /**
              * Format: date-time
-             * @example 2025-01-01T00:00:00.000Z
+             * @example 2025-01-01T09:00:00.000+09:00
              */
             purchase_at?: string;
         };
@@ -424,7 +427,7 @@ export interface components {
     };
     responses: never;
     parameters: {
-        /** @description ユーザーID */
+        /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
         UserId: string;
     };
     requestBodies: never;
@@ -464,6 +467,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description ユーザーIDが既に登録済み */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description サーバーエラー */
             500: {
                 headers: {
@@ -480,7 +492,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description ユーザーID */
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
                 user_id: components["parameters"]["UserId"];
             };
             cookie?: never;
@@ -530,7 +542,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description ユーザーID */
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
                 user_id: components["parameters"]["UserId"];
             };
             cookie?: never;
@@ -575,7 +587,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description ユーザーID */
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
                 user_id: components["parameters"]["UserId"];
             };
             cookie?: never;
@@ -620,7 +632,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description ユーザーID */
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
                 user_id: components["parameters"]["UserId"];
             };
             cookie?: never;
@@ -665,7 +677,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description ユーザーID */
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
                 user_id: components["parameters"]["UserId"];
             };
             cookie?: never;
@@ -710,7 +722,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description ユーザーID */
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
                 user_id: components["parameters"]["UserId"];
             };
             cookie?: never;
@@ -755,7 +767,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description ユーザーID */
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
                 user_id: components["parameters"]["UserId"];
             };
             cookie?: never;
@@ -801,7 +813,7 @@ export interface operations {
             };
             header?: never;
             path: {
-                /** @description ユーザーID */
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
                 user_id: components["parameters"]["UserId"];
             };
             cookie?: never;
