@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	domainuser "sysken-pay-api/app/domain/object/user"
 	apierrors "sysken-pay-api/app/ui/api/pkg/errors"
 	"sysken-pay-api/app/usecase/user"
 
@@ -86,6 +87,10 @@ func (h *userHandlerImpl) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	createdUser, err := h.registerUserUseCase.RegisterUser(ctx, req.UserID, req.UserName)
 	if err != nil {
 		log.Printf("Failed to register user: %v", err)
+		if errors.Is(err, domainuser.ErrUserAlreadyExists) {
+			apierrors.RespondError(w, http.StatusConflict, "user already exists")
+			return
+		}
 		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

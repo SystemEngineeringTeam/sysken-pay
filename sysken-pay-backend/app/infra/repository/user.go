@@ -3,11 +3,17 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log"
 	"sysken-pay-api/app/domain/object/user"
 	"sysken-pay-api/app/domain/repository"
 	"time"
+
+	"github.com/go-sql-driver/mysql"
 )
+
+// mysqlErrDupEntry は重複キー違反 (Duplicate entry) を示す MySQL のエラー番号です。
+const mysqlErrDupEntry = 1062
 
 //TODO userデータベースに値を入れる
 // domainのrepositoryの中にあるユーザーのインターフェースの実装をする
@@ -68,6 +74,10 @@ func (r *UserRepositoryImpl) InsertUser(
 	)
 
 	if err != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) && mysqlErr.Number == mysqlErrDupEntry {
+			return nil, user.ErrUserAlreadyExists
+		}
 		log.Printf("Failed to insert user: %v", err)
 		return nil, err
 	}

@@ -10,6 +10,9 @@ import (
 // 学籍番号フォーマット: 2桁の数字 + 1文字のアルファベット + 数字 (例: 20K23099)
 var userIDPattern = regexp.MustCompile(`^\d{2}[A-Za-z]\d+$`)
 
+// ErrUserAlreadyExists は同じIDのユーザーが既に登録されている場合に返されます。
+var ErrUserAlreadyExists = errors.New("user already exists")
+
 //TODO モデル（データベースに入れる型を宣言する）
 //データベースの制約通りになるようにエラーハンドリングをガチる
 //ユーザーID、名前、作成日時、更新日時など

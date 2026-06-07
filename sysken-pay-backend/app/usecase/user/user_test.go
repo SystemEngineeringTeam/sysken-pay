@@ -174,6 +174,19 @@ func TestRegisterUser_RepoError(t *testing.T) {
 	}
 }
 
+func TestRegisterUser_AlreadyExists(t *testing.T) {
+	repo := &mockUserRepo{
+		insertFunc: func(_ context.Context, u *domainuser.User) (*domainuser.User, error) {
+			return nil, domainuser.ErrUserAlreadyExists
+		},
+	}
+	uc := NewRegisterUserUseCase(repo)
+	_, err := uc.RegisterUser(context.Background(), "20K23099", "田中 太郎")
+	if !errors.Is(err, domainuser.ErrUserAlreadyExists) {
+		t.Errorf("RegisterUser should return ErrUserAlreadyExists, got: %v", err)
+	}
+}
+
 func TestRegisterUser_MaxLengthUserID(t *testing.T) {
 	repo := &mockUserRepo{
 		insertFunc: func(_ context.Context, u *domainuser.User) (*domainuser.User, error) {
