@@ -450,7 +450,7 @@ export interface operations {
         };
         responses: {
             /** @description 登録成功 */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -599,7 +599,7 @@ export interface operations {
         };
         responses: {
             /** @description チャージ成功 */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -689,7 +689,7 @@ export interface operations {
         };
         responses: {
             /** @description 購入成功 */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -892,7 +892,7 @@ export interface operations {
         };
         responses: {
             /** @description 登録成功 */
-            200: {
+            201: {
                 headers: {
                     [name: string]: unknown;
                 };

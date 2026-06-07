@@ -59,8 +59,8 @@ func (h *chargeHandlerImpl) ChargeAmount(w http.ResponseWriter, r *http.Request)
 	//レスポンスの作成
 	res := toPostChargeResponse(chargedAmount)
 
-	w.Header().Set("Content	-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		log.Printf("Failed to encode response: %v", err)
 		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())

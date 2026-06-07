@@ -59,6 +59,7 @@ func (h *purchaseHandlerImpl) CreatePurchase(w http.ResponseWriter, r *http.Requ
 
 	res := toPostPurchaseResponse(createdPurchase)
 	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
 	}

@@ -38,7 +38,7 @@ paths:
             schema:
               $ref: "#/components/schemas/PostUserRequest"
       responses:
-        "200":
+        "201":
           description: 登録成功
           content:
             application/json:
@@ -142,7 +142,7 @@ paths:
             schema:
               $ref: "#/components/schemas/PostChargeRequest"
       responses:
-        "200":
+        "201":
           description: チャージ成功
           content:
             application/json:
@@ -209,7 +209,7 @@ paths:
             schema:
               $ref: "#/components/schemas/PostPurchaseRequest"
       responses:
-        "200":
+        "201":
           description: 購入成功
           content:
             application/json:
@@ -345,7 +345,7 @@ paths:
             schema:
               $ref: "#/components/schemas/PostItemRequest"
       responses:
-        "200":
+        "201":
           description: 登録成功
           content:
             application/json:
