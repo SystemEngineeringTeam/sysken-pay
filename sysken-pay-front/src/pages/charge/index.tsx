@@ -36,13 +36,13 @@ export default function ChargePage(): JSX.Element {
 
   const handleScan = async (barcode: string) => {
     try {
-      const data = await UserRepositoryImpl.getBalance(barcode);
-      if (!data?.user_id) throw new Error("ユーザーが見つかりませんでした");
-      setBalance(data);
-      setScannedUser({ user_id: data.user_id });
+      const user = await UserRepositoryImpl.getUser(barcode);
+      const balance = await UserRepositoryImpl.getBalance(user.user_id!);
+      setBalance(balance);
+      setScannedUser({ user_id: user.user_id! });
       navigate("/charge/select");
     } catch (e) {
-      setScanError(e instanceof Error ? e.message : "残高の取得に失敗しました");
+      setScanError(e instanceof Error ? e.message : "ユーザーの取得に失敗しました");
     }
   }
 
