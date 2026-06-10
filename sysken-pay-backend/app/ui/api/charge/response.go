@@ -2,6 +2,7 @@ package charge
 
 import (
 	"sysken-pay-api/app/domain/object/charge"
+	"sysken-pay-api/app/ui/api/pkg/timefmt"
 )
 
 type ChargeResponse struct {
@@ -20,7 +21,7 @@ func toPostChargeResponse(charge *charge.Charge) *ChargeResponse {
 		Amount:    charge.Amount(),
 		UserID:    charge.UserID(),
 		Balance:   charge.Balance(),
-		CreatedAt: charge.CreatedAt().Format("2006-01-02T15:04:05.000Z"),
+		CreatedAt: timefmt.JST(charge.CreatedAt()),
 	}
 }
 
@@ -40,6 +41,6 @@ func toPostChargeCancelResponse(charge *charge.Charge) *ChargeCancelResponse {
 		Amount:    charge.Amount(),
 		UserID:    charge.UserID(),
 		Balance:   charge.Balance(),
-		CreatedAt: charge.CreatedAt().Format("2006-01-02T15:04:05.000Z"),
+		CreatedAt: timefmt.JST(charge.CreatedAt()),
 	}
 }

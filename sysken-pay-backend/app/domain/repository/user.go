@@ -9,6 +9,9 @@ import (
 //データベースで必要な入力と出力のインターフェースの作成
 
 type UserRepository interface {
+	// ユーザーIDでユーザー情報を取得する
+	GetUserByID(ctx context.Context, userID string) (*user.User, error)
+
 	// ユーザーを新規作成して保存する
 	// 保存に成功した場合は保存したユーザーを返す
 	InsertUser(ctx context.Context, u *user.User) (*user.User, error)

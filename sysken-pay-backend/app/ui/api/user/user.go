@@ -2,8 +2,10 @@ package user
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
+	domainuser "sysken-pay-api/app/domain/object/user"
 	apierrors "sysken-pay-api/app/ui/api/pkg/errors"
 	"sysken-pay-api/app/usecase/user"
 
@@ -12,12 +14,18 @@ import (
 
 // TODO　APIリクエストからデータを整形してユースケースに情報を渡すものを作成する
 type Handler interface {
+	GetUser(w http.ResponseWriter, r *http.Request)
 	RegisterUser(w http.ResponseWriter, r *http.Request)
 	UpdateUser(w http.ResponseWriter, r *http.Request)
 }
 
-func NewUserHandler(registerUserUseCase user.RegisterUserUseCase, updateUserUseCase user.UpdateUserUseCase) Handler {
+func NewUserHandler(
+	getUserUseCase user.GetUserUseCase,
+	registerUserUseCase user.RegisterUserUseCase,
+	updateUserUseCase user.UpdateUserUseCase,
+) Handler {
 	return &userHandlerImpl{
+		getUserUseCase:      getUserUseCase,
 		registerUserUseCase: registerUserUseCase,
 		updateUserUseCase:   updateUserUseCase,
 	}
@@ -26,8 +34,43 @@ func NewUserHandler(registerUserUseCase user.RegisterUserUseCase, updateUserUseC
 var _ Handler = (*userHandlerImpl)(nil)
 
 type userHandlerImpl struct {
+	getUserUseCase      user.GetUserUseCase
 	registerUserUseCase user.RegisterUserUseCase
 	updateUserUseCase   user.UpdateUserUseCase
+}
+
+func (h *userHandlerImpl) GetUser(w http.ResponseWriter, r *http.Request) {
+	userID := chi.URLParam(r, "user_id")
+	if userID == "" {
+		log.Printf("user_id is missing in URL")
+		apierrors.RespondError(w, http.StatusBadRequest, "user_id is required")
+		return
+	}
+
+	ctx := r.Context()
+	foundUser, err := h.getUserUseCase.GetUser(ctx, userID)
+	if err != nil {
+		log.Printf("Failed to get user: %v", err)
+		if errors.Is(err, user.ErrInvalidUserID) {
+			apierrors.RespondError(w, http.StatusBadRequest, err.Error())
+			return
+		}
+		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if foundUser == nil {
+		apierrors.RespondError(w, http.StatusNotFound, "user not found")
+		return
+	}
+
+	res := toGetUserResponse(foundUser)
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
 }
 
 func (h *userHandlerImpl) RegisterUser(w http.ResponseWriter, r *http.Request) {
@@ -44,6 +87,10 @@ func (h *userHandlerImpl) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	createdUser, err := h.registerUserUseCase.RegisterUser(ctx, req.UserID, req.UserName)
 	if err != nil {
 		log.Printf("Failed to register user: %v", err)
+		if errors.Is(err, domainuser.ErrUserAlreadyExists) {
+			apierrors.RespondError(w, http.StatusConflict, "user already exists")
+			return
+		}
 		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
@@ -52,7 +99,7 @@ func (h *userHandlerImpl) RegisterUser(w http.ResponseWriter, r *http.Request) {
 	res := toPostUserResponse(createdUser)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		apierrors.RespondError(w, http.StatusBadRequest, err.Error())
 		return

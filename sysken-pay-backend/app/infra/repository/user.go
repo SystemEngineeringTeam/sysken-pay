@@ -3,11 +3,17 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"log"
 	"sysken-pay-api/app/domain/object/user"
 	"sysken-pay-api/app/domain/repository"
 	"time"
+
+	"github.com/go-sql-driver/mysql"
 )
+
+// mysqlErrDupEntry は重複キー違反 (Duplicate entry) を示す MySQL のエラー番号です。
+const mysqlErrDupEntry = 1062
 
 //TODO userデータベースに値を入れる
 // domainのrepositoryの中にあるユーザーのインターフェースの実装をする
@@ -20,6 +26,37 @@ type UserRepositoryImpl struct {
 
 func NewUserProfileRepository(db *sql.DB) *UserRepositoryImpl {
 	return &UserRepositoryImpl{db: db}
+}
+
+func (r *UserRepositoryImpl) GetUserByID(ctx context.Context, userID string) (*user.User, error) {
+	executor := getExecutor(ctx, r.db)
+
+	row := executor.QueryRowContext(ctx, `
+	SELECT id, name, created_at, updated_at, deleted_at
+	FROM `+"`user`"+`
+	WHERE id = ? AND deleted_at IS NULL
+	`, userID)
+
+	var (
+		id        string
+		name      string
+		createdAt time.Time
+		updatedAt time.Time
+		deletedAt sql.NullTime
+	)
+	if err := row.Scan(&id, &name, &createdAt, &updatedAt, &deletedAt); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	var deleted time.Time
+	if deletedAt.Valid {
+		deleted = deletedAt.Time
+	}
+
+	return user.NewUserFromDB(id, name, createdAt, updatedAt, deleted)
 }
 
 func (r *UserRepositoryImpl) InsertUser(
@@ -37,6 +74,10 @@ func (r *UserRepositoryImpl) InsertUser(
 	)
 
 	if err != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) && mysqlErr.Number == mysqlErrDupEntry {
+			return nil, user.ErrUserAlreadyExists
+		}
 		log.Printf("Failed to insert user: %v", err)
 		return nil, err
 	}

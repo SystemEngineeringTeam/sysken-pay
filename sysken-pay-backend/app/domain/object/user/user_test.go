@@ -9,7 +9,7 @@ import (
 
 func TestSetUserID_Valid(t *testing.T) {
 	u := &User{}
-	if err := u.SetUserID("user123"); err != nil {
+	if err := u.SetUserID("20K23099"); err != nil {
 		t.Errorf("SetUserID should succeed: %v", err)
 	}
 }
@@ -23,7 +23,8 @@ func TestSetUserID_Empty(t *testing.T) {
 
 func TestSetUserID_Exactly20Chars(t *testing.T) {
 	u := &User{}
-	id := strings.Repeat("a", 20)
+	// 学籍番号フォーマットで20文字 (2桁数字 + 1文字 + 17桁数字)
+	id := "20K" + strings.Repeat("1", 17)
 	if err := u.SetUserID(id); err != nil {
 		t.Errorf("SetUserID 20 chars should succeed: %v", err)
 	}
@@ -31,23 +32,28 @@ func TestSetUserID_Exactly20Chars(t *testing.T) {
 
 func TestSetUserID_Over20Chars(t *testing.T) {
 	u := &User{}
-	id := strings.Repeat("a", 21)
+	id := "20K" + strings.Repeat("1", 18) // 21 chars
 	if err := u.SetUserID(id); err == nil {
 		t.Error("SetUserID 21 chars should fail")
 	}
 }
 
-func TestSetUserID_MultibyteCounts(t *testing.T) {
+func TestSetUserID_InvalidFormat(t *testing.T) {
 	u := &User{}
-	// 日本語20文字はOK
-	id := strings.Repeat("あ", 20)
-	if err := u.SetUserID(id); err != nil {
-		t.Errorf("SetUserID 20 multibyte chars should succeed: %v", err)
+	cases := []string{
+		"abcdef",              // アルファベットのみ
+		"user123",             // 数字2桁スタートでない
+		"123",                 // 全数字
+		"20K",                 // 末尾の数字なし
+		"20KK23099",           // アルファベット2文字
+		"K20K23099",           // 先頭が数字でない
+		"2-K23099",            // 記号混入
+		strings.Repeat("あ", 8), // マルチバイトはフォーマット違反
 	}
-	// 21文字はNG
-	id21 := strings.Repeat("あ", 21)
-	if err := u.SetUserID(id21); err == nil {
-		t.Error("SetUserID 21 multibyte chars should fail")
+	for _, id := range cases {
+		if err := u.SetUserID(id); err == nil {
+			t.Errorf("SetUserID(%q) should fail format validation", id)
+		}
 	}
 }
 
@@ -98,12 +104,12 @@ func TestSetUserName_MultibyteCounts(t *testing.T) {
 // --- NewUser ---
 
 func TestNewUser_Valid(t *testing.T) {
-	u, err := NewUser("student001", "田中 太郎")
+	u, err := NewUser("20K23099", "田中 太郎")
 	if err != nil {
 		t.Fatalf("NewUser should succeed: %v", err)
 	}
-	if u.ID() != "student001" {
-		t.Errorf("ID() = %s, want student001", u.ID())
+	if u.ID() != "20K23099" {
+		t.Errorf("ID() = %s, want 20K23099", u.ID())
 	}
 	if u.UserName() != "田中 太郎" {
 		t.Errorf("UserName() = %s, want 田中 太郎", u.UserName())
@@ -117,19 +123,20 @@ func TestNewUser_EmptyUserID(t *testing.T) {
 }
 
 func TestNewUser_EmptyUserName(t *testing.T) {
-	if _, err := NewUser("student001", ""); err == nil {
+	if _, err := NewUser("20K23099", ""); err == nil {
 		t.Error("NewUser empty userName should fail")
 	}
 }
 
 func TestNewUser_UserIDTooLong(t *testing.T) {
-	if _, err := NewUser(strings.Repeat("a", 21), "田中 太郎"); err == nil {
+	id := "20K" + strings.Repeat("1", 18) // 21 chars
+	if _, err := NewUser(id, "田中 太郎"); err == nil {
 		t.Error("NewUser userID > 20 chars should fail")
 	}
 }
 
 func TestNewUser_UserNameTooLong(t *testing.T) {
-	if _, err := NewUser("student001", strings.Repeat("a", 51)); err == nil {
+	if _, err := NewUser("20K23099", strings.Repeat("a", 51)); err == nil {
 		t.Error("NewUser userName > 50 chars should fail")
 	}
 }

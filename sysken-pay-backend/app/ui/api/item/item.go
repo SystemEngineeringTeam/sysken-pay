@@ -59,7 +59,7 @@ func (h *itemHandlerImpl) ResisterItem(w http.ResponseWriter, r *http.Request) {
 	res := toPostItemResponse(createdItem)
 
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusCreated)
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		apierrors.RespondError(w, http.StatusBadRequest, err.Error())
 		return

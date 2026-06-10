@@ -1,12 +1,41 @@
 import { apiClient } from "../api/client";
+import { ApiError } from "../api/ApiError";
 import type { components } from "../../types/api-schema";
 
 export const UserRepositoryImpl = {
+  getUser: async (
+    userId: string
+  ): Promise<components["schemas"]["GetUserResponse"]> => {
+    const { data, error, response } = await apiClient.GET(
+      "/v1/user/{user_id}",
+      {
+        params: { path: { user_id: userId } },
+      }
+    );
+    if (error) {
+      throw new ApiError(
+        error.message ?? "ユーザー取得に失敗しました",
+        response.status
+      );
+    }
+    if (!data?.user_id) {
+      throw new ApiError("ユーザーが見つかりませんでした", response.status);
+    }
+    return data;
+  },
+
   registerUser: async (
     body: components["schemas"]["PostUserRequest"]
   ): Promise<components["schemas"]["PostUserResponse"]> => {
-    const { data, error } = await apiClient.POST("/v1/user", { body });
-    if (error) throw new Error(error.message);
+    const { data, error, response } = await apiClient.POST("/v1/user", {
+      body,
+    });
+    if (error) {
+      throw new ApiError(
+        error.message ?? "ユーザー登録に失敗しました",
+        response.status
+      );
+    }
     return data;
   },
 

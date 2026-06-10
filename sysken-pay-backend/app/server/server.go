@@ -56,6 +56,7 @@ func Run(db *sql.DB) error {
 	balanceRepo := repository.NewBalanceRepository(db)
 
 	// UseCase
+	getUserUseCase := user.NewGetUserUseCase(userRepo)
 	registerUserUseCase := user.NewRegisterUserUseCase(userRepo)
 	updateUserUseCase := user.NewUpdateUserUseCase(userRepo)
 	registerItemUseCase := item.NewRegisterItemUseCase(itemRepo)
@@ -70,7 +71,7 @@ func Run(db *sql.DB) error {
 	getPurchaseHistoriesUseCase := balance.NewGetPurchaseHistoriesUseCase(balanceRepo)
 
 	// Handler
-	userHandler := api_user.NewUserHandler(registerUserUseCase, updateUserUseCase)
+	userHandler := api_user.NewUserHandler(getUserUseCase, registerUserUseCase, updateUserUseCase)
 	itemHandler := api_item.NewItemHandler(registerItemUseCase, updateItemUseCase, findItemByJanCodeUseCase, getAllItemsUseCase)
 	chargeHandler := api_charge.NewChargeHandler(chargeAmountUseCase, chargeCancelUseCase)
 	purchaseHandler := api_purchase.NewPurchaseHandler(createPurchaseUseCase, cancelPurchaseUseCase)
@@ -93,8 +94,9 @@ func Run(db *sql.DB) error {
 	r.Route("/v1", func(r chi.Router) {
 		// ユーザー関連
 		r.Post("/user", userHandler.RegisterUser)
-		r.Patch("/user/{user_id}", userHandler.UpdateUser)
 		r.Route("/user/{user_id}", func(r chi.Router) {
+			r.Get("/", userHandler.GetUser)
+			r.Patch("/", userHandler.UpdateUser)
 			r.Post("/charge", chargeHandler.ChargeAmount)
 			r.Post("/charge/cancel", chargeHandler.ChargeCancel)
 			r.Post("/purchase", purchaseHandler.CreatePurchase)

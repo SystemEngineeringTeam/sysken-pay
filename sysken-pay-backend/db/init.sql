@@ -8,7 +8,8 @@ USE sysken_pay;
 -- 1. user テーブル (ユーザー)
 -- ---------------------------------
 CREATE TABLE `user` (
-    id VARCHAR(20) NOT NULL,
+    -- 学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番 (例: 20K23099)
+    id VARCHAR(20) NOT NULL CHECK (id REGEXP '^[0-9]{2}[A-Za-z][0-9]+$'),
     name VARCHAR(255) NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

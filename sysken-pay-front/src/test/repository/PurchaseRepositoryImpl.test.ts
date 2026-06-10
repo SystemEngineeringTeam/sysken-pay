@@ -39,18 +39,19 @@ describe("PurchaseRepositoryImpl", () => {
       const response = { status: "success", purchase_id: 1, user_id: "k24000", balance: 1000 };
       mockPost.mockResolvedValue({ data: response, error: undefined });
 
-      const result = await PurchaseRepositoryImpl.cancelPurchase("k24000", { purchase_id: 1 });
+      const body = { items: [{ item_id: 1, quantity: 1 }] };
+      const result = await PurchaseRepositoryImpl.cancelPurchase("k24000", body);
       expect(result).toEqual(response);
       expect(mockPost).toHaveBeenCalledWith("/v1/user/{user_id}/purchase/cancel", {
         params: { path: { user_id: "k24000" } },
-        body: { purchase_id: 1 },
+        body,
       });
     });
 
     it("エラー時に例外を投げる", async () => {
       mockPost.mockResolvedValue({ data: undefined, error: { message: "キャンセル失敗" } });
       await expect(
-        PurchaseRepositoryImpl.cancelPurchase("k24000", { purchase_id: 99 })
+        PurchaseRepositoryImpl.cancelPurchase("k24000", { items: [{ item_id: 99, quantity: 1 }] })
       ).rejects.toThrow("キャンセル失敗");
     });
   });

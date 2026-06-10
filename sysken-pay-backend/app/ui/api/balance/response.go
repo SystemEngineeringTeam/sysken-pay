@@ -2,6 +2,7 @@ package balance
 
 import (
 	domainbalance "sysken-pay-api/app/domain/object/balance"
+	"sysken-pay-api/app/ui/api/pkg/timefmt"
 	"sysken-pay-api/app/usecase/balance"
 )
 
@@ -50,7 +51,7 @@ func toGetPurchaseHistoriesResponse(
 			ItemName:   h.ItemName(),
 			Quantity:   h.Quantity(),
 			Price:      h.Price(),
-			PurchaseAt: h.PurchaseAt().Format("2006-01-02T15:04:05.000Z"),
+			PurchaseAt: timefmt.JST(h.PurchaseAt()),
 		}
 	}
 	return &GetPurchaseHistoriesResponse{

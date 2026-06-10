@@ -8,6 +8,7 @@ import Header from "../../../components/layouts/Header";
 import ArrowButton from "../../../components/ui/ArrowButton";
 import { useUserStore } from "../../../store/useUserStore";
 import { UserRepositoryImpl } from "../../../adapter/repository/UserRepositoryImpl";
+import { ApiError } from "../../../adapter/api/ApiError";
 import styles from "./name.module.scss";
 
 export default function UserRegisterNamePage(): JSX.Element {
@@ -39,6 +40,10 @@ export default function UserRegisterNamePage(): JSX.Element {
       setErrorMessage("");
       setShowModal(true);
     } catch (e) {
+      if (e instanceof ApiError && e.status === 409) {
+        setErrorMessage("このユーザーIDはすでに登録されています");
+        return;
+      }
       setErrorMessage(e instanceof Error ? e.message : "登録に失敗しました");
     }
   }
