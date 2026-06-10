@@ -1,0 +1,24 @@
+.chargeButton {
+  width: 90%;
+  max-width: 88rem;
+  height: 10rem;
+  background-color: $blue-40;
+  color: $white;
+  font-size: 4.0625rem;
+  font-weight: bold;
+  border: none;
+  border-radius: 1.5rem;
+  cursor: pointer;
+  box-shadow: 0 0.25rem 0.625rem $shadow-20;
+  transition: opacity 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    opacity: 0.85;
+  }
+
+  &:active {
+    transform: scale(0.97);
+    box-shadow: 0 0.125rem 0.25rem $shadow-20;
+    opacity: 0.9;
+  }
+}
