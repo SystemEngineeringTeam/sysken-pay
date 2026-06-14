@@ -2,10 +2,15 @@ package purchase
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"sysken-pay-api/app/domain/object/purchase"
 	"sysken-pay-api/app/domain/repository"
 	domainservice "sysken-pay-api/app/domain/service/purchase"
 )
+
+// ErrItemNotFound は購入対象の商品が存在しない場合に返されます（ハンドラ側で404にマッピングされる）。
+var ErrItemNotFound = errors.New("item not found")
 
 type CreatePurchaseUseCase interface {
 	CreatePurchase(ctx context.Context, userID string, inputs []PurchaseItemInput) (*purchase.Purchase, error)
@@ -48,6 +53,9 @@ func (s *CreatePurchaseServiceImpl) CreatePurchase(
 		it, err := s.itemRepo.GetItemByID(ctx, input.ItemID)
 		if err != nil {
 			return nil, err
+		}
+		if it == nil {
+			return nil, fmt.Errorf("%w: itemID=%d", ErrItemNotFound, input.ItemID)
 		}
 		totalAmount += it.Price() * input.Quantity
 	}

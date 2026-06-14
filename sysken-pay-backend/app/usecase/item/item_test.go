@@ -192,6 +192,39 @@ func TestFindItemByJanCode_RepoError(t *testing.T) {
 	}
 }
 
+// userIDの学籍番号フォーマット等、JANコードとして不正な値はリポジトリに到達せず
+// ErrInvalidJanCode を返すこと（ハンドラ側で400にマッピングされる）
+func TestFindItemByJanCode_InvalidJanCode(t *testing.T) {
+	repo := &mockItemRepo{
+		getByJanCodeFunc: func(_ context.Context, _ string) (*domainitem.Item, error) {
+			t.Fatal("repository must not be called for invalid janCode")
+			return nil, nil
+		},
+	}
+	uc := NewFindItemByJanCodeUseCase(repo)
+	if _, err := uc.GetItemByJanCode(context.Background(), "20X24045"); !errors.Is(err, ErrInvalidJanCode) {
+		t.Errorf("GetItemByJanCode with student ID should return ErrInvalidJanCode, got: %v", err)
+	}
+}
+
+// 存在しないJANコード（リポジトリが nil を返す）はそのまま nil を伝播し、
+// ハンドラ側で404にマッピングされること（500パニックにならない）
+func TestFindItemByJanCode_NotFound(t *testing.T) {
+	repo := &mockItemRepo{
+		getByJanCodeFunc: func(_ context.Context, _ string) (*domainitem.Item, error) {
+			return nil, nil
+		},
+	}
+	uc := NewFindItemByJanCodeUseCase(repo)
+	result, err := uc.GetItemByJanCode(context.Background(), validJAN13)
+	if err != nil {
+		t.Fatalf("GetItemByJanCode should not error when item not found: %v", err)
+	}
+	if result != nil {
+		t.Errorf("GetItemByJanCode should return nil item when not found, got: %v", result)
+	}
+}
+
 // --- GetAllItems ---
 
 func TestGetAllItems_Success(t *testing.T) {

@@ -221,6 +221,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: 購入対象の商品が存在しない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "500":
           description: サーバーエラー
           content:
@@ -419,7 +425,7 @@ paths:
         - name: jan_code
           in: path
           required: true
-          description: JANコード（8桁または13桁）
+          description: JANコード（8桁または13桁。チェックデジット検証あり。不正な場合は400を返す）
           schema:
             type: string
             pattern: "^[0-9]{8}$|^[0-9]{13}$"
@@ -432,6 +438,12 @@ paths:
                 $ref: "#/components/schemas/GetItemResponse"
         "400":
           description: リクエスト不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: 商品が存在しない
           content:
             application/json:
               schema:

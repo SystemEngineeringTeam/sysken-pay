@@ -2,6 +2,7 @@ package item
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	apierrors "sysken-pay-api/app/ui/api/pkg/errors"
@@ -109,7 +110,15 @@ func (h *itemHandlerImpl) GetItemByJanCode(w http.ResponseWriter, r *http.Reques
 	foundItem, err := h.findItemByJanCodeUseCase.GetItemByJanCode(ctx, janCode)
 	if err != nil {
 		log.Printf("Failed to find item by jan code: %v", err)
+		if errors.Is(err, item.ErrInvalidJanCode) {
+			apierrors.RespondError(w, http.StatusBadRequest, err.Error())
+			return
+		}
 		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if foundItem == nil {
+		apierrors.RespondError(w, http.StatusNotFound, "item not found")
 		return
 	}
 
@@ -119,7 +128,7 @@ func (h *itemHandlerImpl) GetItemByJanCode(w http.ResponseWriter, r *http.Reques
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	if err := json.NewEncoder(w).Encode(res); err != nil {
-		apierrors.RespondError(w, http.StatusBadRequest, err.Error())
+		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
 }
