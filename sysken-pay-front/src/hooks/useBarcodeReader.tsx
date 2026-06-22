@@ -12,6 +12,7 @@ function useScanGuards() {
   const isScanningRef = useRef(false);
 
   useEffect(() => {
+    isMountedRef.current = true;
     return () => {
       isMountedRef.current = false;
     };
