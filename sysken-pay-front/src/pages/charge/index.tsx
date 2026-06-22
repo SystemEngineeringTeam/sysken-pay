@@ -6,19 +6,15 @@ import Button from "../../components/ui/Button/index";
 import { Input } from "../../components/ui/Input";
 import { BarcodeReader } from "../../components/ui/BarcodeReader";
 import ArrowButton from "../../components/ui/ArrowButton";
-import { useBalanceStore } from "../../store/useBalanceStore";
-import { useUserStore } from "../../store/useUserStore";
-import { UserRepositoryImpl } from "../../adapter/repository/UserRepositoryImpl";
+import { useUserScan } from "../../hooks/useBarcodeReader";
 import styles from "./index.module.scss";
 
 export default function ChargePage(): JSX.Element {
   const navigate = useNavigate();
-  const setBalance = useBalanceStore((state) => state.setBalance);
-  const setScannedUser = useUserStore((state) => state.setScannedUser);
+  const { onScan, ErrorMessage } = useUserScan();
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [scanError, setScanError] = useState<string | null>(null);
 
   const handleSubmit = () => {
     if (password !== import.meta.env.VITE_ADMIN_PASSWORD) {
@@ -32,18 +28,6 @@ export default function ChargePage(): JSX.Element {
   const handlePasswordChange = (value: string) => {
     setPassword(value);
     if (errorMessage) setErrorMessage("");
-  }
-
-  const handleScan = async (barcode: string) => {
-    try {
-      const data = await UserRepositoryImpl.getBalance(barcode);
-      if (!data?.user_id) throw new Error("ユーザーが見つかりませんでした");
-      setBalance(data);
-      setScannedUser({ user_id: data.user_id });
-      navigate("/charge/select");
-    } catch (e) {
-      setScanError(e instanceof Error ? e.message : "残高の取得に失敗しました");
-    }
   }
 
   if (!authenticated) {
@@ -77,10 +61,10 @@ export default function ChargePage(): JSX.Element {
       <div className={styles.content}>
         <BarcodeReader
           mode="member"
-          onScan={handleScan}
+          onScan={onScan}
           placeholder="学生証のバーコードをかざしてください"
         />
-        {scanError && <p>{scanError}</p>}
+        <ErrorMessage />
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/")}>
         戻る
