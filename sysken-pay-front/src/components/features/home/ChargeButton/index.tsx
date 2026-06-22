@@ -7,12 +7,19 @@ interface ChargeButtonProps {
 
 export function ChargeButton({ onCharge }: ChargeButtonProps) {
   const navigate = useNavigate();
+  const handleClick = () => {
+    if (onCharge) {
+      onCharge();
+    } else {
+      navigate("/charge");
+    }
+  };
 
   return (
     <button
       type="button"
       className={styles.chargeButton}
-      onClick={onCharge ?? (() => navigate("/charge"))}
+      onClick={handleClick}
     >
       チャージ
     </button>
