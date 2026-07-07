@@ -2,6 +2,7 @@ package purchase
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	apierrors "sysken-pay-api/app/ui/api/pkg/errors"
@@ -53,6 +54,10 @@ func (h *purchaseHandlerImpl) CreatePurchase(w http.ResponseWriter, r *http.Requ
 	createdPurchase, err := h.createPurchaseUseCase.CreatePurchase(ctx, userID, inputs)
 	if err != nil {
 		log.Printf("Failed to create purchase: %v", err)
+		if errors.Is(err, purchase.ErrItemNotFound) {
+			apierrors.RespondError(w, http.StatusNotFound, "item not found")
+			return
+		}
 		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}

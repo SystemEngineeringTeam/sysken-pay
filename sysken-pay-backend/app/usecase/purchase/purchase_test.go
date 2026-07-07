@@ -186,6 +186,24 @@ func TestCreatePurchase_ItemRepoError(t *testing.T) {
 	}
 }
 
+// リポジトリが商品なし(nil, nil)を返した場合、nil参照でpanic(500)せず
+// ErrItemNotFound を返すこと（ハンドラ側で404にマッピングされる）
+func TestCreatePurchase_ItemNotFound(t *testing.T) {
+	inputs := []PurchaseItemInput{{ItemID: 999, Quantity: 1}}
+	itemRepo := &mockItemRepo{
+		getByIDFunc: func(_ context.Context, _ int) (*domainitem.Item, error) {
+			return nil, nil
+		},
+	}
+	balanceRepo := &mockBalanceRepo{}
+	purchaseRepo := &mockPurchaseRepo{}
+
+	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, &mockTxManager{})
+	if _, err := uc.CreatePurchase(context.Background(), "user-1", inputs); !errors.Is(err, ErrItemNotFound) {
+		t.Errorf("CreatePurchase with missing item should return ErrItemNotFound, got: %v", err)
+	}
+}
+
 func TestCreatePurchase_PurchaseRepoError(t *testing.T) {
 	inputs := []PurchaseItemInput{{ItemID: 1, Quantity: 1}}
 	itemRepo := &mockItemRepo{
