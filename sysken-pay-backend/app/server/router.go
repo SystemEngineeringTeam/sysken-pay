@@ -8,6 +8,7 @@ import (
 	api_charge "sysken-pay-api/app/ui/api/charge"
 	"sysken-pay-api/app/ui/api/health"
 	api_item "sysken-pay-api/app/ui/api/item"
+	api_member "sysken-pay-api/app/ui/api/member"
 	apimw "sysken-pay-api/app/ui/api/middleware"
 	api_paymentcard "sysken-pay-api/app/ui/api/paymentcard"
 	api_purchase "sysken-pay-api/app/ui/api/purchase"
@@ -28,6 +29,8 @@ type handlers struct {
 	paymentCard api_paymentcard.Handler
 	// paymentCardClaim は支払い用バーコードの発行用 QR（5分だけ有効）
 	paymentCardClaim api_paymentcard.ClaimHandler
+	// member はユーザー一覧と、退部・卒業のとき（返金・利用停止・再開）
+	member api_member.Handler
 }
 
 type routerConfig struct {
@@ -85,6 +88,11 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 			// 発行用 QR（スマホ登録）。作ると支払い用バーコードも作り直される
 			r.Post("/user/{user_id}/payment-card/claim", h.paymentCardClaim.Create)
 			r.Get("/payment-card/claim/{claim_id}", h.paymentCardClaim.Status)
+			// ユーザー一覧（止めた人も含む）と、退部・卒業のとき（docs/phone-payment.md の「退部・卒業」）
+			r.Get("/user", h.member.List)
+			r.Post("/user/{user_id}/refund", h.member.Refund)
+			r.Post("/user/{user_id}/stop", h.member.Stop)
+			r.Post("/user/{user_id}/resume", h.member.Resume)
 		})
 	})
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	domainmember "sysken-pay-api/app/domain/object/member"
 	"sysken-pay-api/app/domain/object/purchase"
 	"sysken-pay-api/app/domain/repository"
 	domainservice "sysken-pay-api/app/domain/service/purchase"
@@ -11,6 +12,9 @@ import (
 
 // ErrItemNotFound は購入対象の商品が存在しない場合に返されます（ハンドラ側で404にマッピングされる）。
 var ErrItemNotFound = errors.New("item not found")
+
+// ErrUserNotFound はユーザーがいない、または利用停止している場合に返されます（ハンドラ側で404にマッピングされる）。
+var ErrUserNotFound = errors.New("user not found")
 
 // ErrInsufficientBalance は残高不足の場合に返されます（ハンドラ側で400にマッピングされる）。
 // ハンドラが domain 層を直接参照しなくて済むように、ここから公開する。
@@ -24,6 +28,7 @@ type CreatePurchaseServiceImpl struct {
 	purchaseCreateRepo repository.PurchaseRepository
 	itemRepo           repository.ItemRepository
 	balanceRepo        repository.BalanceRepository
+	memberRepo         repository.MemberRepository
 	txManager          repository.Transaction
 }
 
@@ -31,12 +36,14 @@ func NewCreatePurchaseUseCase(
 	purchaseCreateRepo repository.PurchaseRepository,
 	itemRepo repository.ItemRepository,
 	balanceRepo repository.BalanceRepository,
+	memberRepo repository.MemberRepository,
 	txManager repository.Transaction,
 ) *CreatePurchaseServiceImpl {
 	return &CreatePurchaseServiceImpl{
 		purchaseCreateRepo: purchaseCreateRepo,
 		itemRepo:           itemRepo,
 		balanceRepo:        balanceRepo,
+		memberRepo:         memberRepo,
 		txManager:          txManager,
 	}
 }
@@ -71,6 +78,16 @@ func (s *CreatePurchaseServiceImpl) CreatePurchase(
 
 	var createdPurchase *purchase.Purchase
 	err = s.txManager.Do(ctx, func(ctx context.Context) error {
+		// ユーザーの行をロックしてから残高を見る（返金・利用停止と同時に走っても、額がずれないように）。
+		// 利用停止した人は買えない
+		status, found, err := s.memberRepo.LockMember(ctx, userID)
+		if err != nil {
+			return err
+		}
+		if !found || status == domainmember.StatusStopped {
+			return fmt.Errorf("%w: userID=%s", ErrUserNotFound, userID)
+		}
+
 		// トランザクション内で残高チェック（同時実行安全）
 		b, err := s.balanceRepo.GetBalance(ctx, userID)
 		if err != nil {

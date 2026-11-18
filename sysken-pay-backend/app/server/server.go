@@ -16,12 +16,14 @@ import (
 	api_balance "sysken-pay-api/app/ui/api/balance"
 	api_charge "sysken-pay-api/app/ui/api/charge"
 	api_item "sysken-pay-api/app/ui/api/item"
+	api_member "sysken-pay-api/app/ui/api/member"
 	api_paymentcard "sysken-pay-api/app/ui/api/paymentcard"
 	api_purchase "sysken-pay-api/app/ui/api/purchase"
 	api_user "sysken-pay-api/app/ui/api/user"
 	"sysken-pay-api/app/usecase/balance"
 	"sysken-pay-api/app/usecase/charge"
 	"sysken-pay-api/app/usecase/item"
+	"sysken-pay-api/app/usecase/member"
 	"sysken-pay-api/app/usecase/paymentcard"
 	"sysken-pay-api/app/usecase/purchase"
 	"sysken-pay-api/app/usecase/user"
@@ -53,6 +55,7 @@ func Run(db *sql.DB) error {
 	balanceRepo := repository.NewBalanceRepository(db)
 	paymentCardRepo := repository.NewPaymentCardRepository(db)
 	paymentCardClaimRepo := repository.NewPaymentCardClaimRepository(db)
+	memberRepo := repository.NewMemberRepository(db)
 
 	// UseCase
 	getUserUseCase := user.NewGetUserUseCase(userRepo)
@@ -62,15 +65,16 @@ func Run(db *sql.DB) error {
 	updateItemUseCase := item.NewUpdateItemUseCase(itemRepo)
 	findItemByJanCodeUseCase := item.NewFindItemByJanCodeUseCase(itemRepo)
 	getAllItemsUseCase := item.NewGetAllItemsUseCase(itemRepo)
-	chargeAmountUseCase := charge.NewChargeAmountUseCase(chargeRepo)
+	chargeAmountUseCase := charge.NewChargeAmountUseCase(chargeRepo, memberRepo)
 	chargeCancelUseCase := charge.NewChargeCancelUseCase(chargeRepo)
-	createPurchaseUseCase := purchase.NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, txManager)
+	createPurchaseUseCase := purchase.NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, memberRepo, txManager)
 	cancelPurchaseUseCase := purchase.NewCancelPurchaseUseCase(purchaseRepo)
 	getBalanceUseCase := balance.NewGetBalanceUseCase(balanceRepo)
 	getPurchaseHistoriesUseCase := balance.NewGetPurchaseHistoriesUseCase(balanceRepo)
 	issuePaymentCardUseCase := paymentcard.NewIssueUseCase(userRepo, paymentCardRepo, txManager)
 	resolvePaymentCardUseCase := paymentcard.NewResolveUseCase(userRepo, paymentCardRepo)
 	paymentCardClaimUseCase := paymentcard.NewClaimUseCase(userRepo, paymentCardRepo, paymentCardClaimRepo, txManager)
+	memberUseCase := member.NewUseCase(memberRepo, balanceRepo, paymentCardRepo, txManager)
 
 	// Handler
 	userHandler := api_user.NewUserHandler(getUserUseCase, registerUserUseCase, updateUserUseCase)
@@ -81,6 +85,7 @@ func Run(db *sql.DB) error {
 	paymentCardHandler := api_paymentcard.NewHandler(issuePaymentCardUseCase, resolvePaymentCardUseCase)
 	paymentCardClaimHandler := api_paymentcard.NewClaimHandler(paymentCardClaimUseCase, config.PublicBaseURL())
 	paymentCardClaimOpenHandler := api_paymentcard.NewClaimOpenHandler(paymentCardClaimUseCase)
+	memberHandler := api_member.NewHandler(memberUseCase)
 	r := newRouter(handlers{
 		user:     userHandler,
 		item:     itemHandler,
@@ -90,6 +95,7 @@ func Run(db *sql.DB) error {
 
 		paymentCard:      paymentCardHandler,
 		paymentCardClaim: paymentCardClaimHandler,
+		member:           memberHandler,
 	}, routerConfig{
 		adminUser:      config.AdminUser(),
 		adminPassword:  config.AdminPassword(),

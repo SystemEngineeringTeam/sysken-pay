@@ -31,6 +31,30 @@ tags:
 paths:
   # ==================== User ====================
   /v1/user:
+    get:
+      tags: [member]
+      summary: ユーザー一覧（止めた人も含む）
+      description: |
+        管理者画面のユーザー一覧。残高・状態（使える／利用停止）・未返金か・卒業候補かを返す。
+        卒業候補は、使える人のうち入学（学籍番号の先頭2桁）から4年以上たった人。自動では止めない。
+      operationId: listMembers
+      security:
+        - adminBasicAuth: []
+      responses:
+        "200":
+          description: 取得成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListMembersResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
     post:
       tags: [user]
       summary: ユーザー登録
@@ -666,6 +690,141 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
 
   # ==================== Admin ====================
+  /v1/user/{user_id}/refund:
+    post:
+      tags: [member]
+      summary: 返金（残高ちょうど）
+      description: |
+        残高ちょうどを現金で返したことを記録し、残高を 0 にする。止めた人にもできる。
+      operationId: refundMember
+      security:
+        - adminBasicAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefundResponse"
+        "400":
+          description: 学籍番号の形式が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: ユーザーが登録されていない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: 残高が 0 で返金するものがない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/user/{user_id}/stop:
+    post:
+      tags: [member]
+      summary: 利用停止
+      description: |
+        支払い用バーコードを使えなくして、利用停止にする。残高は残す（返金は別の操作）。
+      operationId: stopMember
+      security:
+        - adminBasicAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StopMemberResponse"
+        "400":
+          description: 学籍番号の形式が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: ユーザーが登録されていない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: すでに利用停止している
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/user/{user_id}/resume:
+    post:
+      tags: [member]
+      summary: 利用停止の解除
+      description: |
+        利用停止を解除する（再入部など）。このあと支払い用バーコードを発行し直す。
+      operationId: resumeMember
+      security:
+        - adminBasicAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResumeMemberResponse"
+        "400":
+          description: 学籍番号の形式が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: ユーザーが登録されていない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: 利用停止していない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /v1/admin/verify:
     get:
       tags: [admin]
@@ -1115,6 +1274,80 @@ components:
           description: 画面に出す見やすい形
           example: "SP 7Q2K X9MD RA4T W8YZ"
 
+    ListMembersResponse:
+      type: object
+      required: [status, users]
+      properties:
+        status:
+          type: string
+          example: success
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/Member"
+    Member:
+      type: object
+      required: [user_id, user_name, balance, status, stopped_at, has_payment_card, unrefunded, graduation_candidate]
+      properties:
+        user_id:
+          type: string
+          example: 22K01234
+        user_name:
+          type: string
+          example: k22000_yamadataro
+        balance:
+          type: integer
+          example: 300
+        status:
+          type: string
+          enum: [active, stopped]
+          description: active＝使える、stopped＝利用停止
+        stopped_at:
+          type: string
+          nullable: true
+          description: 利用停止した日時。使える人は null
+        has_payment_card:
+          type: boolean
+          description: 使える支払い用バーコードがあるか
+        unrefunded:
+          type: boolean
+          description: 止めたのに残高が残っている（まだ返金していない）か
+        graduation_candidate:
+          type: boolean
+          description: 年度末の卒業候補か（使える人のうち、入学から4年以上たった人）
+    RefundResponse:
+      type: object
+      required: [status, user_id, refunded_amount]
+      properties:
+        status:
+          type: string
+          example: success
+        user_id:
+          type: string
+        refunded_amount:
+          type: integer
+          description: 返した額（残高ちょうど）
+    StopMemberResponse:
+      type: object
+      required: [status, user_id, balance]
+      properties:
+        status:
+          type: string
+          example: success
+        user_id:
+          type: string
+        balance:
+          type: integer
+          description: 止めたあとに残っている残高
+    ResumeMemberResponse:
+      type: object
+      required: [status, user_id]
+      properties:
+        status:
+          type: string
+          example: success
+        user_id:
+          type: string
     CreatePaymentCardClaimResponse:
       type: object
       required: [status, claim_id, user_id, user_name, url, expires_in_seconds]

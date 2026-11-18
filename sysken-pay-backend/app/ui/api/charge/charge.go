@@ -2,6 +2,7 @@ package charge
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	apierrors "sysken-pay-api/app/ui/api/pkg/errors"
@@ -52,6 +53,10 @@ func (h *chargeHandlerImpl) ChargeAmount(w http.ResponseWriter, r *http.Request)
 	chargedAmount, err := h.chargeAmountUseCase.ChargeAmount(ctx, userID, req.Amount)
 	if err != nil {
 		log.Printf("Failed to charge amount: %v", err)
+		if errors.Is(err, charge.ErrUserNotFound) {
+			apierrors.RespondError(w, http.StatusNotFound, "user not found")
+			return
+		}
 		apierrors.RespondUseCaseError(w, err)
 		return
 	}

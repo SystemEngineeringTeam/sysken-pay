@@ -54,6 +54,10 @@ func (h *purchaseHandlerImpl) CreatePurchase(w http.ResponseWriter, r *http.Requ
 	createdPurchase, err := h.createPurchaseUseCase.CreatePurchase(ctx, userID, inputs)
 	if err != nil {
 		log.Printf("Failed to create purchase: %v", err)
+		if errors.Is(err, purchase.ErrUserNotFound) {
+			apierrors.RespondError(w, http.StatusNotFound, "user not found")
+			return
+		}
 		if errors.Is(err, purchase.ErrItemNotFound) {
 			apierrors.RespondError(w, http.StatusNotFound, "item not found")
 			return

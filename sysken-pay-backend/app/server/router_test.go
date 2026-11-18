@@ -29,11 +29,15 @@ func (stub) Issue(w http.ResponseWriter, r *http.Request)                { ok(w,
 func (stub) Resolve(w http.ResponseWriter, r *http.Request)              { ok(w, r) }
 func (stub) Create(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
 func (stub) Status(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
+func (stub) List(w http.ResponseWriter, r *http.Request)                 { ok(w, r) }
+func (stub) Refund(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
+func (stub) Stop(w http.ResponseWriter, r *http.Request)                 { ok(w, r) }
+func (stub) Resume(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
 
 func testRouter(password string) http.Handler {
 	s := stub{}
 	return newRouter(
-		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, paymentCardClaim: s},
+		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, paymentCardClaim: s, member: s},
 		routerConfig{
 			adminUser:      "admin",
 			adminPassword:  password,
@@ -55,6 +59,10 @@ var protectedRoutes = []struct{ method, path string }{
 	{http.MethodPost, "/v1/user/20K23099/payment-card"},
 	{http.MethodPost, "/v1/user/20K23099/payment-card/claim"},
 	{http.MethodGet, "/v1/payment-card/claim/7"},
+	{http.MethodGet, "/v1/user"},
+	{http.MethodPost, "/v1/user/20K23099/refund"},
+	{http.MethodPost, "/v1/user/20K23099/stop"},
+	{http.MethodPost, "/v1/user/20K23099/resume"},
 }
 
 var openRoutes = []struct{ method, path string }{
