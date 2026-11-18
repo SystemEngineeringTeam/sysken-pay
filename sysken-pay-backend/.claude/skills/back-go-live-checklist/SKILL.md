@@ -47,8 +47,8 @@ description: バックエンド（sysken-pay-backend の Go API・MySQL）を部
 - これらにテスト（`*_test.go`）があるか
 
 **データと運用**
-- **MySQL のデータがボリュームに保存されているか**。今は `volumes:` に `mysql_data` が宣言されているのに `db` サービスにマウントされていない（`/var/lib/mysql` が永続化されていない）。`docker compose down` やコンテナの作り直しでデータが消えるので、**直してから運用する**
-- バックアップ: `mysqldump` を定期的に取る仕組み（cron 等）と、ラズパイの SD カード以外の保存先があるか
+- **MySQL のデータがボリュームに保存されているか**（`db` サービスに `mysql_data:/var/lib/mysql` がマウントされているか）。外れていたら、コンテナの作り直しでデータが消えるので**直してから運用する**
+- バックアップ: `make backup` を cron で毎日回しているか（README.md の手順）、ラズパイの SD カード以外（USB メモリ等）にも保存しているか
 - ラズパイの再起動後に API と DB が自動で起動するか（`restart: unless-stopped` 等）
 - `Dockerfile` の Go イメージが arm64（ラズパイ 5）で動くか、`go.mod` のバージョンと合っているか
 - 依存の脆弱性: `go run golang.org/x/vuln/cmd/govulncheck@latest ./...`

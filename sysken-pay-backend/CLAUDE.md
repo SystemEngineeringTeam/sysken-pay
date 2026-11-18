@@ -14,7 +14,7 @@ go test ./...
 gofmt -l .
 ```
 
-`make down`（`docker compose down`）は、今の `docker-compose.yaml` だと MySQL のデータが消える。本番では使わない。
+DB のデータは docker ボリューム `mysql_data` に保存される。`make down` では消えないが、`docker compose down -v` / `docker volume rm` では全データが消えるので使わない。バックアップは `make backup`、戻すのは `make restore FILE=...`（手順は README.md）。
 
 ## 参照先
 

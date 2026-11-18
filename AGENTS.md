@@ -14,7 +14,7 @@
 ## 安全ルール（全エージェント共通）
 
 1. **破壊的コマンドを実行しない**: `rm` の再帰+強制削除、`git push --force`（全変種）、`git reset --hard`、`git clean`、`docker compose down -v`、`docker volume rm`。取り消しは「追加する」操作（`git revert`、`git stash`、バックアップブランチ）だけで行う
-2. **DB のデータを消さない**: 本番 DB に対して `DROP` / `TRUNCATE` / 条件なしの `DELETE` / `UPDATE` を実行しない。DB に触る前は必ず `mysqldump` で退避する。今の `docker-compose.yaml` は MySQL のデータをボリュームに保存していないため、**本番で `docker compose down` するとデータが消える**
+2. **DB のデータを消さない**: 本番 DB に対して `DROP` / `TRUNCATE` / 条件なしの `DELETE` / `UPDATE` を実行しない。DB に触る前は必ず `mysqldump`（`make backup`）で退避する。DB のデータは docker ボリューム `mysql_data` にあり、`docker compose down -v` や `docker volume rm` で**全データが消える**
 3. **秘密情報を扱わない**: `.env` 系ファイル・秘密鍵を読まない・コミットしない・出力に含めない（`.env.sample` は可）
 4. **安全網を弱めない**: `.claude/settings.json` の deny、`.claude/hooks/`、このファイルの安全ルールを黙って削除・緩和しない
 5. **テストを添える**: 新機能・修正にはテストを付ける（フロント: `src/test/`、バック: 各パッケージの `*_test.go`）。書けない変更は手動での確認方法を報告に書く
