@@ -1,33 +1,17 @@
 import type { JSX } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { BarcodeReader } from "../../../components/ui/BarcodeReader";
-import { useUserStore } from "../../../store/useUserStore";
-import { useBalanceStore } from "../../../store/useBalanceStore";
-import { UserRepositoryImpl } from "../../../adapter/repository/UserRepositoryImpl";
+import { useUserScan } from "../../../hooks/useBarcodeReader";
 import Header from "../../../components/layouts/Header";
 import Total from "../../../components/features/buy/Total";
 import ArrowButton from "../../../components/ui/ArrowButton";
-import { useState } from "react";
 import styles from "./index.module.scss";
 
 export default function PaymentStartPage(): JSX.Element {
   const { paymentMethod } = useParams();
   const navigate = useNavigate();
-  const setScannedUser = useUserStore((state) => state.setScannedUser);
-  const setBalance = useBalanceStore((state) => state.setBalance);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleScan = async (barcode: string) => {
-    try {
-      const data = await UserRepositoryImpl.getBalance(barcode);
-      if (!data?.user_id) throw new Error("ユーザーが見つかりませんでした");
-      setScannedUser({ user_id: data.user_id });
-      setBalance(data);
-      navigate(`/buy/${paymentMethod}/confirm`);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "ユーザー情報の取得に失敗しました");
-    }
-  }
+  // 登録済みのユーザーか確かめてから、購入確定画面へ進む
+  const { onScan: handleScan, ErrorMessage } = useUserScan(`/buy/${paymentMethod}/confirm`);
 
   return (
     <div className={styles.container}>
@@ -39,12 +23,14 @@ export default function PaymentStartPage(): JSX.Element {
       ) : (
         <>
           <Header title="シス研Pay支払い" right="toTop" />
-          <BarcodeReader
-            mode="member"
-            onScan={handleScan}
-            placeholder="学生証のバーコードをかざしてください"
-          />
-          {error && <p className={styles.error}>{error}</p>}
+          <div className={styles.reader}>
+            <BarcodeReader
+              mode="member"
+              onScan={handleScan}
+              placeholder="学生証のバーコードをかざしてください"
+            />
+          </div>
+          <ErrorMessage />
         </>
       )}
       <ArrowButton variant="prev" onClick={() => navigate("/buy/confirm")}>
