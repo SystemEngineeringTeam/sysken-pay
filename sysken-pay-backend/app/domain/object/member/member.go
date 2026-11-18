@@ -32,6 +32,10 @@ type Summary struct {
 	StoppedAt *time.Time
 	// HasPaymentCard は使える支払い用バーコードがあるか
 	HasPaymentCard bool
+	// Hidden は一覧から非表示にした人か（利用停止した人だけがなれる）
+	Hidden bool
+	// HasHistory は購入・チャージ・返金の記録が1件でもあるか（あれば削除できない）
+	HasHistory bool
 }
 
 // Status は部員の状態を返す
@@ -40,6 +44,11 @@ func (s *Summary) Status() Status {
 		return StatusStopped
 	}
 	return StatusActive
+}
+
+// Deletable は削除できる人か（停止中で、購入・チャージ・返金の記録が1件もない）
+func (s *Summary) Deletable() bool {
+	return s.Status() == StatusStopped && !s.HasHistory
 }
 
 // Unrefunded は「止めたのに残高が残っている（まだ返金していない）」人か

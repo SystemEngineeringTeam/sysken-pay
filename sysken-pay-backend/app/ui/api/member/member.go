@@ -21,6 +21,9 @@ type Handler interface {
 	Refund(w http.ResponseWriter, r *http.Request)
 	Stop(w http.ResponseWriter, r *http.Request)
 	Resume(w http.ResponseWriter, r *http.Request)
+	Hide(w http.ResponseWriter, r *http.Request)
+	Unhide(w http.ResponseWriter, r *http.Request)
+	Delete(w http.ResponseWriter, r *http.Request)
 }
 
 func NewHandler(uc member.UseCase) Handler {
@@ -45,6 +48,10 @@ type MemberResponse struct {
 	Unrefunded bool `json:"unrefunded"`
 	// GraduationCandidate は年度末の卒業候補か（入学から4年以上たった、使える人）
 	GraduationCandidate bool `json:"graduation_candidate"`
+	// Hidden は一覧から非表示にした人か（停止中で残高 0 の人だけがなれる）
+	Hidden bool `json:"hidden"`
+	// Deletable は削除できる人か（停止中で、購入・チャージ・返金の記録が1件もない）
+	Deletable bool `json:"deletable"`
 }
 
 type ListResponse struct {
@@ -88,6 +95,8 @@ func (h *handlerImpl) List(w http.ResponseWriter, r *http.Request) {
 			HasPaymentCard:      s.HasPaymentCard,
 			Unrefunded:          s.Unrefunded(),
 			GraduationCandidate: s.GraduationCandidate(now),
+			Hidden:              s.Hidden,
+			Deletable:           s.Deletable(),
 		}
 		if s.StoppedAt != nil {
 			t := timefmt.JST(*s.StoppedAt)
@@ -109,6 +118,14 @@ func respondError(w http.ResponseWriter, action string, err error) {
 		apierrors.RespondError(w, http.StatusConflict, "user already stopped")
 	case errors.Is(err, member.ErrNotStopped):
 		apierrors.RespondError(w, http.StatusConflict, "user not stopped")
+	case errors.Is(err, member.ErrBalanceRemaining):
+		apierrors.RespondError(w, http.StatusConflict, "balance remaining")
+	case errors.Is(err, member.ErrAlreadyHidden):
+		apierrors.RespondError(w, http.StatusConflict, "user already hidden")
+	case errors.Is(err, member.ErrNotHidden):
+		apierrors.RespondError(w, http.StatusConflict, "user not hidden")
+	case errors.Is(err, member.ErrHasHistory):
+		apierrors.RespondError(w, http.StatusConflict, "user has history")
 	default:
 		log.Printf("Failed to %s: %v", action, err)
 		apierrors.RespondUseCaseError(w, err)
@@ -145,6 +162,46 @@ func (h *handlerImpl) Resume(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("Resumed: user=%s", userID)
 	writeJSON(w, http.StatusOK, ResumeResponse{Status: "success", UserID: userID})
+}
+
+type HideResponse struct {
+	Status string `json:"status"`
+	UserID string `json:"user_id"`
+}
+
+type DeleteResponse struct {
+	Status string `json:"status"`
+	UserID string `json:"user_id"`
+}
+
+func (h *handlerImpl) Hide(w http.ResponseWriter, r *http.Request) {
+	userID := chi.URLParam(r, "user_id")
+	if err := h.uc.Hide(r.Context(), userID); err != nil {
+		respondError(w, "hide user", err)
+		return
+	}
+	log.Printf("Hidden: user=%s", userID)
+	writeJSON(w, http.StatusOK, HideResponse{Status: "success", UserID: userID})
+}
+
+func (h *handlerImpl) Unhide(w http.ResponseWriter, r *http.Request) {
+	userID := chi.URLParam(r, "user_id")
+	if err := h.uc.Unhide(r.Context(), userID); err != nil {
+		respondError(w, "unhide user", err)
+		return
+	}
+	log.Printf("Unhidden: user=%s", userID)
+	writeJSON(w, http.StatusOK, HideResponse{Status: "success", UserID: userID})
+}
+
+func (h *handlerImpl) Delete(w http.ResponseWriter, r *http.Request) {
+	userID := chi.URLParam(r, "user_id")
+	if err := h.uc.Delete(r.Context(), userID); err != nil {
+		respondError(w, "delete user", err)
+		return
+	}
+	log.Printf("Deleted: user=%s", userID)
+	writeJSON(w, http.StatusOK, DeleteResponse{Status: "success", UserID: userID})
 }
 
 func writeJSON(w http.ResponseWriter, status int, v any) {

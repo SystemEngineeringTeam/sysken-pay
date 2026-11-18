@@ -33,6 +33,9 @@ func (stub) List(w http.ResponseWriter, r *http.Request)                 { ok(w,
 func (stub) Refund(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
 func (stub) Stop(w http.ResponseWriter, r *http.Request)                 { ok(w, r) }
 func (stub) Resume(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
+func (stub) Hide(w http.ResponseWriter, r *http.Request)                 { ok(w, r) }
+func (stub) Unhide(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
+func (stub) Delete(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
 
 func testRouter(password string) http.Handler {
 	s := stub{}
@@ -63,6 +66,9 @@ var protectedRoutes = []struct{ method, path string }{
 	{http.MethodPost, "/v1/user/20K23099/refund"},
 	{http.MethodPost, "/v1/user/20K23099/stop"},
 	{http.MethodPost, "/v1/user/20K23099/resume"},
+	{http.MethodPost, "/v1/user/20K23099/hide"},
+	{http.MethodPost, "/v1/user/20K23099/unhide"},
+	{http.MethodDelete, "/v1/user/20K23099"},
 }
 
 var openRoutes = []struct{ method, path string }{

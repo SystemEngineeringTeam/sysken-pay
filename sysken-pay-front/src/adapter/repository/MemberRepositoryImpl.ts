@@ -5,7 +5,7 @@ import type { components } from "../../types/api-schema";
 export type Member = components["schemas"]["Member"];
 
 /**
- * ユーザー一覧と、退部・卒業のとき（返金・利用停止・再開）。どれも管理者パスワードが必要。
+ * ユーザー一覧と、退部・卒業のとき（返金・利用停止・再開）、停止中の人の整理（非表示・削除）。どれも管理者パスワードが必要。
  * 設計は docs/phone-payment.md の「退部・卒業」
  */
 export const MemberRepositoryImpl = {
@@ -47,6 +47,36 @@ export const MemberRepositoryImpl = {
     });
     if (error || !data) {
       throw new ApiError(error?.message ?? "利用を再開できませんでした", response.status);
+    }
+  },
+
+  /** 停止中で残高 0 の人を、一覧から非表示にする（記録は消さない） */
+  hide: async (userId: string): Promise<void> => {
+    const { data, error, response } = await apiClient.POST("/v1/user/{user_id}/hide", {
+      params: { path: { user_id: userId } },
+    });
+    if (error || !data) {
+      throw new ApiError(error?.message ?? "非表示にできませんでした", response.status);
+    }
+  },
+
+  /** 非表示を解除する（停止中の一覧に戻る） */
+  unhide: async (userId: string): Promise<void> => {
+    const { data, error, response } = await apiClient.POST("/v1/user/{user_id}/unhide", {
+      params: { path: { user_id: userId } },
+    });
+    if (error || !data) {
+      throw new ApiError(error?.message ?? "非表示を解除できませんでした", response.status);
+    }
+  },
+
+  /** 停止中で、購入・チャージ・返金の記録が1件もない人を消す（取り消せない） */
+  remove: async (userId: string): Promise<void> => {
+    const { data, error, response } = await apiClient.DELETE("/v1/user/{user_id}", {
+      params: { path: { user_id: userId } },
+    });
+    if (error || !data) {
+      throw new ApiError(error?.message ?? "削除できませんでした", response.status);
     }
   },
 };

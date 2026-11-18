@@ -23,6 +23,7 @@ const EMPTY_TEXT = {
   unrefunded: "未返金の人はいません",
   graduation: "卒業候補の人はいません",
   stopped: "利用停止中の人はいません",
+  hidden: "非表示の人はいません",
 } as const;
 
 /**
@@ -30,7 +31,8 @@ const EMPTY_TEXT = {
  * - 全員：使える人だけ。タップで詳細（返金・利用停止・バーコード再発行）
  * - 未返金：止めたのに残高が残っている人。遅れて受け取りに来た人の返金に使う
  * - 卒業候補：入学から4年以上たった人。役員がチェックを付けた人だけ、まとめて利用停止する
- * - 停止中：利用停止した人。タブには出さず、全員の右下のボタンから入る（再開・返金用）
+ * - 停止中：利用停止した人。タブには出さず、全員の右下のボタンから入る（再開・返金・非表示・削除用）
+ * - 非表示：停止中の人のうち、非表示にした人。停止中の右下のボタンから入る（元に戻す用）
  */
 export default function UserListPage(): JSX.Element {
   const navigate = useNavigate();
@@ -137,7 +139,13 @@ export default function UserListPage(): JSX.Element {
       )}
 
       {tab === "stopped" && (
-        <p className={styles.hint}>利用停止中の人です。タップして、利用の再開や返金ができます</p>
+        <p className={styles.hint}>
+          利用停止中の人です。タップして、利用の再開・返金・非表示・削除ができます
+        </p>
+      )}
+
+      {tab === "hidden" && (
+        <p className={styles.hint}>非表示にした人です。タップして「非表示をやめる」で停止中に戻せます</p>
       )}
 
       {isGraduation && (
@@ -188,9 +196,24 @@ export default function UserListPage(): JSX.Element {
 
       {tab === "stopped" && (
         <div className={styles.bar}>
+          {counts.hidden > 0 && (
+            <button type="button" className={styles.barSmall} onClick={() => changeTab("hidden")}>
+              非表示の人 {counts.hidden}
+              <span className={`${styles.arrow} ${styles.arrowNext}`} aria-hidden="true" />
+            </button>
+          )}
           <button type="button" className={`${styles.barSmall} ${styles.barBlue}`} onClick={() => changeTab("all")}>
             <span className={`${styles.arrow} ${styles.arrowPrev}`} aria-hidden="true" />
             全員にもどる
+          </button>
+        </div>
+      )}
+
+      {tab === "hidden" && (
+        <div className={styles.bar}>
+          <button type="button" className={`${styles.barSmall} ${styles.barBlue}`} onClick={() => changeTab("stopped")}>
+            <span className={`${styles.arrow} ${styles.arrowPrev}`} aria-hidden="true" />
+            停止中にもどる
           </button>
         </div>
       )}

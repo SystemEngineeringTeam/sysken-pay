@@ -13,13 +13,14 @@ import { toMemberErrorMessage } from "../../../services/memberErrorMessage";
 import type { PhoneRegisterState } from "../../../services/phoneRegisterState";
 import styles from "./[userId].module.scss";
 
-type Dialog = "refund" | "stop" | "resume" | null;
+type Dialog = "refund" | "stop" | "resume" | "hide" | "delete" | null;
 
 /**
  * ユーザーの詳細（docs/phone-payment.md の「退部・卒業」）
  * - 返金：残高ちょうどを現金で返す（止めた人にもできる）
  * - 利用停止：残高が残っていれば「返金しますか？」と出す。いなければ止めるだけ（残高は残す）
  * - 止めた人は「利用を再開」で戻せる（そのあとバーコードを発行し直す）
+ * - 止めた人は「非表示」で一覧から隠せる（残高 0 の人だけ。記録は残す）。記録が1件もない人は「削除」もできる
  */
 export default function UserDetailPage(): JSX.Element {
   const navigate = useNavigate();
@@ -32,9 +33,10 @@ export default function UserDetailPage(): JSX.Element {
 
   const m = members.find((x) => x.user_id === userId);
   const stopped = m?.status === "stopped";
+  const hidden = m?.hidden === true;
 
   // 操作を1つ行って、一覧を読み直す
-  const run = async (action: () => Promise<string>, kind: "refund" | "stop" | "resume") => {
+  const run = async (action: () => Promise<string>, kind: "refund" | "stop" | "resume" | "hide" | "unhide") => {
     setBusy(true);
     try {
       setMessage({ text: await action(), tone: "ok" });
@@ -59,6 +61,32 @@ export default function UserDetailPage(): JSX.Element {
       if (remaining > 0) return `利用停止しました（残高 ${formatYen(remaining)} は残しています）`;
       return "利用停止しました";
     }, "stop");
+
+  const hide = () => run(async () => {
+    await MemberRepositoryImpl.hide(userId);
+    return "非表示にしました（停止中の一覧の「非表示の人」から戻せます）";
+  }, "hide");
+
+  const unhide = () => run(async () => {
+    await MemberRepositoryImpl.unhide(userId);
+    return "非表示をやめました（停止中の一覧に戻りました）";
+  }, "unhide");
+
+  // 削除は取り消せない。消えたら、一覧に戻る
+  const remove = async () => {
+    setBusy(true);
+    try {
+      await MemberRepositoryImpl.remove(userId);
+      await reload();
+      navigate("/admin/user-list");
+    } catch (e) {
+      setMessage({ text: toMemberErrorMessage("delete", e), tone: "error" });
+      setDialog(null);
+      await reload();
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const resume = async () => {
     setBusy(true);
@@ -143,6 +171,40 @@ export default function UserDetailPage(): JSX.Element {
         )}
       </ConfirmDialog>
     );
+  } else if (dialog === "hide") {
+    dialogView = (
+      <ConfirmDialog
+        title="一覧から非表示にしますか？"
+        busy={busy}
+        actions={[
+          { label: "やめる", onClick: () => setDialog(null), variant: "plain" },
+          { label: "非表示にする", onClick: () => void hide() },
+        ]}
+      >
+        <p>
+          {m.user_name}（{m.user_id}）を、一覧から隠します。
+        </p>
+        <p>記録は消えません。停止中の一覧の「非表示の人」から戻せます。</p>
+      </ConfirmDialog>
+    );
+  } else if (dialog === "delete") {
+    dialogView = (
+      <ConfirmDialog
+        title="このユーザーを削除しますか？"
+        busy={busy}
+        actions={[
+          { label: "やめる", onClick: () => setDialog(null), variant: "plain" },
+          { label: busy ? "削除しています…" : "削除する", onClick: () => void remove(), variant: "danger" },
+        ]}
+      >
+        <p>
+          <strong>{m.user_name}</strong>（{m.user_id}）
+        </p>
+        <p>
+          <strong>取り消せません。</strong>購入・チャージ・返金の記録がない人だけ削除できます。
+        </p>
+      </ConfirmDialog>
+    );
   } else if (dialog === "resume") {
     dialogView = (
       <ConfirmDialog
@@ -172,7 +234,7 @@ export default function UserDetailPage(): JSX.Element {
         <section className={styles.card}>
           <div className={styles.cardHead}>
             <span className={`${styles.status} ${stopped ? styles.statusStopped : styles.statusActive}`}>
-              {stopped ? "利用停止中" : "使用中"}
+              {stopped ? (hidden ? "利用停止中（非表示）" : "利用停止中") : "使用中"}
             </span>
             {m.unrefunded && <span className={styles.unrefunded}>未返金</span>}
           </div>
@@ -199,10 +261,34 @@ export default function UserDetailPage(): JSX.Element {
             <span className={styles.sub}>{m.balance > 0 ? `${formatYen(m.balance)} を返す` : "残高 0 円"}</span>
           </button>
           {stopped ? (
-            <button type="button" className={`${styles.action} ${styles.outline}`} onClick={() => setDialog("resume")}>
-              利用を再開
-              <span className={styles.sub}>再入部したとき</span>
-            </button>
+            <>
+              <button type="button" className={`${styles.action} ${styles.outline}`} onClick={() => setDialog("resume")}>
+                利用を再開
+                <span className={styles.sub}>再入部したとき</span>
+              </button>
+              {hidden ? (
+                <button type="button" className={`${styles.action} ${styles.outline}`} onClick={() => void unhide()} disabled={busy}>
+                  非表示をやめる
+                  <span className={styles.sub}>停止中の一覧に戻す</span>
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className={`${styles.action} ${styles.outline}`}
+                  onClick={() => setDialog("hide")}
+                  disabled={m.balance > 0}
+                >
+                  非表示
+                  <span className={styles.sub}>{m.balance > 0 ? "先に返金してください" : "一覧から隠す"}</span>
+                </button>
+              )}
+              {m.deletable && (
+                <button type="button" className={`${styles.action} ${styles.danger}`} onClick={() => setDialog("delete")}>
+                  削除
+                  <span className={styles.sub}>記録がない人だけ・取り消せません</span>
+                </button>
+              )}
+            </>
           ) : (
             <>
               <button type="button" className={`${styles.action} ${styles.danger}`} onClick={() => setDialog("stop")}>

@@ -26,6 +26,9 @@ func (f *fakeUC) List(context.Context) ([]*domainmember.Summary, error) { return
 func (f *fakeUC) Refund(context.Context, string) (int, error)           { return f.amount, f.err }
 func (f *fakeUC) Stop(context.Context, string) (int, error)             { return f.amount, f.err }
 func (f *fakeUC) Resume(context.Context, string) error                  { return f.err }
+func (f *fakeUC) Hide(context.Context, string) error                    { return f.err }
+func (f *fakeUC) Unhide(context.Context, string) error                  { return f.err }
+func (f *fakeUC) Delete(context.Context, string) error                  { return f.err }
 
 func serve(h Handler, method, path string) *httptest.ResponseRecorder {
 	r := chi.NewRouter()
@@ -33,6 +36,9 @@ func serve(h Handler, method, path string) *httptest.ResponseRecorder {
 	r.Post("/v1/user/{user_id}/refund", h.Refund)
 	r.Post("/v1/user/{user_id}/stop", h.Stop)
 	r.Post("/v1/user/{user_id}/resume", h.Resume)
+	r.Post("/v1/user/{user_id}/hide", h.Hide)
+	r.Post("/v1/user/{user_id}/unhide", h.Unhide)
+	r.Delete("/v1/user/{user_id}", h.Delete)
 	rec := httptest.NewRecorder()
 	r.ServeHTTP(rec, httptest.NewRequest(method, path, nil))
 	return rec
@@ -89,5 +95,55 @@ func TestActions(t *testing.T) {
 				t.Errorf("status = %d, want %d", rec.Code, tt.want)
 			}
 		})
+	}
+}
+
+func TestHideDeleteResponses(t *testing.T) {
+	h := &handlerImpl{uc: &fakeUC{}, now: time.Now}
+	for _, c := range []struct{ method, path string }{
+		{http.MethodPost, "/v1/user/22K01234/hide"},
+		{http.MethodPost, "/v1/user/22K01234/unhide"},
+		{http.MethodDelete, "/v1/user/22K01234"},
+	} {
+		if rec := serve(h, c.method, c.path); rec.Code != http.StatusOK {
+			t.Errorf("%s %s = %d", c.method, c.path, rec.Code)
+		}
+	}
+	for err, want := range map[error]int{
+		member.ErrHasHistory:       http.StatusConflict,
+		member.ErrBalanceRemaining: http.StatusConflict,
+		member.ErrAlreadyHidden:    http.StatusConflict,
+		member.ErrNotHidden:        http.StatusConflict,
+		member.ErrNotStopped:       http.StatusConflict,
+		member.ErrUserNotFound:     http.StatusNotFound,
+	} {
+		h := &handlerImpl{uc: &fakeUC{err: err}, now: time.Now}
+		if rec := serve(h, http.MethodDelete, "/v1/user/22K01234"); rec.Code != want {
+			t.Errorf("%v: status = %d, want %d", err, rec.Code, want)
+		}
+	}
+}
+
+func TestListHiddenAndDeletable(t *testing.T) {
+	stopped := time.Date(2026, 11, 1, 12, 0, 0, 0, time.UTC)
+	uc := &fakeUC{list: []*domainmember.Summary{
+		{UserID: "24K00001", UserName: "a", StoppedAt: &stopped, HasHistory: false},
+		{UserID: "24K00002", UserName: "b", StoppedAt: &stopped, HasHistory: true, Hidden: true},
+		{UserID: "24K00003", UserName: "c", HasHistory: false},
+	}}
+	h := &handlerImpl{uc: uc, now: time.Now}
+	var res ListResponse
+	if err := json.NewDecoder(serve(h, http.MethodGet, "/v1/user").Body).Decode(&res); err != nil {
+		t.Fatal(err)
+	}
+	u := res.Users
+	if !u[0].Deletable || u[0].Hidden {
+		t.Errorf("記録のない停止中の人は削除できる: %+v", u[0])
+	}
+	if u[1].Deletable || !u[1].Hidden {
+		t.Errorf("記録のある人は削除できない・非表示: %+v", u[1])
+	}
+	if u[2].Deletable {
+		t.Errorf("使える人は削除できない: %+v", u[2])
 	}
 }

@@ -12,14 +12,17 @@ import (
 
 // fakeDB は1人分の状態を持つ、テスト用の保存先
 type fakeDB struct {
-	found    bool
-	status   domainmember.Status
-	balance  int
-	hasCard  bool
-	refunds  []int
-	locked   bool
-	inTx     bool
-	stopCall int
+	found      bool
+	status     domainmember.Status
+	balance    int
+	hasCard    bool
+	refunds    []int
+	locked     bool
+	inTx       bool
+	stopCall   int
+	hidden     bool
+	hasHistory bool
+	deleted    bool
 }
 
 type fakeMemberRepo struct{ db *fakeDB }
@@ -41,6 +44,26 @@ func (r *fakeMemberRepo) Stop(context.Context, string) error {
 }
 func (r *fakeMemberRepo) Resume(context.Context, string) error {
 	r.db.status = domainmember.StatusActive
+	r.db.hidden = false
+	return nil
+}
+func (r *fakeMemberRepo) IsHidden(context.Context, string) (bool, error) { return r.db.hidden, nil }
+func (r *fakeMemberRepo) Hide(context.Context, string) error {
+	r.db.hidden = true
+	return nil
+}
+func (r *fakeMemberRepo) Unhide(context.Context, string) error {
+	r.db.hidden = false
+	return nil
+}
+func (r *fakeMemberRepo) HasHistory(context.Context, string) (bool, error) {
+	return r.db.hasHistory, nil
+}
+func (r *fakeMemberRepo) Delete(context.Context, string) error {
+	if !r.db.locked {
+		return errors.New("ロックせずに消した")
+	}
+	r.db.deleted = true
 	return nil
 }
 func (r *fakeMemberRepo) InsertRefund(_ context.Context, _ string, amount int) error {
@@ -161,5 +184,81 @@ func TestResume(t *testing.T) {
 	}
 	if err := newUC(&fakeDB{found: true, status: domainmember.StatusActive}).Resume(context.Background(), uid); !errors.Is(err, ErrNotStopped) {
 		t.Errorf("使える人を再開: %v", err)
+	}
+}
+
+func TestHide(t *testing.T) {
+	db := &fakeDB{found: true, status: domainmember.StatusStopped, balance: 0, hasHistory: true}
+	if err := newUC(db).Hide(context.Background(), uid); err != nil {
+		t.Fatal(err)
+	}
+	if !db.hidden || db.deleted {
+		t.Errorf("非表示になっていない・消してしまった: %+v", db)
+	}
+}
+
+func TestHideErrors(t *testing.T) {
+	ctx := context.Background()
+	if err := newUC(&fakeDB{found: true, status: domainmember.StatusActive}).Hide(ctx, uid); !errors.Is(err, ErrNotStopped) {
+		t.Errorf("使える人は非表示にできない: %v", err)
+	}
+	// 未返金の人が一覧から見えなくならないように
+	db := &fakeDB{found: true, status: domainmember.StatusStopped, balance: 500}
+	if err := newUC(db).Hide(ctx, uid); !errors.Is(err, ErrBalanceRemaining) || db.hidden {
+		t.Errorf("残高がある人: err=%v hidden=%v", err, db.hidden)
+	}
+	if err := newUC(&fakeDB{found: true, status: domainmember.StatusStopped, hidden: true}).Hide(ctx, uid); !errors.Is(err, ErrAlreadyHidden) {
+		t.Errorf("すでに非表示: %v", err)
+	}
+	if err := newUC(&fakeDB{found: false}).Hide(ctx, uid); !errors.Is(err, ErrUserNotFound) {
+		t.Errorf("いない人: %v", err)
+	}
+	if err := newUC(&fakeDB{}).Hide(ctx, "abc"); !errors.Is(err, derrors.ErrInvalidInput) {
+		t.Errorf("形式が不正: %v", err)
+	}
+}
+
+func TestUnhide(t *testing.T) {
+	ctx := context.Background()
+	db := &fakeDB{found: true, status: domainmember.StatusStopped, hidden: true}
+	if err := newUC(db).Unhide(ctx, uid); err != nil || db.hidden {
+		t.Fatalf("err=%v hidden=%v", err, db.hidden)
+	}
+	if err := newUC(&fakeDB{found: true, status: domainmember.StatusStopped}).Unhide(ctx, uid); !errors.Is(err, ErrNotHidden) {
+		t.Errorf("非表示ではない: %v", err)
+	}
+}
+
+func TestResumeUnhides(t *testing.T) {
+	db := &fakeDB{found: true, status: domainmember.StatusStopped, hidden: true}
+	if err := newUC(db).Resume(context.Background(), uid); err != nil || db.hidden {
+		t.Errorf("再開で非表示も解けるはず: err=%v hidden=%v", err, db.hidden)
+	}
+}
+
+func TestDelete(t *testing.T) {
+	db := &fakeDB{found: true, status: domainmember.StatusStopped}
+	if err := newUC(db).Delete(context.Background(), uid); err != nil || !db.deleted {
+		t.Fatalf("err=%v deleted=%v", err, db.deleted)
+	}
+}
+
+func TestDeleteErrors(t *testing.T) {
+	ctx := context.Background()
+	// 使える人は消せない（先に利用停止する）
+	db := &fakeDB{found: true, status: domainmember.StatusActive}
+	if err := newUC(db).Delete(ctx, uid); !errors.Is(err, ErrNotStopped) || db.deleted {
+		t.Errorf("使える人: err=%v deleted=%v", err, db.deleted)
+	}
+	// 記録が1件でもある人は、残高 0 でも消さない
+	db = &fakeDB{found: true, status: domainmember.StatusStopped, hasHistory: true}
+	if err := newUC(db).Delete(ctx, uid); !errors.Is(err, ErrHasHistory) || db.deleted {
+		t.Errorf("記録がある人: err=%v deleted=%v", err, db.deleted)
+	}
+	if err := newUC(&fakeDB{found: false}).Delete(ctx, uid); !errors.Is(err, ErrUserNotFound) {
+		t.Errorf("いない人: %v", err)
+	}
+	if err := newUC(&fakeDB{}).Delete(ctx, "abc"); !errors.Is(err, derrors.ErrInvalidInput) {
+		t.Errorf("形式が不正: %v", err)
 	}
 }

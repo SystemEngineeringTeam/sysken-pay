@@ -168,6 +168,51 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags: [member]
+      summary: 停止中の人の削除
+      description: |
+        停止中で、購入・チャージ・返金の記録が1件もない人（登録ミス・テストで作った人）だけを消す。
+        その人の行と、支払い用バーコード・発行用 QR の行を消す。**取り消せない**。
+        記録が1件でもある人は消さない（会計の記録を残すため）。その人は非表示にする。
+      operationId: deleteMember
+      security:
+        - adminBasicAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberDoneResponse"
+        "400":
+          description: 学籍番号の形式が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: ユーザーが登録されていない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: 利用停止していない・購入／チャージ／返金の記録がある
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
   # ==================== Charge ====================
   /v1/user/{user_id}/charge:
@@ -855,6 +900,97 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /v1/user/{user_id}/hide:
+    post:
+      tags: [member]
+      summary: 停止中の人を一覧から非表示にする
+      description: |
+        停止中で、残高が 0 の人を一覧から隠す。記録は何も消さない。
+        残高が残っている人（未返金）は非表示にできない（先に返金する）。
+      operationId: hideMember
+      security:
+        - adminBasicAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberDoneResponse"
+        "400":
+          description: 学籍番号の形式が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: ユーザーが登録されていない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: 利用停止していない・残高が残っている・すでに非表示
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/user/{user_id}/unhide:
+    post:
+      tags: [member]
+      summary: 非表示の解除
+      description: |
+        非表示にした人を、停止中の一覧に戻す。
+      operationId: unhideMember
+      security:
+        - adminBasicAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberDoneResponse"
+        "400":
+          description: 学籍番号の形式が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: ユーザーが登録されていない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: 非表示にしていない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /v1/admin/verify:
     get:
       tags: [admin]
@@ -1317,7 +1453,7 @@ components:
             $ref: "#/components/schemas/Member"
     Member:
       type: object
-      required: [user_id, user_name, balance, status, stopped_at, has_payment_card, unrefunded, graduation_candidate]
+      required: [user_id, user_name, balance, status, stopped_at, has_payment_card, unrefunded, graduation_candidate, hidden, deletable]
       properties:
         user_id:
           type: string
@@ -1345,6 +1481,12 @@ components:
         graduation_candidate:
           type: boolean
           description: 年度末の卒業候補か（使える人のうち、入学から4年以上たった人）
+        hidden:
+          type: boolean
+          description: 一覧から非表示にした人か（停止中で残高 0 の人だけがなれる）
+        deletable:
+          type: boolean
+          description: 削除できる人か（停止中で、購入・チャージ・返金の記録が1件もない）
     RefundResponse:
       type: object
       required: [status, user_id, refunded_amount]
@@ -1370,6 +1512,15 @@ components:
           type: integer
           description: 止めたあとに残っている残高
     ResumeMemberResponse:
+      type: object
+      required: [status, user_id]
+      properties:
+        status:
+          type: string
+          example: success
+        user_id:
+          type: string
+    MemberDoneResponse:
       type: object
       required: [status, user_id]
       properties:
