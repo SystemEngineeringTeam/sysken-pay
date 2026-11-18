@@ -31,7 +31,7 @@ export function BarcodeReader({ mode, onScan, placeholder, error }: BarcodeReade
   const defaultPlaceholder =
     mode === "product"
       ? "商品のバーコードをかざしてください"
-      : "学生証のナンバーをかざしてください";
+      : "シス研Payのバーコードをかざしてください";
 
   const modeIcon =
     mode === "product" ? "/icons/Barcord.svg" : "/icons/MemberCard.svg";
