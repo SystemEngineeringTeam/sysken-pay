@@ -17,3 +17,9 @@ describe("toPurchaseErrorMessage", () => {
     expect(toPurchaseErrorMessage("unknown")).toBe("購入に失敗しました");
   });
 });
+
+describe("toPurchaseErrorMessage（利用停止）", () => {
+  it("user stopped は利用停止の文", () => {
+    expect(toPurchaseErrorMessage(new Error("user stopped"))).toBe("利用停止されています。役員に伝えてください。");
+  });
+});

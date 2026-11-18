@@ -12,6 +12,9 @@ export default function AdminUserMenu(): JSX.Element {
     <div className={styles.container}>
       <Header title="ユーザー設定" />
       <div className={styles.content}>
+        <Button size="lg" onClick={() => navigate("/admin/user-list")}>
+          一覧
+        </Button>
         <Button size="lg" onClick={() => navigate("/admin/user-register")}>
           登録
         </Button>

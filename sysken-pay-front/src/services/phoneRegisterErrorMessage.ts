@@ -4,6 +4,8 @@ import { ApiError } from "../adapter/api/ApiError";
 export const toPhoneRegisterErrorMessage = (e: unknown): string => {
   if (e instanceof ApiError) {
     switch (e.status) {
+      case 403:
+        return "このユーザーは利用停止しています。「ユーザー一覧」から「利用を再開」してください。";
       case 404:
         return "登録されていない学生証です。先にユーザー登録をしてください。";
       case 400:

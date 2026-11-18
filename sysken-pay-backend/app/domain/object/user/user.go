@@ -14,6 +14,9 @@ var userIDPattern = regexp.MustCompile(`^\d{2}[A-Za-z]\d+$`)
 // ErrUserAlreadyExists は同じIDのユーザーが既に登録されている場合に返されます。
 var ErrUserAlreadyExists = errors.New("user already exists")
 
+// ErrUserStopped はユーザーが利用停止している（退部・卒業）ことを表す（API では 403）
+var ErrUserStopped = errors.New("user stopped")
+
 //TODO モデル（データベースに入れる型を宣言する）
 //データベースの制約通りになるようにエラーハンドリングをガチる
 //ユーザーID、名前、作成日時、更新日時など

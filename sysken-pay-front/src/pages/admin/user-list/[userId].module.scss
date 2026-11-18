@@ -1,0 +1,178 @@
+.container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.notFound {
+  margin: 10rem 0 0;
+  font-size: 3rem;
+  color: $gray-70;
+  text-align: center;
+}
+
+.message {
+  margin: 2rem 4rem 0;
+  padding: 1.2rem 2rem;
+  border-radius: 1rem;
+  font-size: 2.4rem;
+  font-weight: $bold;
+  text-align: center;
+}
+
+.messageOk {
+  background-color: rgba(83, 152, 225, 0.1);
+  border: 0.15rem solid $blue-40;
+  color: $blue-40;
+}
+
+.messageError {
+  background-color: $red-10;
+  border: 0.15rem solid $red-100;
+  color: $red-100;
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  gap: 3rem;
+  padding: 2.5rem 4rem 3rem;
+  min-height: 0;
+}
+
+// 左：その人の情報
+.card {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  // 左下の「戻る」ボタンと重ならないように、下を空ける
+  margin-bottom: 8.5rem;
+  padding: 2.5rem 3rem;
+  border: 0.1rem solid $gray-10;
+  border-radius: 2rem;
+  background-color: $white;
+  box-shadow: 0 0.4rem 1.4rem $shadow-40;
+}
+
+.cardHead {
+  display: flex;
+  gap: 1.2rem;
+}
+
+.status,
+.unrefunded {
+  padding: 0.6rem 1.8rem;
+  border-radius: 999px;
+  font-size: 2.2rem;
+  font-weight: $bold;
+}
+
+.statusActive {
+  background-color: rgba(83, 152, 225, 0.12);
+  color: $blue-40;
+}
+
+.statusStopped {
+  background-color: $gray-10;
+  color: $gray-70;
+}
+
+.unrefunded {
+  background-color: $red-10;
+  color: $red-100;
+}
+
+.name {
+  margin: 1.6rem 0 0;
+  font-size: 3rem;
+  font-weight: $extra-bold;
+  color: $gray-100;
+  overflow-wrap: anywhere;
+}
+
+.id {
+  margin: 0.6rem 0 0;
+  font-size: 2.4rem;
+  color: $gray-70;
+}
+
+.balanceBox {
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
+  margin-top: auto;
+  padding-top: 2rem;
+}
+
+.balanceLabel {
+  font-size: 2.6rem;
+  font-weight: $bold;
+  color: $gray-70;
+}
+
+.balance {
+  font-size: 5.2rem;
+  font-weight: $extra-bold;
+  color: $blue-40;
+}
+
+.meta {
+  margin: 1rem 0 0;
+  font-size: 2rem;
+  color: $gray-70;
+}
+
+// 右：操作のボタン
+.actions {
+  flex: 0 0 46rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+.action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-height: 8rem;
+  border-radius: 1.6rem;
+  font-size: 3rem;
+  font-weight: $bold;
+  border: 0.2rem solid transparent;
+
+  &:active {
+    transform: scale(0.98);
+  }
+
+  &:disabled {
+    opacity: 0.4;
+  }
+}
+
+.sub {
+  font-size: 2rem;
+  font-weight: $medium;
+  opacity: 0.85;
+}
+
+.primary {
+  background-color: $blue-40;
+  color: $white;
+}
+
+.danger {
+  background-color: $white;
+  color: $red-100;
+  border-color: $red-100;
+}
+
+.outline {
+  background-color: $white;
+  color: $blue-40;
+  border-color: $blue-40;
+}

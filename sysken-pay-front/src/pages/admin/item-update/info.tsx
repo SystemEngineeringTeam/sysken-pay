@@ -67,7 +67,7 @@ export default function ItemUpdateInfoPage(): JSX.Element {
       <div className={styles.buttonWrapper}>
         <Button size="md" onClick={handleRegister}>更新</Button>
       </div>
-      <ArrowButton variant="prev" onClick={() => navigate("/admin/item-update")}>
+      <ArrowButton variant="prev" onClick={() => navigate(-1)}>
         戻る
       </ArrowButton>
       {showModal && (

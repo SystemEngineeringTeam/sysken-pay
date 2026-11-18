@@ -19,4 +19,8 @@ type UserRepository interface {
 	// ユーザー情報を更新して保存する
 	// 保存に成功した場合は保存したユーザーを返す
 	UpdateUser(ctx context.Context, u *user.User) (*user.User, error)
+
+	// IsStopped はユーザーが利用停止しているか（GetUserByID で見つからなかったときに、理由を確かめるため）。
+	// ユーザーがいなければ false
+	IsStopped(ctx context.Context, userID string) (bool, error)
 }

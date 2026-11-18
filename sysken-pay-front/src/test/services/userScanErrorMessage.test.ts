@@ -20,3 +20,9 @@ describe("toUserScanErrorMessage", () => {
     expect(toUserScanErrorMessage(new TypeError("Failed to fetch"))).toBe("ユーザーの取得に失敗しました");
   });
 });
+
+describe("toUserScanErrorMessage（利用停止）", () => {
+  it("403 は利用停止の文", () => {
+    expect(toUserScanErrorMessage(new ApiError("user stopped", 403))).toBe("利用停止されています。役員に伝えてください。");
+  });
+});

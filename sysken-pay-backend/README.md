@@ -89,6 +89,7 @@ make migrate FILE=db/migrations/001_payment_card.sql
 |---|---|
 | `001_payment_card.sql` | 支払い用バーコードの表（`docs/phone-payment.md`） |
 | `002_payment_card_claim.sql` | 発行用 QR の表（同上） |
+| `003_refund.sql` | 返金の表（`docs/phone-payment.md` の「ユーザー一覧」） |
 
 ## テスト
 

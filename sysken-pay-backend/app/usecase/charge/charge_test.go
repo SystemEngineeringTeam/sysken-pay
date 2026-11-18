@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	domaincharge "sysken-pay-api/app/domain/object/charge"
+	domainmember "sysken-pay-api/app/domain/object/member"
 )
 
 // --- mock ---
@@ -23,6 +24,25 @@ func (m *mockChargeRepo) ChargeCancel(ctx context.Context, c *domaincharge.Charg
 	return m.chargeCancelFunc(ctx, c)
 }
 
+type mockMemberRepo struct {
+	status domainmember.Status
+	found  bool
+}
+
+func (m *mockMemberRepo) ListMembers(context.Context) ([]*domainmember.Summary, error) {
+	return nil, nil
+}
+func (m *mockMemberRepo) LockMember(context.Context, string) (domainmember.Status, bool, error) {
+	return m.status, m.found, nil
+}
+func (m *mockMemberRepo) Stop(context.Context, string) error              { return nil }
+func (m *mockMemberRepo) Resume(context.Context, string) error            { return nil }
+func (m *mockMemberRepo) InsertRefund(context.Context, string, int) error { return nil }
+
+func activeMember() *mockMemberRepo {
+	return &mockMemberRepo{status: domainmember.StatusActive, found: true}
+}
+
 // --- ChargeAmount ---
 
 func TestChargeAmount_Success(t *testing.T) {
@@ -32,7 +52,7 @@ func TestChargeAmount_Success(t *testing.T) {
 			return c, nil
 		},
 	}
-	uc := NewChargeAmountUseCase(repo)
+	uc := NewChargeAmountUseCase(repo, activeMember())
 	result, err := uc.ChargeAmount(context.Background(), "user-1", 1000)
 	if err != nil {
 		t.Fatalf("ChargeAmount should succeed: %v", err)
@@ -44,7 +64,7 @@ func TestChargeAmount_Success(t *testing.T) {
 
 func TestChargeAmount_InvalidAmount(t *testing.T) {
 	repo := &mockChargeRepo{}
-	uc := NewChargeAmountUseCase(repo)
+	uc := NewChargeAmountUseCase(repo, activeMember())
 	if _, err := uc.ChargeAmount(context.Background(), "user-1", 300); err == nil {
 		t.Error("ChargeAmount with invalid amount should fail")
 	}
@@ -52,7 +72,7 @@ func TestChargeAmount_InvalidAmount(t *testing.T) {
 
 func TestChargeAmount_EmptyUserID(t *testing.T) {
 	repo := &mockChargeRepo{}
-	uc := NewChargeAmountUseCase(repo)
+	uc := NewChargeAmountUseCase(repo, activeMember())
 	if _, err := uc.ChargeAmount(context.Background(), "", 1000); err == nil {
 		t.Error("ChargeAmount with empty userID should fail")
 	}
@@ -64,7 +84,7 @@ func TestChargeAmount_RepoError(t *testing.T) {
 			return nil, errors.New("db error")
 		},
 	}
-	uc := NewChargeAmountUseCase(repo)
+	uc := NewChargeAmountUseCase(repo, activeMember())
 	if _, err := uc.ChargeAmount(context.Background(), "user-1", 1000); err == nil {
 		t.Error("ChargeAmount should propagate repo error")
 	}
@@ -77,7 +97,7 @@ func TestChargeAmount_AllAllowedAmounts(t *testing.T) {
 				return c, nil
 			},
 		}
-		uc := NewChargeAmountUseCase(repo)
+		uc := NewChargeAmountUseCase(repo, activeMember())
 		if _, err := uc.ChargeAmount(context.Background(), "user-1", amount); err != nil {
 			t.Errorf("ChargeAmount(%d) should succeed: %v", amount, err)
 		}
@@ -128,5 +148,30 @@ func TestChargeCancel_RepoError(t *testing.T) {
 	uc := NewChargeCancelUseCase(repo)
 	if _, err := uc.ChargeCancel(context.Background(), "user-1", 1000); err == nil {
 		t.Error("ChargeCancel should propagate repo error")
+	}
+}
+
+func TestChargeAmount_StoppedOrMissingUser(t *testing.T) {
+	called := false
+	repo := &mockChargeRepo{
+		chargeAmountFunc: func(_ context.Context, c *domaincharge.Charge) (*domaincharge.Charge, error) {
+			called = true
+			return c, nil
+		},
+	}
+	for name, tc := range map[string]struct {
+		m    *mockMemberRepo
+		want error
+	}{
+		"利用停止した人": {&mockMemberRepo{status: domainmember.StatusStopped, found: true}, ErrUserStopped},
+		"いない人":    {&mockMemberRepo{found: false}, ErrUserNotFound},
+	} {
+		m := tc.m
+		if _, err := NewChargeAmountUseCase(repo, m).ChargeAmount(context.Background(), "22K01234", 1000); !errors.Is(err, tc.want) {
+			t.Errorf("%s: err = %v", name, err)
+		}
+	}
+	if called {
+		t.Error("利用停止した人・いない人にチャージした")
 	}
 }

@@ -7,6 +7,7 @@ import (
 
 	domainbalance "sysken-pay-api/app/domain/object/balance"
 	domainitem "sysken-pay-api/app/domain/object/item"
+	domainmember "sysken-pay-api/app/domain/object/member"
 	domainpurchase "sysken-pay-api/app/domain/object/purchase"
 )
 
@@ -30,7 +31,7 @@ type mockItemRepo struct {
 	getByJanCodeFunc func(ctx context.Context, janCode string) (*domainitem.Item, error)
 	insertFunc       func(ctx context.Context, item *domainitem.Item) (*domainitem.Item, error)
 	updateFunc       func(ctx context.Context, item *domainitem.Item) (*domainitem.Item, error)
-	getAllFunc        func(ctx context.Context) ([]*domainitem.Item, error)
+	getAllFunc       func(ctx context.Context) ([]*domainitem.Item, error)
 }
 
 func (m *mockItemRepo) GetItemByID(ctx context.Context, id int) (*domainitem.Item, error) {
@@ -50,8 +51,8 @@ func (m *mockItemRepo) GetAllItems(ctx context.Context) ([]*domainitem.Item, err
 }
 
 type mockBalanceRepo struct {
-	getBalanceFunc          func(ctx context.Context, userID string) (*domainbalance.Balance, error)
-	getPurchaseHistoryFunc  func(ctx context.Context, userID string, limit, offset int) ([]*domainbalance.PurchaseHistory, int, int, error)
+	getBalanceFunc         func(ctx context.Context, userID string) (*domainbalance.Balance, error)
+	getPurchaseHistoryFunc func(ctx context.Context, userID string, limit, offset int) ([]*domainbalance.PurchaseHistory, int, int, error)
 }
 
 func (m *mockBalanceRepo) GetBalance(ctx context.Context, userID string) (*domainbalance.Balance, error) {
@@ -59,6 +60,26 @@ func (m *mockBalanceRepo) GetBalance(ctx context.Context, userID string) (*domai
 }
 func (m *mockBalanceRepo) GetPurchaseHistories(ctx context.Context, userID string, limit, offset int) ([]*domainbalance.PurchaseHistory, int, int, error) {
 	return m.getPurchaseHistoryFunc(ctx, userID, limit, offset)
+}
+
+// mockMemberRepo は購入する人の状態だけを返す
+type mockMemberRepo struct {
+	status domainmember.Status
+	found  bool
+}
+
+func (m *mockMemberRepo) ListMembers(context.Context) ([]*domainmember.Summary, error) {
+	return nil, nil
+}
+func (m *mockMemberRepo) LockMember(context.Context, string) (domainmember.Status, bool, error) {
+	return m.status, m.found, nil
+}
+func (m *mockMemberRepo) Stop(context.Context, string) error              { return nil }
+func (m *mockMemberRepo) Resume(context.Context, string) error            { return nil }
+func (m *mockMemberRepo) InsertRefund(context.Context, string, int) error { return nil }
+
+func activeMember() *mockMemberRepo {
+	return &mockMemberRepo{status: domainmember.StatusActive, found: true}
 }
 
 type mockTxManager struct{}
@@ -100,7 +121,7 @@ func TestCreatePurchase_Success(t *testing.T) {
 		},
 	}
 
-	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, &mockTxManager{})
+	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, activeMember(), &mockTxManager{})
 	result, err := uc.CreatePurchase(context.Background(), "user-1", inputs)
 	if err != nil {
 		t.Fatalf("CreatePurchase should succeed: %v", err)
@@ -130,7 +151,7 @@ func TestCreatePurchase_InsufficientBalance(t *testing.T) {
 		},
 	}
 
-	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, &mockTxManager{})
+	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, activeMember(), &mockTxManager{})
 	_, err := uc.CreatePurchase(context.Background(), "user-1", inputs)
 	if err == nil {
 		t.Fatal("CreatePurchase should fail with insufficient balance")
@@ -150,7 +171,7 @@ func TestCreatePurchase_EmptyUserID(t *testing.T) {
 	balanceRepo := &mockBalanceRepo{}
 	purchaseRepo := &mockPurchaseRepo{}
 
-	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, &mockTxManager{})
+	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, activeMember(), &mockTxManager{})
 	if _, err := uc.CreatePurchase(context.Background(), "", inputs); err == nil {
 		t.Error("CreatePurchase with empty userID should fail")
 	}
@@ -161,7 +182,7 @@ func TestCreatePurchase_EmptyItems(t *testing.T) {
 	balanceRepo := &mockBalanceRepo{}
 	purchaseRepo := &mockPurchaseRepo{}
 
-	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, &mockTxManager{})
+	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, activeMember(), &mockTxManager{})
 	if _, err := uc.CreatePurchase(context.Background(), "user-1", []PurchaseItemInput{}); err == nil {
 		t.Error("CreatePurchase with empty items should fail")
 	}
@@ -173,7 +194,7 @@ func TestCreatePurchase_InvalidItemID(t *testing.T) {
 	balanceRepo := &mockBalanceRepo{}
 	purchaseRepo := &mockPurchaseRepo{}
 
-	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, &mockTxManager{})
+	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, activeMember(), &mockTxManager{})
 	if _, err := uc.CreatePurchase(context.Background(), "user-1", inputs); err == nil {
 		t.Error("CreatePurchase with itemID=0 should fail")
 	}
@@ -189,7 +210,7 @@ func TestCreatePurchase_ItemRepoError(t *testing.T) {
 	balanceRepo := &mockBalanceRepo{}
 	purchaseRepo := &mockPurchaseRepo{}
 
-	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, &mockTxManager{})
+	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, activeMember(), &mockTxManager{})
 	if _, err := uc.CreatePurchase(context.Background(), "user-1", inputs); err == nil {
 		t.Error("CreatePurchase should propagate item repo error")
 	}
@@ -207,7 +228,7 @@ func TestCreatePurchase_ItemNotFound(t *testing.T) {
 	balanceRepo := &mockBalanceRepo{}
 	purchaseRepo := &mockPurchaseRepo{}
 
-	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, &mockTxManager{})
+	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, activeMember(), &mockTxManager{})
 	if _, err := uc.CreatePurchase(context.Background(), "user-1", inputs); !errors.Is(err, ErrItemNotFound) {
 		t.Errorf("CreatePurchase with missing item should return ErrItemNotFound, got: %v", err)
 	}
@@ -231,7 +252,7 @@ func TestCreatePurchase_PurchaseRepoError(t *testing.T) {
 		},
 	}
 
-	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, &mockTxManager{})
+	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, activeMember(), &mockTxManager{})
 	if _, err := uc.CreatePurchase(context.Background(), "user-1", inputs); err == nil {
 		t.Error("CreatePurchase should propagate purchase repo error")
 	}
@@ -256,7 +277,7 @@ func TestCreatePurchase_BalanceExactlyEnough(t *testing.T) {
 		},
 	}
 
-	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, &mockTxManager{})
+	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, activeMember(), &mockTxManager{})
 	if _, err := uc.CreatePurchase(context.Background(), "user-1", inputs); err != nil {
 		t.Errorf("CreatePurchase with exact balance should succeed: %v", err)
 	}
@@ -325,3 +346,37 @@ func TestCancelPurchase_RepoError(t *testing.T) {
 	}
 }
 
+func TestCreatePurchase_StoppedOrMissingUser(t *testing.T) {
+	inputs := []PurchaseItemInput{{ItemID: 1, Quantity: 1}}
+	itemRepo := &mockItemRepo{
+		getByIDFunc: func(_ context.Context, id int) (*domainitem.Item, error) { return newTestItem(200), nil },
+	}
+	balanceRepo := &mockBalanceRepo{
+		getBalanceFunc: func(_ context.Context, userID string) (*domainbalance.Balance, error) {
+			return newTestBalance(userID, 1000), nil
+		},
+	}
+	called := false
+	purchaseRepo := &mockPurchaseRepo{
+		createFunc: func(_ context.Context, p *domainpurchase.Purchase) (*domainpurchase.Purchase, error) {
+			called = true
+			return p, nil
+		},
+	}
+	for name, tc := range map[string]struct {
+		m    *mockMemberRepo
+		want error
+	}{
+		"利用停止した人": {&mockMemberRepo{status: domainmember.StatusStopped, found: true}, ErrUserStopped},
+		"いない人":    {&mockMemberRepo{found: false}, ErrUserNotFound},
+	} {
+		m := tc.m
+		uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, m, &mockTxManager{})
+		if _, err := uc.CreatePurchase(context.Background(), "22K01234", inputs); !errors.Is(err, tc.want) {
+			t.Errorf("%s: err = %v, want %v", name, err, tc.want)
+		}
+	}
+	if called {
+		t.Error("利用停止した人・いない人の購入を保存した")
+	}
+}

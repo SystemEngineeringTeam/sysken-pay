@@ -70,7 +70,7 @@ export default function UserUpdateNamePage(): JSX.Element {
           更新
         </Button>
       </div>
-      <ArrowButton variant="prev" onClick={() => navigate("/admin/user-update")}>
+      <ArrowButton variant="prev" onClick={() => navigate(-1)}>
         戻る
       </ArrowButton>
       {showModal && (

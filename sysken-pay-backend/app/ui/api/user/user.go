@@ -51,6 +51,10 @@ func (h *userHandlerImpl) GetUser(w http.ResponseWriter, r *http.Request) {
 	foundUser, err := h.getUserUseCase.GetUser(ctx, userID)
 	if err != nil {
 		log.Printf("Failed to get user: %v", err)
+		if errors.Is(err, domainuser.ErrUserStopped) {
+			apierrors.RespondError(w, http.StatusForbidden, "user stopped")
+			return
+		}
 		if errors.Is(err, user.ErrInvalidUserID) {
 			apierrors.RespondError(w, http.StatusBadRequest, err.Error())
 			return
