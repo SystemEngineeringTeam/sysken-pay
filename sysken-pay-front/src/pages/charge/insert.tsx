@@ -44,7 +44,7 @@ export default function ChargeInsertPage(): JSX.Element {
 
   return (
     <div className={styles.container}>
-      <Header title="チャージ金額" />
+      <Header title="チャージ金額" confirmHome />
       <div className={styles.content}>
         <div className={styles.instruction}>箱にお金を入れてください</div>
         <PriceLabel label="チャージ金額" price={chargeAmount} />

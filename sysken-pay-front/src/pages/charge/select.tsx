@@ -36,7 +36,7 @@ export default function ChargeSelectPage(): JSX.Element {
 
   return (
     <div className={styles.container}>
-      <Header title="チャージ金額" />
+      <Header title="チャージ金額" confirmHome />
       <div className={styles.content}>
         <div className={styles.inner}>
           <PriceLabel label="残高" price={balance} />

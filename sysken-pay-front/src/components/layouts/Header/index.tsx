@@ -7,9 +7,11 @@ interface HeaderProps {
   title: string;
   right?: "setting" | "toTop" | "none";
   shadow?: boolean;
+  /** アイコンを押したときに確認を出す（右上が「最初に戻る」の画面は、指定しなくても出す） */
+  confirmHome?: boolean;
 }
 
-function Header({ title, right = "none", shadow = false }: HeaderProps): JSX.Element {
+function Header({ title, right = "none", shadow = false, confirmHome = false }: HeaderProps): JSX.Element {
   const [showConfirm, setShowConfirm] = useState(false);
   const navigate = useNavigate();
 
@@ -18,13 +20,21 @@ function Header({ title, right = "none", shadow = false }: HeaderProps): JSX.Ele
     navigate("/");
   }
 
+  // アイコンでホームへ。購入・チャージの途中は確認を出す
+  const handleIconClick = () => {
+    if (right === "toTop" || confirmHome) setShowConfirm(true);
+    else navigate("/");
+  };
+
   return (
     <div
       className={styles.header}
       style={{ boxShadow: shadow ? "0 1.8px 9px 0 #17223330" : "none" }}
     >
       <div className={styles.left}>
-        <img src="/icons/Sysken.png" alt="Icon" className={styles.icon} />
+        <button type="button" className={styles.iconButton} onClick={handleIconClick} aria-label="ホームに戻る">
+          <img src="/icons/Sysken.png" alt="" className={styles.icon} />
+        </button>
         <h1 className={styles.title}>{title}</h1>
       </div>
       {right === "setting" && (
