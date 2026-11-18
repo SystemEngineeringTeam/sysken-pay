@@ -16,11 +16,13 @@ import (
 	api_balance "sysken-pay-api/app/ui/api/balance"
 	api_charge "sysken-pay-api/app/ui/api/charge"
 	api_item "sysken-pay-api/app/ui/api/item"
+	api_paymentcard "sysken-pay-api/app/ui/api/paymentcard"
 	api_purchase "sysken-pay-api/app/ui/api/purchase"
 	api_user "sysken-pay-api/app/ui/api/user"
 	"sysken-pay-api/app/usecase/balance"
 	"sysken-pay-api/app/usecase/charge"
 	"sysken-pay-api/app/usecase/item"
+	"sysken-pay-api/app/usecase/paymentcard"
 	"sysken-pay-api/app/usecase/purchase"
 	"sysken-pay-api/app/usecase/user"
 	"time"
@@ -49,6 +51,7 @@ func Run(db *sql.DB) error {
 	chargeRepo := repository.NewChargeRepository(db)
 	purchaseRepo := repository.NewPurchaseRepository(db)
 	balanceRepo := repository.NewBalanceRepository(db)
+	paymentCardRepo := repository.NewPaymentCardRepository(db)
 
 	// UseCase
 	getUserUseCase := user.NewGetUserUseCase(userRepo)
@@ -64,6 +67,8 @@ func Run(db *sql.DB) error {
 	cancelPurchaseUseCase := purchase.NewCancelPurchaseUseCase(purchaseRepo)
 	getBalanceUseCase := balance.NewGetBalanceUseCase(balanceRepo)
 	getPurchaseHistoriesUseCase := balance.NewGetPurchaseHistoriesUseCase(balanceRepo)
+	issuePaymentCardUseCase := paymentcard.NewIssueUseCase(userRepo, paymentCardRepo, txManager)
+	resolvePaymentCardUseCase := paymentcard.NewResolveUseCase(userRepo, paymentCardRepo)
 
 	// Handler
 	userHandler := api_user.NewUserHandler(getUserUseCase, registerUserUseCase, updateUserUseCase)
@@ -71,12 +76,15 @@ func Run(db *sql.DB) error {
 	chargeHandler := api_charge.NewChargeHandler(chargeAmountUseCase, chargeCancelUseCase)
 	purchaseHandler := api_purchase.NewPurchaseHandler(createPurchaseUseCase, cancelPurchaseUseCase)
 	balanceHandler := api_balance.NewBalanceHandler(getBalanceUseCase, getPurchaseHistoriesUseCase)
+	paymentCardHandler := api_paymentcard.NewHandler(issuePaymentCardUseCase, resolvePaymentCardUseCase)
 	r := newRouter(handlers{
 		user:     userHandler,
 		item:     itemHandler,
 		charge:   chargeHandler,
 		purchase: purchaseHandler,
 		balance:  balanceHandler,
+
+		paymentCard: paymentCardHandler,
 	}, routerConfig{
 		adminUser:      config.AdminUser(),
 		adminPassword:  config.AdminPassword(),

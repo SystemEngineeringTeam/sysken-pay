@@ -177,6 +177,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/user/{user_id}/payment-card": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 支払い用バーコードの発行（作り直し）
+         * @description 支払い用バーコードを発行する。すでに使えるものがあれば使えなくしてから新しく発行する（作り直し）。
+         *     `code` はこのレスポンスでしか取り出せない（DB にはハッシュだけを保存する）。
+         */
+        post: operations["issuePaymentCard"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payment-card/resolve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 支払い用バーコードの照合
+         * @description 読み取った支払い用バーコードから持ち主を返す。中身はアクセスログに残さないため、URL ではなく本文で送る。
+         *     空白・ハイフン・小文字は取り除いてから照合する（4文字ずつ区切った表示を手で入力した場合のため）。
+         *     短い時間に失敗が続くと、しばらく 429 を返す。
+         */
+        post: operations["resolvePaymentCard"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/admin/verify": {
         parameters: {
             query?: never;
@@ -437,6 +480,39 @@ export interface components {
             /** @description 合計金額 */
             total?: number;
             page?: components["schemas"]["PageInfo"];
+        };
+        IssuePaymentCardResponse: {
+            /** @example success */
+            status: string;
+            /** @example 24K01234 */
+            user_id: string;
+            /** @example シス研太郎 */
+            user_name: string;
+            /**
+             * @description 支払い用バーコードの中身（SP + 16文字）。このレスポンスでしか取り出せない
+             * @example SP7Q2KX9MDRA4TW8YZ
+             */
+            code: string;
+            /**
+             * @description 画面に出す見やすい形
+             * @example SP 7Q2K X9MD RA4T W8YZ
+             */
+            display_code: string;
+        };
+        ResolvePaymentCardRequest: {
+            /**
+             * @description 読み取った支払い用バーコード
+             * @example SP7Q2KX9MDRA4TW8YZ
+             */
+            code: string;
+        };
+        ResolvePaymentCardResponse: {
+            /** @example success */
+            status: string;
+            /** @example 24K01234 */
+            user_id: string;
+            /** @example シス研太郎 */
+            user_name: string;
         };
         ErrorResponse: {
             /** @example error */
@@ -1040,6 +1116,117 @@ export interface operations {
             };
             /** @description 商品が存在しない */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    issuePaymentCard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
+                user_id: components["parameters"]["UserId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 発行成功 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IssuePaymentCardResponse"];
+                };
+            };
+            /** @description 学籍番号の形式が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description ユーザーが登録されていない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    resolvePaymentCard: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ResolvePaymentCardRequest"];
+            };
+        };
+        responses: {
+            /** @description 照合成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResolvePaymentCardResponse"];
+                };
+            };
+            /** @description 形式が不正（支払い用バーコードではない） */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 存在しない、または使えなくなった支払い用バーコード */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 失敗が続いたため、しばらく受け付けない */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
