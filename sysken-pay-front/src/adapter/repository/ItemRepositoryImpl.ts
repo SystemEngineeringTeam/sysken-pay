@@ -1,4 +1,5 @@
 import { apiClient } from "../api/client";
+import { ApiError } from "../api/ApiError";
 import type { components } from "../../types/api-schema";
 
 export const ItemRepositoryImpl = {
@@ -9,10 +10,11 @@ export const ItemRepositoryImpl = {
   },
 
   getItemByJanCode: async (janCode: string) => {
-    const { data, error } = await apiClient.GET("/v1/item/{jan_code}", {
+    const { data, error, response } = await apiClient.GET("/v1/item/{jan_code}", {
       params: { path: { jan_code: janCode } },
     });
-    if (error) throw new Error(error.message);
+    // 404（未登録）と 400（読み取りミス）を画面で区別できるように、ステータスを付けて投げる
+    if (error) throw new ApiError(error.message ?? "商品の取得に失敗しました", response.status);
     return data;
   },
 

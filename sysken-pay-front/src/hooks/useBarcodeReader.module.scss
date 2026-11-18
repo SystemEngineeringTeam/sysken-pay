@@ -1,23 +1,25 @@
+// 読み取りエラーの表示。下部のボタン（チャージ・戻る）に重ならない高さに、不透明な背景で出す
 .error {
   position: fixed;
-  bottom: 3.5rem;
+  bottom: 14rem;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  background-color: $red-10;
+  background-color: #fdecec; // $red-10 を白の上に重ねた色（透けるとボタンの文字と重なって読めない）
   border: 0.125rem solid $red-100;
   border-radius: 1rem;
   color: $red-100;
-  font-size: 1.4rem;
+  font-size: 2rem;
   font-weight: $bold;
   text-align: center;
   padding: 1.25rem 2rem;
   margin: 0;
-  width: fit-content;
+  width: max-content; // left: 50% の要素は幅が半分に縮むので、文の長さに合わせる
   max-width: calc(100% - 4rem);
   box-sizing: border-box;
-  z-index: 10;
+  z-index: 100;
+  box-shadow: 0 0.25rem 1rem $shadow-40;
   animation: fadeIn 0.2s ease-out;
   will-change: opacity, transform;
 }

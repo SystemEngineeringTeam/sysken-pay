@@ -8,6 +8,7 @@ import { PriceLabel } from "../../components/ui/PriceLabel";
 import { Input } from "../../components/ui/Input";
 import { useBalanceStore } from "../../store/useBalanceStore";
 import { useChargeStore } from "../../store/useChargeStore";
+import { chargeAmountsLabel, isChargeAmount } from "../../services/chargeAmounts";
 import styles from "./select.module.scss";
 
 export default function ChargeSelectPage(): JSX.Element {
@@ -24,8 +25,8 @@ export default function ChargeSelectPage(): JSX.Element {
 
   const handleNext = () => {
     const normalizedChargeAmount = Number(chargeAmount.replace(/[^\d]/g, ""));
-    if (!normalizedChargeAmount || normalizedChargeAmount < 1) {
-      setErrorMessage("1円以上の金額を入力または選択してください");
+    if (!isChargeAmount(normalizedChargeAmount)) {
+      setErrorMessage(`${chargeAmountsLabel}から選んでください`);
       return;
     }
     setErrorMessage("");
