@@ -54,7 +54,6 @@ src/
 │   └── admin/
 │       ├── index.tsx           # /admin パスワード認証
 │       ├── menu.tsx            # /admin/menu メニュー（ユーザー設定・商品設定）
-│       ├── dashboard.tsx       # /admin/dashboard
 │       ├── user-register/
 │       │   ├── index.tsx       # /admin/user-register 学生証スキャン
 │       │   └── name.tsx        # /admin/user-register/name 氏名入力・登録
