@@ -32,4 +32,5 @@ go vet ./...
 ## Claude Code 固有の補足
 
 - AGENTS.md の安全ルール1（破壊的コマンド）は、`.claude/settings.json` の `permissions.deny` と `.claude/hooks/deny_dangerous_bash.py`（PreToolUse hook）で**強制**される。hook を変更したら `python3 .claude/hooks/test_deny_dangerous_bash.py` を必ず実行する
-- ランブック（safe-rollback / go-live-checklist / project-health-check）と、画面作業用の pi-display-ui、起票用の github-task-intake はスキルとして自動発動する（一覧は `.claude/skills/README.md`）
+- スキルはフロントとバックで分けて置いている。フロントは `sysken-pay-front/.claude/skills/`（`front-*`）、バックは `sysken-pay-backend/.claude/skills/`（`back-*`）。それぞれのディレクトリで Claude Code を開くと、そちらの CLAUDE.md・settings.json・スキルが使われる
+- hook 本体（`.claude/hooks/`）はリポジトリ直下の1か所にあり、フロント・バックの settings.json からも `../.claude/hooks/` を参照している

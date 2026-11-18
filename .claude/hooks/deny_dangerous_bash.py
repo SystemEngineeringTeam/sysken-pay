@@ -180,12 +180,12 @@ def check_segment(segment):
             if any(re.fullmatch(r"-[A-Za-z]*f[A-Za-z]*", t) for t in rest) or has_opt(
                 rest, r"--for(c(e.*)?)?"
             ):
-                return "force push はリモートの履歴を書き換えるためブロックしています。取り消しは git revert で行ってください（safe-rollback スキル参照）。"
+                return "force push はリモートの履歴を書き換えるためブロックしています。取り消しは git revert で行ってください（front-safe-rollback / back-safe-rollback スキル参照）。"
             # refspecの `+` プレフィックス（git push origin +main）も強制pushになる
             if any(t.startswith("+") for t in after if not t.startswith("-")):
                 return "refspecの + プレフィックスは force push と同じ意味のためブロックしています。取り消しは git revert で行ってください。"
         if sub == "reset" and has_opt(rest, r"--har?d?"):  # --ha / --har / --hard
-            return "git reset --hard は作業内容を完全に消すためブロックしています。復旧は safe-rollback スキルの手順（退避→revert）で行ってください。"
+            return "git reset --hard は作業内容を完全に消すためブロックしています。復旧は front-safe-rollback / back-safe-rollback スキルの手順（退避→revert）で行ってください。"
         if sub == "clean":
             return "git clean は未追跡ファイルを削除するためブロックしています。不要ファイルは個別に削除してください。"
         if sub == "branch":
@@ -203,7 +203,7 @@ def check_segment(segment):
                 if t.startswith("-"):
                     continue
                 if t in ("clear", "drop"):
-                    return "git stash の clear/drop は退避した作業を消すためブロックしています。stashは残したままにしてください（safe-rollback スキル参照）。"
+                    return "git stash の clear/drop は退避した作業を消すためブロックしています。stashは残したままにしてください（front-safe-rollback / back-safe-rollback スキル参照）。"
                 break
 
     # 秘密情報ファイルの読み取り・複製（Readツールのdenyと対になる検査）。

@@ -1,15 +1,15 @@
 ---
-name: pi-display-ui
+name: front-pi-display-ui
 description: フロントエンド（sysken-pay-front）の画面レイアウト・文字サイズ・ボタン・配色・文言など、見た目を追加・変更するときに使う。「画面を作って」「レイアウトを直して」「ボタンを大きくして」「はみ出してる」「ラズパイで見ると崩れる」「新しいページを追加したい」といった依頼で発動する。ロジックだけの変更（store・hooks・API呼び出し・Goのバックエンド）で見た目に触れない場合は発動しない。
 ---
 
-# Pi Display UI（800x480 タッチ画面の UI 作業）
+# Front Pi Display UI（800x480 タッチ画面の UI 作業）
 
 シス研Pay は部室の **Raspberry Pi 5 + 5インチ DSI タッチモニター（800x480・横向き）** にキオスク表示して使う。PC のブラウザで良く見えても、実機では文字が小さすぎたり、ボタンが画面外に出たりする。UI を触るときは、実装の前後でこのスキルの手順を通す。
 
 ## 前提（画面サイズの仕組み）
 
-`sysken-pay-front/src/index.css` の冒頭で決めている。**ここを読んでから作業する**。
+`src/index.css` の冒頭で決めている。**ここを読んでから作業する**。
 
 - `--screen-width: 800px` / `--screen-height: 480px` / `--ui-scale: 0.5`
 - スタイルはすべて **rem 基準で、1600x960 のデザインを 0.5 倍** にして表示している（1rem = 8px）
@@ -40,7 +40,7 @@ description: フロントエンド（sysken-pay-front）の画面レイアウト
 
 確認は必須。「たぶん収まる」で終わらせない。
 
-1. `cd sysken-pay-front && pnpm dev`
+1. `pnpm dev`
 2. ブラウザで開くと 800x480 の枠が出るので、その中に収まっているか見る
    - Claude が自分で確認する場合は、Playwright（devDependencies に入っている）で `viewport: { width: 800, height: 480 }` のスクリーンショットを撮り、Read で画像を見る
 3. 見る点

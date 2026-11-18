@@ -19,9 +19,9 @@
 4. **安全網を弱めない**: `.claude/settings.json` の deny、`.claude/hooks/`、このファイルの安全ルールを黙って削除・緩和しない
 5. **テストを添える**: 新機能・修正にはテストを付ける（フロント: `src/test/`、バック: 各パッケージの `*_test.go`）。書けない変更は手動での確認方法を報告に書く
 6. **お金の計算は特に慎重に**: 金額・残高を変える処理は、二重送信・途中失敗（トランザクション）・負の値をテストで確かめる
-7. **壊れた・元に戻したいと言われたら**: `.claude/skills/safe-rollback/SKILL.md` に従う
-8. **本番運用・大きな変更の反映の前に**: `.claude/skills/go-live-checklist/SKILL.md` の監査を先に行う
-9. **定期点検を頼まれたら**: `.claude/skills/project-health-check/SKILL.md` に従う
+7. **壊れた・元に戻したいと言われたら**: 画面なら `sysken-pay-front/.claude/skills/front-safe-rollback/SKILL.md`、API・DB・残高なら `sysken-pay-backend/.claude/skills/back-safe-rollback/SKILL.md` に従う
+8. **本番運用・大きな変更の反映の前に**: `front-go-live-checklist` / `back-go-live-checklist`（変更した側。両方なら両方）の監査を先に行う
+9. **定期点検を頼まれたら**: `front-health-check` / `back-health-check` に従う（全体なら両方）
 
 ランブックはただの Markdown 手順書なので、Claude Code 以外のツールでも読んで従える。Claude Code 固有の機能（`/security-review`、AskUserQuestion 等）は、使えないツールでは同等の代替で読み替える。
 
@@ -31,7 +31,7 @@
 
 - レイヤー構成は `sysken-pay-front/src/docs/ARCHITECTURE.md` に従う（adapter → services → hooks → store → pages/components）
 - `src/types/api-schema.d.ts` と `src/router.ts` は自動生成。手で編集しない
-- **画面は 800x480 のタッチ画面**。長さは rem で書き、`100vh` / `100vw` を使わない。詳しくは `.claude/skills/pi-display-ui/SKILL.md`
+- **画面は 800x480 のタッチ画面**。長さは rem で書き、`100vh` / `100vw` を使わない。詳しくは `sysken-pay-front/.claude/skills/front-pi-display-ui/SKILL.md`
 - コードレビューの書式は `sysken-pay-front/.github/copilot-instructions.md`（[MUST] / [SHOULD] / [MAY]）
 
 ### バック
