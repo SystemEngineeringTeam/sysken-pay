@@ -145,10 +145,11 @@ cd ../sysken-pay-front
 pnpm install --frozen-lockfile       # ERR_PNPM_IGNORED_BUILDS が出ても続けてよい
 pnpm build                           # ✓ built と出ること
 sudo systemctl restart sysken-pay-front
+pkill -f chromium                    # キオスクの画面を新しい版で開き直す（2秒後に自動で開き直される）
 ```
 
 - DB の表が増える変更（`db/migrations/` にファイルが増えた）ときは、`docker compose up` の前に `make migrate FILE=...`（`sysken-pay-backend/README.md`）
-- キオスクの画面は、フロントを再起動すると自動で読み込み直される（読み込み直されなければ `pkill -f chromium`）
+- 開いたままの Chromium は古い画面のまま動き続けるので、最後の `pkill -f chromium` を忘れない
 
 ## まだやっていないこと
 
