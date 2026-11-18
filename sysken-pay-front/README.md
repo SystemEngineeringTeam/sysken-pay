@@ -80,6 +80,26 @@ Raspberry Pi等での公開用（0.0.0.0:3000）:
 pnpm preview:pi
 ```
 
+
+## 画面サイズ（Raspberry Pi 5 + 5インチ タッチモニター）
+
+本番は 800x480（横向き）のタッチモニターで表示します。設定は `src/index.css` の冒頭にあります。
+
+- `--screen-width` / `--screen-height`: 画面の大きさ（800px / 480px）
+- `--ui-scale`: 文字や余白の倍率（0.5）。スタイルは 1600x960 基準の rem で書かれているので、0.5 倍で 800x480 に収まります
+- PC で `pnpm dev` を開くと、800x480 の枠が中央に出ます。実機と同じ見え方で確認できます
+- 画面を作るときは `rem` で書き、`100vh` / `100vw` は使わないでください（ページの高さは `height: 100%`）
+
+ラズパイでは Chromium をキオスクモードで開きます（例）:
+
+```bash
+chromium-browser --kiosk --noerrdialogs --disable-infobars \
+  --window-size=800,480 --window-position=0,0 \
+  http://localhost:3000
+```
+
+モニター自体の接続・ドライバ設定（`/boot/firmware/config.txt` 等）は、モニター付属の説明書に従ってください。
+
 ## APIスキーマの型生成
 
 バックエンドのOpenAPIスキーマから型を自動生成します。バックエンドリポジトリが `../sysken-pay-backend` に存在する必要があります。
