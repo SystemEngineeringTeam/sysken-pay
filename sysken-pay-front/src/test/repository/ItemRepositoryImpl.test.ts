@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import { ApiError } from "../../adapter/api/ApiError";
 import { ItemRepositoryImpl } from "@/adapter/repository/ItemRepositoryImpl";
 
 const mockGet = vi.hoisted(() => vi.fn());
@@ -40,9 +41,16 @@ describe("ItemRepositoryImpl", () => {
       });
     });
 
-    it("エラー時に例外を投げる", async () => {
-      mockGet.mockResolvedValue({ data: undefined, error: { message: "Not Found" } });
-      await expect(ItemRepositoryImpl.getItemByJanCode("0000000000000")).rejects.toThrow("Not Found");
+    it("エラー時にステータス付きの例外を投げる", async () => {
+      mockGet.mockResolvedValue({
+        data: undefined,
+        error: { message: "item not found" },
+        response: { status: 404 },
+      });
+      const err = await ItemRepositoryImpl.getItemByJanCode("4901234567894").catch((e) => e);
+      expect(err).toBeInstanceOf(ApiError);
+      expect(err.message).toBe("item not found");
+      expect(err.status).toBe(404);
     });
   });
 });

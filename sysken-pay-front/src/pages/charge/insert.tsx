@@ -7,10 +7,8 @@ import { PriceLabel } from "../../components/ui/PriceLabel";
 import { useChargeStore } from "../../store/useChargeStore";
 import { useBalanceStore } from "../../store/useBalanceStore";
 import { ChargeRepositoryImpl } from "../../adapter/repository/ChargeRepositoryImpl";
-import type { components } from "../../types/api-schema";
+import { isChargeAmount } from "../../services/chargeAmounts";
 import styles from "./insert.module.scss";
-
-type ChargeAmount = components["schemas"]["PostChargeRequest"]["amount"];
 
 export default function ChargeInsertPage(): JSX.Element {
   const navigate = useNavigate();
@@ -25,16 +23,22 @@ export default function ChargeInsertPage(): JSX.Element {
       setError("ユーザー情報が見つかりません");
       return;
     }
+    if (!isChargeAmount(chargeAmount)) {
+      setError("チャージ金額をもう一度選んでください");
+      return;
+    }
     try {
       const data = await ChargeRepositoryImpl.chargeAmount(userId, {
-        amount: chargeAmount as ChargeAmount,
+        amount: chargeAmount,
       });
       if (data.balance !== undefined && data.user_id) {
         setBalance({ user_id: data.user_id, balance: data.balance });
       }
       navigate("/charge/complete");
     } catch (e) {
-      setError(e instanceof Error ? e.message : "チャージに失敗しました");
+      // サーバーの英語メッセージはそのまま出さない
+      console.error(e);
+      setError("チャージに失敗しました。もう一度お試しください");
     }
   }
 

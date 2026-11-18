@@ -6,6 +6,7 @@ import { useUserStore } from "../store/useUserStore";
 import { ItemRepositoryImpl } from "../adapter/repository/ItemRepositoryImpl";
 import { UserRepositoryImpl } from "../adapter/repository/UserRepositoryImpl";
 import { toUserScanErrorMessage } from "../services/userScanErrorMessage";
+import { PRODUCT_NOT_REGISTERED, toProductScanErrorMessage } from "../services/productScanErrorMessage";
 import styles from "./useBarcodeReader.module.scss";
 
 function useScanGuards() {
@@ -48,13 +49,16 @@ export function useProductScan() {
     isScanningRef.current = true;
     try {
       const data = await ItemRepositoryImpl.getItemByJanCode(barcode);
-      if (!data?.item_id) throw new Error("商品が見つかりませんでした。ご不明の際は担当者にご連絡ください。");
       if (!isMountedRef.current) return;
+      if (!data?.item_id) {
+        setError(PRODUCT_NOT_REGISTERED);
+        return;
+      }
       addItem(data);
       navigate("/buy/list");
     } catch (e) {
       if (!isMountedRef.current) return;
-      setError(e instanceof Error ? e.message : "商品の取得に失敗しました");
+      setError(toProductScanErrorMessage(e));
     } finally {
       isScanningRef.current = false;
     }

@@ -1,7 +1,8 @@
 import Button from "../../../ui/Button";
+import { CHARGE_AMOUNTS } from "../../../../services/chargeAmounts";
 import styles from "./SelectButton.module.scss";
 
-const AMOUNTS = ["100", "500", "1000"] as const;
+const AMOUNTS = CHARGE_AMOUNTS.map(String);
 
 type SelectButtonGroupProps = {
   selectedAmount: string;
