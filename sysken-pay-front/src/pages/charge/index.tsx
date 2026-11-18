@@ -32,7 +32,7 @@ export default function ChargePage(): JSX.Element {
   if (!authenticated) {
     return (
       <div className={styles.container}>
-        <Header title="チャージ" />
+        <Header title="チャージ" confirmHome />
         <div className={styles.content}>
           <div className={styles.form}>
             <h1 className={styles.title}>パスワードを入力してください</h1>
@@ -56,7 +56,7 @@ export default function ChargePage(): JSX.Element {
 
   return (
     <div className={styles.container}>
-      <Header title="チャージ" />
+      <Header title="チャージ" confirmHome />
       <div className={styles.content}>
         <BarcodeReader
           mode="member"

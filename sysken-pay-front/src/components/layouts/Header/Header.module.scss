@@ -13,6 +13,17 @@
     display: flex;
     align-items: center;
 
+    // 押しやすいようにアイコンの周りも押せる範囲にする
+    .iconButton {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      margin: -1rem 0 -1rem -1rem;
+      border: none;
+      background: none;
+    }
+
     .icon {
       width: 4rem;
       height: 4rem;

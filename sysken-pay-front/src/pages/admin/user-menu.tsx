@@ -18,9 +18,6 @@ export default function AdminUserMenu(): JSX.Element {
         <Button size="lg" onClick={() => navigate("/admin/user-register")}>
           登録
         </Button>
-        <Button size="lg" onClick={() => navigate("/admin/user-update")}>
-          更新
-        </Button>
         <Button size="lg" onClick={() => navigate("/admin/phone-register")}>
           バーコード再発行
         </Button>

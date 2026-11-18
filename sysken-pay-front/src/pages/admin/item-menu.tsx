@@ -18,9 +18,6 @@ export default function AdminItemMenu(): JSX.Element {
         <Button size="lg" onClick={() => navigate("/admin/item-register")}>
           登録
         </Button>
-        <Button size="lg" onClick={() => navigate("/admin/item-update")}>
-          更新
-        </Button>
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/admin/menu")}>
         戻る

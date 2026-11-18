@@ -22,13 +22,15 @@ const EMPTY_TEXT = {
   all: "まだユーザーが登録されていません",
   unrefunded: "未返金の人はいません",
   graduation: "卒業候補の人はいません",
+  stopped: "利用停止中の人はいません",
 } as const;
 
 /**
  * ユーザー一覧（docs/phone-payment.md の「退部・卒業」）
- * - 全員：タップで詳細（返金・利用停止・バーコード再発行）
+ * - 全員：使える人だけ。タップで詳細（返金・利用停止・バーコード再発行）
  * - 未返金：止めたのに残高が残っている人。遅れて受け取りに来た人の返金に使う
  * - 卒業候補：入学から4年以上たった人。役員がチェックを付けた人だけ、まとめて利用停止する
+ * - 停止中：利用停止した人。タブには出さず、全員の右下のボタンから入る（再開・返金用）
  */
 export default function UserListPage(): JSX.Element {
   const navigate = useNavigate();
@@ -134,6 +136,10 @@ export default function UserListPage(): JSX.Element {
         </p>
       )}
 
+      {tab === "stopped" && (
+        <p className={styles.hint}>利用停止中の人です。タップして、利用の再開や返金ができます</p>
+      )}
+
       {isGraduation && (
         <p className={styles.hint}>
           入学から4年以上の人です。卒業する人にチェック →まとめて利用停止（残高は残ります）
@@ -170,6 +176,24 @@ export default function UserListPage(): JSX.Element {
           );
         })}
       </ul>
+
+      {tab === "all" && (
+        <div className={styles.bar}>
+          <button type="button" className={styles.barSmall} onClick={() => changeTab("stopped")}>
+            停止中の人 {counts.stopped}
+            <span className={`${styles.arrow} ${styles.arrowNext}`} aria-hidden="true" />
+          </button>
+        </div>
+      )}
+
+      {tab === "stopped" && (
+        <div className={styles.bar}>
+          <button type="button" className={`${styles.barSmall} ${styles.barBlue}`} onClick={() => changeTab("all")}>
+            <span className={`${styles.arrow} ${styles.arrowPrev}`} aria-hidden="true" />
+            全員にもどる
+          </button>
+        </div>
+      )}
 
       {isGraduation && (
         <div className={styles.bar}>

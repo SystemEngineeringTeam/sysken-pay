@@ -28,13 +28,14 @@ const members = [
 
 describe("filterMembers / countMembers", () => {
   it("タブごとに絞り込む", () => {
-    expect(filterMembers(members, "all")).toHaveLength(3);
+    expect(filterMembers(members, "all").map((x) => x.user_id)).toEqual(["22K00001", "24K00003"]);
+    expect(filterMembers(members, "stopped").map((x) => x.user_id)).toEqual(["23K00002"]);
     expect(filterMembers(members, "unrefunded").map((x) => x.user_id)).toEqual(["23K00002"]);
     expect(filterMembers(members, "graduation").map((x) => x.user_id)).toEqual(["22K00001"]);
   });
 
   it("人数を数える", () => {
-    expect(countMembers(members)).toEqual({ all: 3, unrefunded: 1, graduation: 1 });
+    expect(countMembers(members)).toEqual({ all: 2, unrefunded: 1, graduation: 1, stopped: 1 });
   });
 });
 

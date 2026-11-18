@@ -262,6 +262,48 @@
   border: 0.2rem solid $blue-40;
 }
 
+// 「停止中の人」「全員にもどる」用の小さめのボタン
+.barSmall {
+  height: 5rem;
+  padding: 0 2.2rem;
+  border: 0.15rem solid $gray-30;
+  border-radius: 999px;
+  background-color: $white;
+  color: $gray-70;
+  font-size: 2rem;
+  font-weight: $bold;
+  white-space: nowrap;
+}
+
+.barSmall {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.barBlue {
+  border-color: $blue-40;
+  background-color: $blue-40;
+  color: $white;
+}
+
+// 文字の「‹ ›」はフォントで細く・欠けて見えるので、線で描く
+.arrow {
+  flex-shrink: 0;
+  width: 1.4rem;
+  height: 1.4rem;
+  border-top: 0.3rem solid currentColor;
+  border-right: 0.3rem solid currentColor;
+}
+
+.arrowNext {
+  transform: rotate(45deg);
+}
+
+.arrowPrev {
+  transform: rotate(-135deg);
+}
+
 .barDanger {
   background-color: $red-100;
   color: $white;
