@@ -88,7 +88,8 @@ pnpm build
 sh ../deploy/raspberry-pi/install-front-service.sh    # active と出れば OK
 ```
 
-- `pnpm install` で `ERR_PNPM_IGNORED_BUILDS`（esbuild・@parcel/watcher）が出ても、`pnpm build` が `✓ built` になれば問題ない。気になれば `pnpm approve-builds` で2つとも許可する
+- `pnpm install` で `ERR_PNPM_IGNORED_BUILDS`（esbuild・@parcel/watcher）が出ても、`pnpm build` が `✓ built` になれば問題ない。一度 `pnpm approve-builds` で2つとも許可しておくと、次から出なくなる
+  - このエラーで `pnpm install` は失敗扱いになるので、`&&` で後ろのコマンドをつながない
 - フロントは `sysken-pay-front.service`（`deploy/raspberry-pi/sysken-pay-front.service`）として動く。`127.0.0.1:3000` だけで待つので、部室の Wi-Fi からは開けない
 
 ## 6. キオスク表示（Chromium の全画面）
@@ -131,11 +132,19 @@ crontab -l    # 0 3 * * * の行が1つだけあること
 
 ## 更新するとき
 
+1行ずつ打つ（`&&` でつなぐと、`pnpm install` の `ERR_PNPM_IGNORED_BUILDS` で後ろが実行されない）。
+
 ```bash
-cd ~/sysken-pay/sysken-pay-backend && make backup    # 先にバックアップ
-cd ~/sysken-pay && git pull
-cd sysken-pay-backend && docker compose up -d --build
-cd ../sysken-pay-front && pnpm install --frozen-lockfile && pnpm build && sudo systemctl restart sysken-pay-front
+cd ~/sysken-pay/sysken-pay-backend
+make backup                          # 先にバックアップ
+cd ~/sysken-pay
+git pull
+cd sysken-pay-backend
+docker compose up -d --build
+cd ../sysken-pay-front
+pnpm install --frozen-lockfile       # ERR_PNPM_IGNORED_BUILDS が出ても続けてよい
+pnpm build                           # ✓ built と出ること
+sudo systemctl restart sysken-pay-front
 ```
 
 - DB の表が増える変更（`db/migrations/` にファイルが増えた）ときは、`docker compose up` の前に `make migrate FILE=...`（`sysken-pay-backend/README.md`）
