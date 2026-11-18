@@ -7,6 +7,7 @@ export type Path =
   | `/`
   | `/admin`
   | `/admin/dashboard`
+  | `/admin/item-list`
   | `/admin/item-menu`
   | `/admin/item-register`
   | `/admin/item-register/info`
@@ -14,6 +15,8 @@ export type Path =
   | `/admin/item-update/info`
   | `/admin/menu`
   | `/admin/phone-register`
+  | `/admin/user-list`
+  | `/admin/user-list/:userId`
   | `/admin/user-menu`
   | `/admin/user-register`
   | `/admin/user-register/name`
@@ -31,6 +34,7 @@ export type Path =
   | `/charge/select`
 
 export type Params = {
+  '/admin/user-list/:userId': { userId: string }
   '/buy/:paymentMethod': { paymentMethod: string }
   '/buy/:paymentMethod/confirm': { paymentMethod: string }
 }

@@ -1,0 +1,87 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background-color: $gray-a70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.dialog {
+  background-color: $white;
+  border-radius: 2rem;
+  padding: 4rem 4rem 3.5rem;
+  width: 90%;
+  max-width: 110rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+  box-shadow: 0 0.5rem 2rem $shadow-40;
+}
+
+.title {
+  margin: 0;
+  font-size: 3.4rem;
+  font-weight: $extra-bold;
+  color: $gray-100;
+  text-align: center;
+}
+
+.body {
+  font-size: 2.6rem;
+  font-weight: $medium;
+  color: $gray-70;
+  text-align: center;
+  line-height: 1.6;
+
+  p {
+    margin: 0;
+  }
+
+  strong {
+    color: $gray-100;
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+}
+
+.action {
+  min-width: 26rem;
+  height: 7rem;
+  padding: 0 3rem;
+  border-radius: 999px;
+  font-size: 2.8rem;
+  font-weight: $bold;
+  border: 0.2rem solid transparent;
+  white-space: nowrap;
+
+  &:active {
+    transform: scale(0.97);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+  }
+}
+
+.primary {
+  background-color: $blue-40;
+  color: $white;
+}
+
+.danger {
+  background-color: $red-100;
+  color: $white;
+}
+
+.plain {
+  background-color: $white;
+  color: $gray-70;
+  border-color: $gray-30;
+}

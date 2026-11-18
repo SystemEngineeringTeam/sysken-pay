@@ -12,6 +12,9 @@ export default function AdminItemMenu(): JSX.Element {
     <div className={styles.container}>
       <Header title="商品設定" />
       <div className={styles.content}>
+        <Button size="lg" onClick={() => navigate("/admin/item-list")}>
+          一覧
+        </Button>
         <Button size="lg" onClick={() => navigate("/admin/item-register")}>
           登録
         </Button>
