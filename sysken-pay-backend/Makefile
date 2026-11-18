@@ -17,4 +17,4 @@ restore:
 # 例: make migrate FILE=db/migrations/001_payment_card.sql
 migrate:
 	./scripts/backup-db.sh
-	docker exec -i sysken-db sh -c 'exec mysql -uroot -p"$$MYSQL_ROOT_PASSWORD"' < $(FILE)
+	docker exec -i sysken-db sh -c 'MYSQL_PWD="$$MYSQL_ROOT_PASSWORD" exec mysql -uroot' < $(FILE)

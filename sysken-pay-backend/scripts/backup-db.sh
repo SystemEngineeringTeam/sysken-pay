@@ -6,6 +6,8 @@
 #   ./scripts/backup-db.sh                 # backups/ に保存（最新 KEEP 件だけ残す）
 #   BACKUP_DIR=/mnt/usb/sysken ./scripts/backup-db.sh   # 保存先を変える
 set -eu
+# バックアップには部員の学籍番号・名前・残高が入るので、自分だけが読めるファイルにする
+umask 077
 
 CONTAINER="${CONTAINER:-sysken-db}"
 BACKUP_DIR="${BACKUP_DIR:-$(cd "$(dirname "$0")/.." && pwd)/backups}"
@@ -17,7 +19,7 @@ OUT="$BACKUP_DIR/sysken_pay-$STAMP.sql.gz"
 TMP="$OUT.tmp"
 
 docker exec "$CONTAINER" sh -c \
-  'exec mysqldump -uroot -p"$MYSQL_ROOT_PASSWORD" --single-transaction --routines --triggers --databases sysken_pay' \
+  'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysqldump -uroot --single-transaction --routines --triggers --databases sysken_pay' \
   | gzip > "$TMP"
 
 # 失敗して中身が空のファイルを「成功したバックアップ」として残さない
