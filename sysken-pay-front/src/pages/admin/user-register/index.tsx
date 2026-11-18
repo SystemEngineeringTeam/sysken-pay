@@ -47,8 +47,8 @@ export default function UserRegisterPage(): JSX.Element {
           mode="member"
           onScan={handleScan}
           placeholder="学生証のバーコードをかざしてください"
+          error={error}
         />
-        {error && <p className={styles.error}>{error}</p>}
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/admin/menu")}>
         戻る

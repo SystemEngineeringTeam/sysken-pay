@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, type JSX, type KeyboardEvent } from "react";
+import { useState, useRef, useCallback, type JSX, type KeyboardEvent, type ReactNode } from "react";
 import styles from "./BarcodeReader.module.scss";
 import { Input } from "../Input";
 
@@ -6,9 +6,11 @@ interface BarcodeReaderProps {
   mode: "product" | "member";
   onScan: (barcode: string) => void;
   placeholder?: string;
+  /** 読み取りに失敗したときの案内。見出しのすぐ下に出す（画面の下だと「戻る」と重なるため） */
+  error?: ReactNode;
 }
 
-export function BarcodeReader({ mode, onScan, placeholder }: BarcodeReaderProps): JSX.Element {
+export function BarcodeReader({ mode, onScan, placeholder, error }: BarcodeReaderProps): JSX.Element {
   const [inputValue, setInputValue] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -37,7 +39,14 @@ export function BarcodeReader({ mode, onScan, placeholder }: BarcodeReaderProps)
   return (
     <div ref={containerRef} className={styles.container} onClick={focusInput}>
       <div className={styles.content}>
-        <p className={styles.placeholder}>{placeholder || defaultPlaceholder}</p>
+        <div className={styles.head}>
+          <p className={styles.placeholder}>{placeholder || defaultPlaceholder}</p>
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
+        </div>
         <div className={styles.iconWrapper}>
           <img
             src="/icons/BarcordReader.svg"

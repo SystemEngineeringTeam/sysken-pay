@@ -14,3 +14,10 @@
   gap: 2.5rem;
   margin-bottom: 5rem;
 }
+
+// 「バーコード作り直し」が2行に折り返さないように、ボタンを少し広げて1行にする
+// Button の .button.large より強くするため [class] を付ける
+.content > button[class] {
+  width: 36rem;
+  white-space: nowrap;
+}

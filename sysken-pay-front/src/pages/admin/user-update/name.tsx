@@ -58,7 +58,7 @@ export default function UserUpdateNamePage(): JSX.Element {
           />
           <Input
             label="新しい名前"
-            placeholder="k24000_シス研太郎"
+            placeholder="k24000_yamadataro"
             value={name}
             onChange={handleChange(setName)}
           />

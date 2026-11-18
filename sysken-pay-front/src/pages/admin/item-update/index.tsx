@@ -32,8 +32,8 @@ export default function ItemUpdatePage(): JSX.Element {
           mode="product"
           onScan={handleScan}
           placeholder="商品のバーコードをかざしてください"
+          error={error}
         />
-        {error && <p className={styles.error}>{error}</p>}
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/admin/menu")}>
         戻る
