@@ -3,19 +3,18 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "../../../components/ui/Input";
 import Button from "../../../components/ui/Button";
-import { CompletionModal } from "../../../components/ui/CompletionModal";
 import Header from "../../../components/layouts/Header";
 import ArrowButton from "../../../components/ui/ArrowButton";
 import { useUserStore } from "../../../store/useUserStore";
 import { UserRepositoryImpl } from "../../../adapter/repository/UserRepositoryImpl";
 import { ApiError } from "../../../adapter/api/ApiError";
+import type { PhoneRegisterState } from "../../../services/phoneRegisterState";
 import styles from "./name.module.scss";
 
 export default function UserRegisterNamePage(): JSX.Element {
   const navigate = useNavigate();
   const scannedUser = useUserStore((state) => state.scannedUser);
   const [name, setName] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
   const handleNameChange = (value: string) => {
@@ -38,7 +37,9 @@ export default function UserRegisterNamePage(): JSX.Element {
         user_name: name,
       });
       setErrorMessage("");
-      setShowModal(true);
+      // 登録できたら、そのままスマホ登録（支払い用バーコードの QR）へ進む
+      const state: PhoneRegisterState = { userId: scannedUser.user_id, justRegistered: true };
+      navigate("/admin/phone-register", { state });
     } catch (e) {
       if (e instanceof ApiError && e.status === 409) {
         setErrorMessage("このユーザーIDはすでに登録されています");
@@ -70,13 +71,6 @@ export default function UserRegisterNamePage(): JSX.Element {
       <ArrowButton variant="prev" onClick={() => navigate("/admin/user-register")}>
         戻る
       </ArrowButton>
-      {showModal && (
-        <CompletionModal
-          mode="userRegister"
-          name={name}
-          onClose={() => navigate("/admin/menu")}
-        />
-      )}
     </div>
   );
 }
