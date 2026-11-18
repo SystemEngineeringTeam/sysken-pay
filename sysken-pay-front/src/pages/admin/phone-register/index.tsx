@@ -13,7 +13,7 @@ import styles from "./index.module.scss";
 
 /**
  * スマホ登録・バーコード再発行（docs/phone-payment.md の「発行」）
- * 部員の学生証を読む → 支払い用バーコードを発行して、5分だけ有効な QR を出す。
+ * 学生証を読む → 支払い用バーコードを発行して、5分だけ有効な QR を出す。
  * 作り直し（スマホを無くした・機種変更）も同じ画面で行う。
  * ユーザー登録から続けて来たときは、学生証を読み直さずにすぐ QR を出す。
  */
@@ -46,7 +46,7 @@ export default function PhoneRegisterPage(): JSX.Element {
           <BarcodeReader
             mode="member"
             onScan={start}
-            placeholder="部員の学生証をかざしてください"
+            placeholder="学生証をかざしてください"
             error={error}
           />
           {phase === "creating" && <p className={styles.info}>QR を作っています…</p>}

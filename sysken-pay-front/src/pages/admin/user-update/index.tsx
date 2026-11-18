@@ -46,7 +46,7 @@ export default function UserUpdatePage(): JSX.Element {
         <BarcodeReader
           mode="member"
           onScan={handleScan}
-          placeholder="学生証のバーコードをかざしてください"
+          placeholder="シス研Payバーコードをかざしてください"
           error={error}
         />
       </div>
