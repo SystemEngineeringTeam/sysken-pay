@@ -363,13 +363,17 @@ func TestCreatePurchase_StoppedOrMissingUser(t *testing.T) {
 			return p, nil
 		},
 	}
-	for name, m := range map[string]*mockMemberRepo{
-		"利用停止した人": {status: domainmember.StatusStopped, found: true},
-		"いない人":    {found: false},
+	for name, tc := range map[string]struct {
+		m    *mockMemberRepo
+		want error
+	}{
+		"利用停止した人": {&mockMemberRepo{status: domainmember.StatusStopped, found: true}, ErrUserStopped},
+		"いない人":    {&mockMemberRepo{found: false}, ErrUserNotFound},
 	} {
+		m := tc.m
 		uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, m, &mockTxManager{})
-		if _, err := uc.CreatePurchase(context.Background(), "22K01234", inputs); !errors.Is(err, ErrUserNotFound) {
-			t.Errorf("%s: err = %v, want ErrUserNotFound", name, err)
+		if _, err := uc.CreatePurchase(context.Background(), "22K01234", inputs); !errors.Is(err, tc.want) {
+			t.Errorf("%s: err = %v, want %v", name, err, tc.want)
 		}
 	}
 	if called {

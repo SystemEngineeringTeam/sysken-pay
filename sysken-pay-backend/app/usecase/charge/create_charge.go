@@ -6,11 +6,15 @@ import (
 	"fmt"
 	"sysken-pay-api/app/domain/object/charge"
 	domainmember "sysken-pay-api/app/domain/object/member"
+	domainuser "sysken-pay-api/app/domain/object/user"
 	"sysken-pay-api/app/domain/repository"
 )
 
-// ErrUserNotFound はユーザーがいない、または利用停止している場合に返されます（ハンドラ側で404にマッピングされる）。
+// ErrUserNotFound はユーザーがいない場合に返されます（ハンドラ側で404にマッピングされる）。
 var ErrUserNotFound = errors.New("user not found")
+
+// ErrUserStopped はユーザーが利用停止している場合に返されます（ハンドラ側で403にマッピングされる）。
+var ErrUserStopped = domainuser.ErrUserStopped
 
 type ChargeAmountUseCase interface {
 	ChargeAmount(ctx context.Context, userID string, amount int) (*charge.Charge, error)
@@ -44,8 +48,11 @@ func (s *ChargeAmountServiceImpl) ChargeAmount(
 	if err != nil {
 		return nil, err
 	}
-	if !found || status == domainmember.StatusStopped {
+	if !found {
 		return nil, fmt.Errorf("%w: userID=%s", ErrUserNotFound, userID)
+	}
+	if status == domainmember.StatusStopped {
+		return nil, fmt.Errorf("%w: userID=%s", ErrUserStopped, userID)
 	}
 
 	chargedAmount, err := s.chargeAmountRepo.ChargeAmount(ctx, c)

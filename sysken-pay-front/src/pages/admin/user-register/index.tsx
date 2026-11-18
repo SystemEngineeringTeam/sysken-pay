@@ -7,6 +7,7 @@ import { useUserStore } from "../../../store/useUserStore";
 import { UserRepositoryImpl } from "../../../adapter/repository/UserRepositoryImpl";
 import { ApiError } from "../../../adapter/api/ApiError";
 import ArrowButton from "../../../components/ui/ArrowButton";
+import { ADMIN_USER_STOPPED_MESSAGE } from "../../../services/userScanErrorMessage";
 import styles from "./index.module.scss";
 
 export default function UserRegisterPage(): JSX.Element {
@@ -29,6 +30,10 @@ export default function UserRegisterPage(): JSX.Element {
       if (err instanceof ApiError && err.status === 404) {
         setScannedUser({ user_id: barcode });
         navigate("/admin/user-register/name");
+        return;
+      }
+      if (err instanceof ApiError && err.status === 403) {
+        setError(ADMIN_USER_STOPPED_MESSAGE);
         return;
       }
       if (err instanceof ApiError && err.status === 400) {

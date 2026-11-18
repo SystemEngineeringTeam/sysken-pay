@@ -13,7 +13,14 @@ import (
 
 // --- テスト用のリポジトリ（メモリ上） ---
 
-type memUserRepo struct{ users map[string]*domainuser.User }
+type memUserRepo struct {
+	users   map[string]*domainuser.User
+	stopped map[string]bool
+}
+
+func (m *memUserRepo) IsStopped(_ context.Context, id string) (bool, error) {
+	return m.stopped[id], nil
+}
 
 func (m *memUserRepo) GetUserByID(_ context.Context, id string) (*domainuser.User, error) {
 	return m.users[id], nil
@@ -229,5 +236,18 @@ func TestResolve_UnknownCode(t *testing.T) {
 	code, _ := domainpc.GenerateCode()
 	if _, err := resolve.Resolve(context.Background(), code); !errors.Is(err, ErrCardNotFound) {
 		t.Errorf("err = %v, want ErrCardNotFound", err)
+	}
+}
+
+func TestIssue_StoppedUser(t *testing.T) {
+	users := &memUserRepo{users: map[string]*domainuser.User{}, stopped: map[string]bool{"22K01234": true}}
+	cards := &memCardRepo{}
+	issue := NewIssueUseCase(users, cards, &memTx{cards: cards})
+	_, err := issue.Issue(context.Background(), "22K01234")
+	if !errors.Is(err, domainuser.ErrUserStopped) {
+		t.Fatalf("err = %v, want ErrUserStopped（先に「利用を再開」してもらう）", err)
+	}
+	if len(cards.rows) != 0 {
+		t.Error("利用停止した人に発行された")
 	}
 }

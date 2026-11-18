@@ -9,6 +9,7 @@ import (
 	"time"
 
 	domainpc "sysken-pay-api/app/domain/object/paymentcard"
+	domainuser "sysken-pay-api/app/domain/object/user"
 	apierrors "sysken-pay-api/app/ui/api/pkg/errors"
 	"sysken-pay-api/app/usecase/paymentcard"
 
@@ -69,6 +70,10 @@ func (h *handlerImpl) Issue(w http.ResponseWriter, r *http.Request) {
 	issued, err := h.issue.Issue(r.Context(), userID)
 	if err != nil {
 		log.Printf("Failed to issue payment card: %v", err)
+		if errors.Is(err, domainuser.ErrUserStopped) {
+			apierrors.RespondError(w, http.StatusForbidden, "user stopped")
+			return
+		}
 		if errors.Is(err, paymentcard.ErrUserNotFound) {
 			apierrors.RespondError(w, http.StatusNotFound, "user not found")
 			return

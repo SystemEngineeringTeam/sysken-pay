@@ -159,11 +159,15 @@ func TestChargeAmount_StoppedOrMissingUser(t *testing.T) {
 			return c, nil
 		},
 	}
-	for name, m := range map[string]*mockMemberRepo{
-		"利用停止した人": {status: domainmember.StatusStopped, found: true},
-		"いない人":    {found: false},
+	for name, tc := range map[string]struct {
+		m    *mockMemberRepo
+		want error
+	}{
+		"利用停止した人": {&mockMemberRepo{status: domainmember.StatusStopped, found: true}, ErrUserStopped},
+		"いない人":    {&mockMemberRepo{found: false}, ErrUserNotFound},
 	} {
-		if _, err := NewChargeAmountUseCase(repo, m).ChargeAmount(context.Background(), "22K01234", 1000); !errors.Is(err, ErrUserNotFound) {
+		m := tc.m
+		if _, err := NewChargeAmountUseCase(repo, m).ChargeAmount(context.Background(), "22K01234", 1000); !errors.Is(err, tc.want) {
 			t.Errorf("%s: err = %v", name, err)
 		}
 	}
