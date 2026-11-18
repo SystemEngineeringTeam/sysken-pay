@@ -63,7 +63,7 @@ function Header({ title, right = "none", shadow = false, confirmHome = false }: 
                 キャンセル
               </button>
               <button className={styles.confirmButton} onClick={handleConfirm}>
-                戻る
+                はい
               </button>
             </div>
           </div>
