@@ -20,6 +20,7 @@ export default function SyskenPayConfirmPage(): JSX.Element {
 
   const balance = useBalanceStore((state) => state.balance?.balance ?? 0);
   const userId = useUserStore((state) => state.scannedUser?.user_id ?? "");
+  const userName = useUserStore((state) => state.scannedUser?.user_name);
   const { cartItems, clearCart } = useCartStore();
   const setBalance = useBalanceStore((state) => state.setBalance);
   const totalPrice = useTotalPrice();
@@ -50,7 +51,7 @@ export default function SyskenPayConfirmPage(): JSX.Element {
     <div className={styles.container}>
       <Header title="購入確定" right="toTop" />
       <div className={styles.content}>
-        <SyskenPayConfirm balance={balance} />
+        <SyskenPayConfirm balance={balance} userName={userName} />
         {errorMessage && <p className={styles.error}>{errorMessage}</p>}
       </div>
       <div className={styles.buttonWrapper}>

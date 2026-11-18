@@ -108,6 +108,10 @@ func (h *handlerImpl) Resolve(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		// 支払い用バーコードの中身はログに出さない
 		switch {
+		case errors.Is(err, domainuser.ErrUserStopped):
+			// 本物のバーコードなので、当てずっぽうの失敗には数えない
+			log.Printf("Payment card of stopped user")
+			apierrors.RespondError(w, http.StatusForbidden, "user stopped")
 		case errors.Is(err, paymentcard.ErrCardNotFound):
 			h.limiter.Fail()
 			log.Printf("Payment card not found")

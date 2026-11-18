@@ -6,13 +6,13 @@ import Button from "../../components/ui/Button/index";
 import { Input } from "../../components/ui/Input";
 import { BarcodeReader } from "../../components/ui/BarcodeReader";
 import ArrowButton from "../../components/ui/ArrowButton";
-import { useUserScan } from "../../hooks/useBarcodeReader";
+import { usePaymentCardScan } from "../../hooks/useBarcodeReader";
 import { useAdminLogin } from "../../hooks/useAdminLogin";
 import styles from "./index.module.scss";
 
 export default function ChargePage(): JSX.Element {
   const navigate = useNavigate();
-  const { onScan, ErrorMessage } = useUserScan();
+  const { onScan, ErrorMessage } = usePaymentCardScan();
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const { login, isLoading, error: errorMessage, clearError } = useAdminLogin();

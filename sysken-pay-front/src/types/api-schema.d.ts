@@ -1702,6 +1702,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description 利用停止した人の支払い用バーコード */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description 存在しない、または使えなくなった支払い用バーコード */
             404: {
                 headers: {

@@ -91,6 +91,9 @@ func (r *fakeCardRepo) RevokeActiveByUserID(context.Context, string) error {
 	return nil
 }
 func (r *fakeCardRepo) Insert(context.Context, string, string) error { return nil }
+func (r *fakeCardRepo) FindRevokedUserIDByHash(context.Context, string) (string, error) {
+	return "", nil
+}
 func (r *fakeCardRepo) FindActiveUserIDByHash(context.Context, string) (string, error) {
 	return "", nil
 }

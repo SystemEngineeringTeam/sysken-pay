@@ -113,6 +113,20 @@ func (s *ResolveServiceImpl) Resolve(ctx context.Context, code string) (*domainu
 		return nil, err
 	}
 	if userID == "" {
+		// 使えなくなったバーコードなら、持ち主が利用停止しているか確かめる（画面で「利用停止されています」と出すため）
+		owner, err := s.cardRepo.FindRevokedUserIDByHash(ctx, domainpc.HashCode(normalized))
+		if err != nil {
+			return nil, err
+		}
+		if owner != "" {
+			stopped, err := s.userRepo.IsStopped(ctx, owner)
+			if err != nil {
+				return nil, err
+			}
+			if stopped {
+				return nil, domainuser.ErrUserStopped
+			}
+		}
 		return nil, ErrCardNotFound
 	}
 
@@ -121,7 +135,14 @@ func (s *ResolveServiceImpl) Resolve(ctx context.Context, code string) (*domainu
 		return nil, err
 	}
 	if u == nil {
-		// ユーザーが削除されている場合も、使えないバーコードとして扱う
+		stopped, err := s.userRepo.IsStopped(ctx, userID)
+		if err != nil {
+			return nil, err
+		}
+		if stopped {
+			return nil, domainuser.ErrUserStopped
+		}
+		// ユーザーがいない場合も、使えないバーコードとして扱う
 		return nil, ErrCardNotFound
 	}
 	return u, nil

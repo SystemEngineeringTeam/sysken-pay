@@ -39,3 +39,19 @@ describe("PaymentCardRepositoryImpl", () => {
     });
   });
 });
+
+describe("PaymentCardRepositoryImpl.resolve", () => {
+  it("バーコードは URL ではなく本文で送る", async () => {
+    const data = { status: "success", user_id: "24K01234", user_name: "太郎" };
+    mockPost.mockResolvedValue({ data, error: undefined, response: { status: 200 } });
+    await expect(PaymentCardRepositoryImpl.resolve("SP7Q2KX9MDRA4TW8YZ")).resolves.toEqual(data);
+    expect(mockPost).toHaveBeenCalledWith("/v1/payment-card/resolve", { body: { code: "SP7Q2KX9MDRA4TW8YZ" } });
+  });
+
+  it("エラーはステータス付きで投げる", async () => {
+    mockPost.mockResolvedValue({ data: undefined, error: { message: "x" }, response: { status: 403 } });
+    const err = await PaymentCardRepositoryImpl.resolve("SP7Q2KX9MDRA4TW8YZ").catch((e) => e);
+    expect(err).toBeInstanceOf(ApiError);
+    expect(err.status).toBe(403);
+  });
+});
