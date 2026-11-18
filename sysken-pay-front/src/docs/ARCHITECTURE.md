@@ -53,7 +53,7 @@ src/
 │   │   └── complete.tsx        # /charge/complete チャージ完了
 │   └── admin/
 │       ├── index.tsx           # /admin パスワード認証
-│       ├── menu.tsx            # /admin/menu メニュー
+│       ├── menu.tsx            # /admin/menu メニュー（ユーザー設定・商品設定）
 │       ├── dashboard.tsx       # /admin/dashboard
 │       ├── user-register/
 │       │   ├── index.tsx       # /admin/user-register 学生証スキャン

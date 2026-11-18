@@ -12,20 +12,11 @@ export default function AdminMenu(): JSX.Element {
     <div className={styles.container}>
       <Header title="管理者" />
       <div className={styles.content}>
-        <Button size="lg" onClick={() => navigate("/admin/user-register")}>
-          ユーザー登録
+        <Button size="lg" onClick={() => navigate("/admin/user-menu")}>
+          ユーザー設定
         </Button>
-        <Button size="lg" onClick={() => navigate("/admin/user-update")}>
-          ユーザー更新
-        </Button>
-        <Button size="lg" onClick={() => navigate("/admin/item-register")}>
-          商品登録
-        </Button>
-        <Button size="lg" onClick={() => navigate("/admin/item-update")}>
-          商品更新
-        </Button>
-        <Button size="lg" onClick={() => navigate("/admin/phone-register")}>
-          バーコード作り直し
+        <Button size="lg" onClick={() => navigate("/admin/item-menu")}>
+          商品設定
         </Button>
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/admin")}>

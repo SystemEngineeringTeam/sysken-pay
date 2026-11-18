@@ -75,7 +75,7 @@ export default function ItemUpdateInfoPage(): JSX.Element {
           mode="itemUpdate"
           name={name}
           price={Number(price)}
-          onClose={() => navigate("/admin/menu")}
+          onClose={() => navigate("/admin/item-menu")}
         />
       )}
     </div>

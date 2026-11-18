@@ -86,7 +86,7 @@ export default function ProductRegisterPage(): JSX.Element {
           mode="itemRegister"
           name={name}
           price={Number(price)}
-          onClose={() => navigate("/admin/menu")}
+          onClose={() => navigate("/admin/item-menu")}
         />
       )}
     </div>
