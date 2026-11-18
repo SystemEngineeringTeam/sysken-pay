@@ -19,6 +19,8 @@ const (
 	PagePath   = "/claim"
 	ScriptPath = "/claim/app.js"
 	StylePath  = "/claim/app.css"
+	// MascotPath は保存用カードに描くマスコットの画像（static/mascot.png）。無ければ 404 で、マスコット無しのカードになる
+	MascotPath = "/claim/mascot.png"
 )
 
 // SecurityHeaders はこの入口のすべての応答に付けるヘッダー。
@@ -28,7 +30,7 @@ func SecurityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		h := w.Header()
 		h.Set("Content-Security-Policy",
-			"default-src 'none'; script-src 'self'; style-src 'self'; img-src data:; connect-src 'self'; "+
+			"default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; "+
 				"base-uri 'none'; form-action 'none'; frame-ancestors 'none'")
 		h.Set("Referrer-Policy", "no-referrer")
 		h.Set("X-Content-Type-Options", "nosniff")
@@ -58,3 +60,6 @@ func Script() http.HandlerFunc { return serve("app.js", "text/javascript; charse
 
 // Style はページの CSS を返す
 func Style() http.HandlerFunc { return serve("app.css", "text/css; charset=utf-8") }
+
+// Mascot は保存用カードに描くマスコットの画像を返す
+func Mascot() http.HandlerFunc { return serve("mascot.png", "image/png") }
