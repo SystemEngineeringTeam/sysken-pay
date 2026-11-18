@@ -123,11 +123,20 @@ func TestCreatePurchase_InsufficientBalance(t *testing.T) {
 			return newTestBalance(userID, 1000), nil // 残高1000円 < 1500円
 		},
 	}
-	purchaseRepo := &mockPurchaseRepo{}
+	purchaseRepo := &mockPurchaseRepo{
+		createFunc: func(_ context.Context, _ *domainpurchase.Purchase) (*domainpurchase.Purchase, error) {
+			t.Error("残高不足なのに購入が記録された")
+			return nil, nil
+		},
+	}
 
 	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, &mockTxManager{})
-	if _, err := uc.CreatePurchase(context.Background(), "user-1", inputs); err == nil {
-		t.Error("CreatePurchase should fail with insufficient balance")
+	_, err := uc.CreatePurchase(context.Background(), "user-1", inputs)
+	if err == nil {
+		t.Fatal("CreatePurchase should fail with insufficient balance")
+	}
+	if !errors.Is(err, ErrInsufficientBalance) {
+		t.Errorf("error should be ErrInsufficientBalance: %v", err)
 	}
 }
 

@@ -731,7 +731,7 @@ export interface operations {
                     "application/json": components["schemas"]["PostPurchaseResponse"];
                 };
             };
-            /** @description リクエスト不正 */
+            /** @description リクエスト不正、または残高不足（message が "insufficient balance"） */
             400: {
                 headers: {
                     [name: string]: unknown;
