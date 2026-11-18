@@ -25,7 +25,7 @@ export default function AdminMenu(): JSX.Element {
           商品更新
         </Button>
         <Button size="lg" onClick={() => navigate("/admin/phone-register")}>
-          スマホ登録
+          バーコード作り直し
         </Button>
       </div>
       <ArrowButton variant="prev" onClick={() => navigate("/admin")}>

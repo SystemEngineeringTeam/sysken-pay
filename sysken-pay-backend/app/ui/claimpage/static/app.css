@@ -96,16 +96,22 @@ li {
   user-select: all;
 }
 
-.button {
-  display: block;
-  margin-top: 8px;
-  padding: 14px;
-  border-radius: 10px;
-  background: #1565c0;
-  color: #fff;
+.save {
+  margin-bottom: 8px;
+}
+
+.save-title {
   font-weight: bold;
-  text-align: center;
-  text-decoration: none;
+  margin-bottom: 4px;
+}
+
+ol {
+  margin: 0 0 8px;
+  padding-left: 22px;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 details {

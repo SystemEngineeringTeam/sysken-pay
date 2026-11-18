@@ -1,5 +1,6 @@
 import type { JSX } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import Header from "../../../components/layouts/Header";
 import ArrowButton from "../../../components/ui/ArrowButton";
 import Button from "../../../components/ui/Button";
@@ -7,22 +8,38 @@ import { BarcodeReader } from "../../../components/ui/BarcodeReader";
 import { QrCode } from "../../../components/ui/QrCode";
 import { usePhoneRegister } from "../../../hooks/usePhoneRegister";
 import { formatRemaining } from "../../../services/phoneRegisterErrorMessage";
+import { toPhoneRegisterState } from "../../../services/phoneRegisterState";
 import styles from "./index.module.scss";
 
 /**
- * スマホ登録（docs/phone-payment.md の「発行」）
+ * スマホ登録・バーコード作り直し（docs/phone-payment.md の「発行」）
  * 部員の学生証を読む → 支払い用バーコードを発行して、5分だけ有効な QR を出す。
  * 作り直し（スマホを無くした・機種変更）も同じ画面で行う。
+ * ユーザー登録から続けて来たときは、学生証を読み直さずにすぐ QR を出す。
  */
 export default function PhoneRegisterPage(): JSX.Element {
   const navigate = useNavigate();
+  const location = useLocation();
+  const passed = toPhoneRegisterState(location.state);
   const { phase, claim, remaining, openCount, error, start, reset } = usePhoneRegister();
+
+  // ほかの画面から学籍番号を渡されたら、そのまま QR を作る（1回だけ）
+  const startedRef = useRef(false);
+  useEffect(() => {
+    if (!passed || startedRef.current) return;
+    startedRef.current = true;
+    void start(passed.userId);
+  }, [passed, start]);
 
   const backToMenu = () => navigate("/admin/menu");
 
   return (
     <div className={styles.container}>
-      <Header title="スマホ登録" />
+      {/* ユーザー登録から続けて来たときは「ユーザー登録」、管理メニューから来たときは「バーコード作り直し」 */}
+      <Header title={passed?.justRegistered ? "ユーザー登録" : "バーコード作り直し"} />
+      {passed?.justRegistered && phase !== "expired" && (
+        <p className={styles.registered}>ユーザー登録が終わりました。続けて、スマホに支払い用バーコードを入れます</p>
+      )}
 
       {(phase === "scan" || phase === "creating") && (
         <div className={styles.content}>

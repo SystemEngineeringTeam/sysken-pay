@@ -70,13 +70,14 @@
   $("user-name").textContent = body.user_name;
   $("barcode").src = src;
   $("display-code").textContent = body.display_code;
-  $("download").href = src;
 
-  // 使っているスマホの案内を開いておく
+  // 使っているスマホの案内だけを出す（分からなければ両方出す）
   const ua = navigator.userAgent;
   if (/iPhone|iPad|iPod/.test(ua)) {
+    $("save-android").hidden = true;
     $("guide-ios").open = true;
   } else if (/Android/.test(ua)) {
+    $("save-ios").hidden = true;
     $("guide-android").open = true;
   }
 
