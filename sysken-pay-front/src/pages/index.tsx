@@ -1,4 +1,6 @@
 import type { JSX } from "react";
+import { useEffect } from "react";
+import { clearAdminPassword } from "../adapter/api/adminCredentials";
 import Header from "../components/layouts/Header";
 import { ChargeButton } from "../components/features/home/ChargeButton";
 import { BarcodeReader } from "../components/ui/BarcodeReader";
@@ -7,6 +9,11 @@ import styles from "./index.module.scss";
 
 export default function Home(): JSX.Element {
   const { onScan, ErrorMessage } = useProductScan();
+
+  // ホームに戻ったら管理者パスワードを忘れる（次の人がそのままチャージや管理操作をできないように）
+  useEffect(() => {
+    clearAdminPassword();
+  }, []);
 
   return (
     <div className={styles.container}>

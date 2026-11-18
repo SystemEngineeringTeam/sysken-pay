@@ -177,6 +177,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 管理者パスワードの確認
+         * @description BASIC 認証が通れば 204 を返す。フロントのパスワード入力画面で、パスワードが正しいかを確かめるのに使う
+         */
+        get: operations["verifyAdmin"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/health": {
         parameters: {
             query?: never;
@@ -425,7 +445,17 @@ export interface components {
             message?: string;
         };
     };
-    responses: never;
+    responses: {
+        /** @description 認証エラー（管理者パスワードが無い・違う） */
+        Unauthorized: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["ErrorResponse"];
+            };
+        };
+    };
     parameters: {
         /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
         UserId: string;
@@ -467,6 +497,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
             /** @description ユーザーIDが既に登録済み */
             409: {
                 headers: {
@@ -571,6 +602,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
             /** @description サーバーエラー */
             500: {
                 headers: {
@@ -616,6 +648,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
             /** @description サーバーエラー */
             500: {
                 headers: {
@@ -661,6 +694,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
             /** @description サーバーエラー */
             500: {
                 headers: {
@@ -699,6 +733,15 @@ export interface operations {
             };
             /** @description リクエスト不正 */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 購入対象の商品が存在しない */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -751,6 +794,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
             /** @description サーバーエラー */
             500: {
                 headers: {
@@ -909,6 +953,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
             /** @description サーバーエラー */
             500: {
                 headers: {
@@ -951,6 +996,7 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            401: components["responses"]["Unauthorized"];
             /** @description サーバーエラー */
             500: {
                 headers: {
@@ -967,7 +1013,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description JANコード（8桁または13桁） */
+                /** @description JANコード（8桁または13桁。チェックデジット検証あり。不正な場合は400を返す） */
                 jan_code: string;
             };
             cookie?: never;
@@ -992,6 +1038,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description 商品が存在しない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description サーバーエラー */
             500: {
                 headers: {
@@ -1001,6 +1056,25 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+        };
+    };
+    verifyAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 認証成功 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
         };
     };
     healthCheck: {

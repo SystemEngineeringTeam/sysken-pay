@@ -135,6 +135,7 @@ pnpm build-storybook
 `.env` ファイルをプロジェクトルートに作成してください。
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080   # バックエンドAPIのURL
-VITE_ADMIN_PASSWORD=your_password         # 管理者パスワード
+VITE_API_URL=http://localhost:8080   # バックエンドAPIのURL
 ```
+
+管理者・チャージ画面のパスワードは、バックエンドの `.env` の `ADMIN_PASSWORD` で設定します（パスワードの確認はバックエンドで行います）。`VITE_` で始まる値はビルド後の JS から誰でも読めるので、パスワードなどの秘密情報は書かないでください。

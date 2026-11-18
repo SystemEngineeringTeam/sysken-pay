@@ -5,29 +5,28 @@ import Header from "../../components/layouts/Header/index";
 import Button from "../../components/ui/Button/index";
 import { Input } from "../../components/ui/Input";
 import ArrowButton from "../../components/ui/ArrowButton";
+import { useAdminLogin } from "../../hooks/useAdminLogin";
 import styles from "./index.module.scss";
 
 export default function Admin(): JSX.Element {
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const { login, isLoading, error: errorMessage, clearError } = useAdminLogin();
 
   const handleHome = () => {
     navigate("/");
   }
 
-  const handleSubmit = () => {
-    if (password !== import.meta.env.VITE_ADMIN_PASSWORD) {
-      setErrorMessage("パスワードが違います");
-      return;
+  const handleSubmit = async () => {
+    if (isLoading) return;
+    if (await login(password)) {
+      navigate("/admin/menu");
     }
-    setErrorMessage("");
-    navigate("/admin/menu");
   }
 
   const handlePasswordChange = (value: string) => {
     setPassword(value);
-    if (errorMessage) setErrorMessage("");
+    if (errorMessage) clearError();
   }
 
   return (

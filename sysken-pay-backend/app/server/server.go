@@ -15,7 +15,6 @@ import (
 	"sysken-pay-api/app/infra/transaction"
 	api_balance "sysken-pay-api/app/ui/api/balance"
 	api_charge "sysken-pay-api/app/ui/api/charge"
-	"sysken-pay-api/app/ui/api/health"
 	api_item "sysken-pay-api/app/ui/api/item"
 	api_purchase "sysken-pay-api/app/ui/api/purchase"
 	api_user "sysken-pay-api/app/ui/api/user"
@@ -25,10 +24,6 @@ import (
 	"sysken-pay-api/app/usecase/purchase"
 	"sysken-pay-api/app/usecase/user"
 	"time"
-
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/cors"
 )
 
 // TODO エンドポイントとUI層との接続
@@ -76,43 +71,17 @@ func Run(db *sql.DB) error {
 	chargeHandler := api_charge.NewChargeHandler(chargeAmountUseCase, chargeCancelUseCase)
 	purchaseHandler := api_purchase.NewPurchaseHandler(createPurchaseUseCase, cancelPurchaseUseCase)
 	balanceHandler := api_balance.NewBalanceHandler(getBalanceUseCase, getPurchaseHistoriesUseCase)
-	// ルーターの設定
-	r := chi.NewRouter()
-
-	// ミドルウェアの設定
-	r.Use(middleware.RequestID)
-	r.Use(middleware.RealIP)
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
-	r.Use(newCORS().Handler)
-
-	// リクエストタイムアウトをコンテキストに設定
-	// リクエストがタイムアウトした場合、ctx.Done()を通じて通知し、以降の処理を停止する
-	r.Use(middleware.Timeout(requestTimeout))
-
-	// v1 エンドポイント
-	r.Route("/v1", func(r chi.Router) {
-		// ユーザー関連
-		r.Post("/user", userHandler.RegisterUser)
-		r.Route("/user/{user_id}", func(r chi.Router) {
-			r.Get("/", userHandler.GetUser)
-			r.Patch("/", userHandler.UpdateUser)
-			r.Post("/charge", chargeHandler.ChargeAmount)
-			r.Post("/charge/cancel", chargeHandler.ChargeCancel)
-			r.Post("/purchase", purchaseHandler.CreatePurchase)
-			r.Post("/purchase/cancel", purchaseHandler.CancelPurchase)
-			r.Get("/balance", balanceHandler.GetBalance)
-			r.Get("/history", balanceHandler.GetPurchaseHistories)
-		})
-
-		// 商品関連
-		r.Post("/item", itemHandler.ResisterItem)
-		r.Patch("/item", itemHandler.UpdateItem)
-		r.Get("/item", itemHandler.GetAllItems)
-		r.Get("/item/{jan_code}", itemHandler.GetItemByJanCode)
-
-		// ヘルスチェック
-		r.Get("/health", health.Check)
+	r := newRouter(handlers{
+		user:     userHandler,
+		item:     itemHandler,
+		charge:   chargeHandler,
+		purchase: purchaseHandler,
+		balance:  balanceHandler,
+	}, routerConfig{
+		adminUser:      config.AdminUser(),
+		adminPassword:  config.AdminPassword(),
+		allowedOrigins: config.AllowedOrigins(),
+		timeout:        requestTimeout,
 	})
 
 	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
@@ -142,20 +111,4 @@ func Run(db *sql.DB) error {
 	}
 
 	return nil
-}
-
-func newCORS() *cors.Cors {
-	return cors.New(cors.Options{
-		AllowedOrigins: []string{"*"},
-		AllowedHeaders: []string{"*"},
-		AllowedMethods: []string{
-			http.MethodGet,
-			http.MethodHead,
-			http.MethodPut,
-			http.MethodPatch,
-			http.MethodPost,
-			http.MethodDelete,
-			http.MethodOptions,
-		},
-	})
 }
