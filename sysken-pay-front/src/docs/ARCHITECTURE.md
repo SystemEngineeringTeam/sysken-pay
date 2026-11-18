@@ -44,10 +44,10 @@ src/
 │   │   ├── confirm.tsx         # /buy/confirm 決済方法選択
 │   │   ├── complete.tsx        # /buy/complete 購入完了
 │   │   └── [paymentMethod]/
-│   │       ├── index.tsx       # /buy/:paymentMethod 学生証スキャン or 現金投入
+│   │       ├── index.tsx       # /buy/:paymentMethod シス研Payバーコードのスキャン or 現金投入
 │   │       └── confirm.tsx     # /buy/:paymentMethod/confirm シスPay購入確定
 │   ├── charge/
-│   │   ├── index.tsx           # /charge パスワード認証 → 学生証スキャン
+│   │   ├── index.tsx           # /charge パスワード認証 → シス研Payバーコードのスキャン
 │   │   ├── select.tsx          # /charge/select チャージ金額選択
 │   │   ├── insert.tsx          # /charge/insert 現金投入・API実行
 │   │   └── complete.tsx        # /charge/complete チャージ完了

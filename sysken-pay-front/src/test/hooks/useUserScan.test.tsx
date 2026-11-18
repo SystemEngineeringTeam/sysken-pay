@@ -47,7 +47,7 @@ describe("useUserScan", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/charge/select");
   });
 
-  it("未登録の学生証なら残高を取らず、先へ進まない", async () => {
+  it("未登録のバーコードなら残高を取らず、先へ進まない", async () => {
     mockGetUser.mockRejectedValue(new ApiError("user not found", 404));
 
     const { result } = renderHook(() => useUserScan("/buy/sysken-pay/confirm"));

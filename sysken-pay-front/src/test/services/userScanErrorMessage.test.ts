@@ -3,15 +3,15 @@ import { ApiError } from "../../adapter/api/ApiError";
 import { toUserScanErrorMessage } from "../../services/userScanErrorMessage";
 
 describe("toUserScanErrorMessage", () => {
-  it("404 は未登録の学生証", () => {
+  it("404 は未登録のバーコード", () => {
     expect(toUserScanErrorMessage(new ApiError("user not found", 404))).toBe(
-      "登録されていない学生証です。担当者にご連絡ください。"
+      "登録されていないバーコードです。担当者にご連絡ください。"
     );
   });
 
   it("400 は読み取りミス", () => {
     expect(toUserScanErrorMessage(new ApiError("invalid userID", 400))).toBe(
-      "学生証のバーコードを読み取れませんでした。もう一度かざしてください。"
+      "シス研Payバーコードを読み取れませんでした。もう一度かざしてください。"
     );
   });
 

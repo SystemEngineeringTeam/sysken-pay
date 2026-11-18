@@ -61,7 +61,7 @@ export default function ChargePage(): JSX.Element {
         <BarcodeReader
           mode="member"
           onScan={onScan}
-          placeholder="学生証のバーコードをかざしてください"
+          placeholder="シス研Payバーコードをかざしてください"
         />
         <ErrorMessage />
       </div>
