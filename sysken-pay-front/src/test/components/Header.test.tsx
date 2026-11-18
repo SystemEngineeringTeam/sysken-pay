@@ -20,12 +20,12 @@ describe("Header のアイコン", () => {
     expect(screen.getByText("ホーム")).toBeTruthy();
   });
 
-  it("購入の途中（toTop）は確認を出し、「戻る」でホームへ飛ぶ", () => {
+  it("購入の途中（toTop）は確認を出し、「はい」でホームへ飛ぶ", () => {
     renderHeader("toTop");
     fireEvent.click(screen.getByRole("button", { name: "ホームに戻る" }));
     expect(screen.queryByText("ホーム")).toBeNull();
     expect(screen.getByText("本当に最初から戻りますか？")).toBeTruthy();
-    fireEvent.click(screen.getByRole("button", { name: "戻る" }));
+    fireEvent.click(screen.getByRole("button", { name: "はい" }));
     expect(screen.getByText("ホーム")).toBeTruthy();
   });
 
