@@ -9,6 +9,12 @@ describe("toMemberErrorMessage", () => {
     expect(toMemberErrorMessage("resume", new ApiError("x", 409))).toContain("利用停止していません");
   });
 
+  it("非表示・削除の 409", () => {
+    expect(toMemberErrorMessage("hide", new ApiError("x", 409))).toContain("残高が 0 円");
+    expect(toMemberErrorMessage("unhide", new ApiError("x", 409))).toContain("非表示にしていません");
+    expect(toMemberErrorMessage("delete", new ApiError("x", 409))).toContain("記録がある人は削除できません");
+  });
+
   it("401・404", () => {
     expect(toMemberErrorMessage("list", new ApiError("x", 401))).toContain("管理者パスワード");
     expect(toMemberErrorMessage("stop", new ApiError("x", 404))).toContain("登録されていません");

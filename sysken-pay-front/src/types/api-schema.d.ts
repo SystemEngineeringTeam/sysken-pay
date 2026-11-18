@@ -37,7 +37,13 @@ export interface paths {
         get: operations["getUser"];
         put?: never;
         post?: never;
-        delete?: never;
+        /**
+         * 停止中の人の削除
+         * @description 停止中で、購入・チャージ・返金の記録が1件もない人（登録ミス・テストで作った人）だけを消す。
+         *     その人の行と、支払い用バーコード・発行用 QR の行を消す。**取り消せない**。
+         *     記録が1件でもある人は消さない（会計の記録を残すため）。その人は非表示にする。
+         */
+        delete: operations["deleteMember"];
         options?: never;
         head?: never;
         /** ユーザー更新 */
@@ -321,6 +327,47 @@ export interface paths {
          * @description 利用停止を解除する（再入部など）。このあと支払い用バーコードを発行し直す。
          */
         post: operations["resumeMember"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/user/{user_id}/hide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 停止中の人を一覧から非表示にする
+         * @description 停止中で、残高が 0 の人を一覧から隠す。記録は何も消さない。
+         *     残高が残っている人（未返金）は非表示にできない（先に返金する）。
+         */
+        post: operations["hideMember"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/user/{user_id}/unhide": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 非表示の解除
+         * @description 非表示にした人を、停止中の一覧に戻す。
+         */
+        post: operations["unhideMember"];
         delete?: never;
         options?: never;
         head?: never;
@@ -631,6 +678,10 @@ export interface components {
             unrefunded: boolean;
             /** @description 年度末の卒業候補か（使える人のうち、入学から4年以上たった人） */
             graduation_candidate: boolean;
+            /** @description 一覧から非表示にした人か（停止中で残高 0 の人だけがなれる） */
+            hidden: boolean;
+            /** @description 削除できる人か（停止中で、購入・チャージ・返金の記録が1件もない） */
+            deletable: boolean;
         };
         RefundResponse: {
             /** @example success */
@@ -647,6 +698,11 @@ export interface components {
             balance: number;
         };
         ResumeMemberResponse: {
+            /** @example success */
+            status: string;
+            user_id: string;
+        };
+        MemberDoneResponse: {
             /** @example success */
             status: string;
             user_id: string;
@@ -850,6 +906,66 @@ export interface operations {
             };
             /** @description ユーザーが存在しない */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
+                user_id: components["parameters"]["UserId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberDoneResponse"];
+                };
+            };
+            /** @description 学籍番号の形式が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description ユーザーが登録されていない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 利用停止していない・購入／チャージ／返金の記録がある */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1776,6 +1892,126 @@ export interface operations {
                 };
             };
             /** @description 利用停止していない */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    hideMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
+                user_id: components["parameters"]["UserId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberDoneResponse"];
+                };
+            };
+            /** @description 学籍番号の形式が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description ユーザーが登録されていない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 利用停止していない・残高が残っている・すでに非表示 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    unhideMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
+                user_id: components["parameters"]["UserId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberDoneResponse"];
+                };
+            };
+            /** @description 学籍番号の形式が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description ユーザーが登録されていない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 非表示にしていない */
             409: {
                 headers: {
                     [name: string]: unknown;
