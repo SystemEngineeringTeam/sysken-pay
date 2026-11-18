@@ -45,7 +45,7 @@ func (h *balanceHandlerImpl) GetBalance(w http.ResponseWriter, r *http.Request) 
 	b, err := h.getBalanceUseCase.GetBalance(ctx, userID)
 	if err != nil {
 		log.Printf("Failed to get balance: %v", err)
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 
@@ -84,7 +84,7 @@ func (h *balanceHandlerImpl) GetPurchaseHistories(w http.ResponseWriter, r *http
 	histories, totalAmount, pageInfo, err := h.getPurchaseHistoriesUseCase.GetPurchaseHistories(ctx, userID, page, perPage)
 	if err != nil {
 		log.Printf("Failed to get purchase histories: %v", err)
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 

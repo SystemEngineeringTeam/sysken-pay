@@ -52,7 +52,7 @@ func (h *itemHandlerImpl) ResisterItem(w http.ResponseWriter, r *http.Request) {
 	createdItem, err := h.registerItemUseCase.RegisterItem(ctx, req.JanCode, req.ItemName, req.Price)
 	if err != nil {
 		log.Printf("Failed to register item: %v", err)
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 
@@ -81,7 +81,7 @@ func (h *itemHandlerImpl) UpdateItem(w http.ResponseWriter, r *http.Request) {
 	updatedItem, err := h.updateItemUseCase.UpdateItem(ctx, req.JanCode, req.ItemName, req.Price)
 	if err != nil {
 		log.Printf("Failed to update item: %v", err)
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 
@@ -114,7 +114,7 @@ func (h *itemHandlerImpl) GetItemByJanCode(w http.ResponseWriter, r *http.Reques
 			apierrors.RespondError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 	if foundItem == nil {
@@ -139,7 +139,7 @@ func (h *itemHandlerImpl) GetAllItems(w http.ResponseWriter, r *http.Request) {
 	allItems, err := h.getAllItemsUseCase.GetAllItems(ctx)
 	if err != nil {
 		log.Printf("Failed to get all items: %v", err)
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 	//レスポンスの作成

@@ -52,7 +52,7 @@ func (h *chargeHandlerImpl) ChargeAmount(w http.ResponseWriter, r *http.Request)
 	chargedAmount, err := h.chargeAmountUseCase.ChargeAmount(ctx, userID, req.Amount)
 	if err != nil {
 		log.Printf("Failed to charge amount: %v", err)
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 
@@ -89,7 +89,7 @@ func (h *chargeHandlerImpl) ChargeCancel(w http.ResponseWriter, r *http.Request)
 	canceledCharge, err := h.chargeCancelUseCase.ChargeCancel(ctx, userID, req.Amount)
 	if err != nil {
 		log.Printf("Failed to cancel charge: %v", err)
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 

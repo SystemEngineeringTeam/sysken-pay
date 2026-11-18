@@ -2,6 +2,7 @@ package item
 
 import (
 	"errors"
+	"sysken-pay-api/app/domain/derrors"
 	"time"
 	"unicode/utf8"
 )
@@ -26,19 +27,19 @@ func (p *Item) SetID(id int) error {
 
 func (p *Item) SetJanCode(janCode string) error {
 	if janCode == "" {
-		return errors.New("janCode must not be empty")
+		return derrors.Invalid("janCode must not be empty")
 	}
 	// JANコードは13桁の数字か短縮型の8桁であること
 	if len(janCode) != 13 && len(janCode) != 8 {
-		return errors.New("janCode must be 13 or 8 characters long")
+		return derrors.Invalid("janCode must be 13 or 8 characters long")
 	}
 	// JANコードは数字のみで構成されていること
 	if !isNumeric(janCode) {
-		return errors.New("janCode must be numeric")
+		return derrors.Invalid("janCode must be numeric")
 	}
 	// JANコードのチェックデジットが正しいこと
 	if !isValidJanCode(janCode) {
-		return errors.New("janCode must be valid")
+		return derrors.Invalid("janCode must be valid")
 	}
 	p.janCode = janCode
 	return nil
@@ -46,7 +47,7 @@ func (p *Item) SetJanCode(janCode string) error {
 
 func (p *Item) SetName(name string) error {
 	if !(utf8.RuneCountInString(name) >= 1) {
-		return errors.New("name must not be empty")
+		return derrors.Invalid("name must not be empty")
 	}
 	p.name = name
 	return nil
@@ -54,7 +55,7 @@ func (p *Item) SetName(name string) error {
 
 func (p *Item) SetPrice(price int) error {
 	if price < 0 {
-		return errors.New("price must be non-negative")
+		return derrors.Invalid("price must be non-negative")
 	}
 	p.price = price
 	return nil
