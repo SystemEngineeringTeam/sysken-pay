@@ -84,6 +84,9 @@ make migrate FILE=db/migrations/001_payment_card.sql
 - 実行前に自動で `make backup` を取ります
 - `db/migrations/` の SQL は何度流しても壊れないように書く（`CREATE TABLE IF NOT EXISTS` など）
 - 新しく作る DB には `db/init.sql` の内容が入るので、テーブルを足したら `init.sql` にも同じものを足す
+- **まだ流していない migration は、番号の小さい順にすべて流す**。途中を飛ばすと、新しい API が古い DB にないテーブル・列を読んで、一覧などが 500 になる（例: `003_refund.sql` を流さずに `004` の API を動かすと、ユーザー一覧が `Table 'sysken_pay.refund' doesn't exist` で失敗する）
+- どこまで流したかは、DB にテーブル・列があるかで確かめる（`SHOW TABLES;`、`SHOW COLUMNS FROM user;`）
+- 本番（ラズパイ）を新しくするときは、`make backup` → 足りない migration を番号順に流す → API を作り直す、の順にする
 
 | ファイル | 内容 |
 |---|---|
