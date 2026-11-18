@@ -125,7 +125,59 @@ crontab -l    # 0 3 * * * の行が1つだけあること
 - バックアップには部員の個人情報と残高が入るので、ファイルは自分だけが読める権限で作られる
 - このままだと SD カードの中にしかない。USB メモリなど、ラズパイの外にもコピーすること（未設定）
 
-## 8. 確認
+## 8. IP アドレスを固定する
+
+スマホ登録の QR に入れる URL にラズパイの IP アドレスを使うので、変わらないようにする。
+本当はルーターの予約（MAC アドレスで固定）がきれいだが、ルーター側の登録が合っていなくても動くように、ラズパイ側でも固定する。
+
+調べる（`<...>` に入れる値はここから読む。IP アドレスは部の管理表の値を使う）:
+
+```bash
+nmcli -t -f NAME,DEVICE connection show --active   # Wi-Fi の接続名（<接続名>）
+ip -br addr show wlan0                             # 今の IP と、/ のあとの数（<範囲>。例: 23）
+ip route | grep default                            # via のあとがゲートウェイ（<ゲートウェイ>）
+ping -c 2 <IP>                                     # 返事が無ければ、その IP は空いている
+```
+
+遠隔で変えるときは、失敗しても5分後に元に戻るように予約してから変える（1行ずつ）:
+
+```bash
+sudo systemd-run --unit=ip-rollback --on-active=5min /bin/sh -c 'nmcli connection modify <接続名> ipv4.method auto ipv4.addresses "" ipv4.gateway "" ipv4.dns "" && nmcli connection up <接続名>'
+sudo nmcli connection modify <接続名> ipv4.method manual ipv4.addresses <IP>/<範囲> ipv4.gateway <ゲートウェイ> ipv4.dns "8.8.8.8 1.1.1.1"
+sudo nmcli connection up <接続名>     # ここでリモートシェルが切れる。1分ほど待ってつなぎ直す
+ip -br addr show wlan0                # <IP> になっていること
+ping -c 2 8.8.8.8                     # 返事があること
+sudo systemctl stop ip-rollback.timer # うまくいったら、元に戻す予約を取り消す（忘れると5分後に戻る）
+```
+
+- うまくいかなければ何もしなくてよい。5分後に元の設定に戻るので、6分ほど待ってつなぎ直す
+- Wi-Fi の名前やパスワードが変わったら、やり直す
+
+## 9. スマホ登録の入口を開ける
+
+スマホで QR を読んだときに開く「支払い用バーコードを受け取るページ」の入口（ポート 8081）を、部室の Wi-Fi に開ける。
+開くのはこのページと受け取り API だけで、購入などの API は今まで通りラズパイの中からしか届かない。
+
+```bash
+cd ~/sysken-pay/sysken-pay-backend
+nano .env    # 下の2行を書く（<IP> は 8. で固定した IP アドレス）
+#   CLAIM_BIND_ADDR=0.0.0.0
+#   PUBLIC_BASE_URL=http://<IP>:8081
+docker compose up -d --build
+```
+
+確認：
+
+```bash
+docker compose ps                                                       # 0.0.0.0:8081->8081 が出ること
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8081/claim    # 200
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8081/v1/health # 404（API は出ていない）
+```
+
+- 部室の Wi-Fi につないだスマホで `http://<IP>:8081/claim` を開くと「QR コードをもう一度読み取ってください」と出れば、入口は届いている
+- 管理メニュー →「スマホ登録」で QR を出して、スマホで読み取れることを確かめる
+
+## 10. 確認
 
 - 再起動後、何も操作しなくてもシス研Pay の画面が全画面で出る
 - 右上の歯車 → 管理者パスワードで管理メニューに入れる
@@ -153,5 +205,5 @@ sudo systemctl restart sysken-pay-front
 ## まだやっていないこと
 
 - 5インチのタッチモニターをつないでの確認（800x480 で全画面になるか、タッチが効くか）
-- ルーターでの IP アドレスの固定割り当て（管理表の値と、実際に割り当てられている値が違った）
+- ルーターの予約の登録し直し（ルーターに登録されている MAC アドレスが、ラズパイの Wi-Fi のものと違った。今はラズパイ側で固定している）
 - バックアップのラズパイの外（USB メモリなど）への保存

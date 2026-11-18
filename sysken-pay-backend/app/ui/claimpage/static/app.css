@@ -1,0 +1,124 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #f4f6f8;
+  color: #1f2933;
+  font-family: system-ui, -apple-system, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 22px;
+  text-align: center;
+  margin: 8px 0 16px;
+}
+
+h2 {
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+
+p {
+  margin: 0 0 8px;
+}
+
+ul {
+  margin: 0 0 8px;
+  padding-left: 20px;
+}
+
+li {
+  margin-bottom: 4px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.error {
+  border: 2px solid #c62828;
+  color: #c62828;
+  font-weight: bold;
+}
+
+.warn {
+  border: 2px solid #e65100;
+  background: #fff3e0;
+}
+
+.note {
+  color: #52606d;
+  font-size: 14px;
+}
+
+.name {
+  font-size: 20px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.barcode {
+  background: #fff;
+  border-radius: 12px;
+  padding: 16px 8px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.barcode img {
+  display: block;
+  width: 100%;
+  height: auto;
+  /* 拡大でぼやけてバーが読めなくならないように */
+  image-rendering: pixelated;
+  -webkit-touch-callout: default;
+}
+
+.code {
+  margin-top: 8px;
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  user-select: all;
+}
+
+.button {
+  display: block;
+  margin-top: 8px;
+  padding: 14px;
+  border-radius: 10px;
+  background: #1565c0;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+}
+
+details {
+  border-top: 1px solid #e4e7eb;
+  padding: 8px 0;
+}
+
+summary {
+  font-weight: bold;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+details ul {
+  margin-top: 8px;
+}

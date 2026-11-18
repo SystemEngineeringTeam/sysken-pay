@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="noindex" />
+    <title>シス研Pay 支払い用バーコード</title>
+    <link rel="stylesheet" href="/claim/app.css" />
+  </head>
+  <body>
+    <main>
+      <h1>シス研Pay<br />支払い用バーコード</h1>
+
+      <section id="loading" class="card">
+        <p>読み込んでいます…</p>
+      </section>
+
+      <section id="error" class="card error" hidden>
+        <p id="error-message"></p>
+      </section>
+
+      <section id="done" hidden>
+        <p class="name"><span id="user-name"></span> さん</p>
+
+        <div class="barcode">
+          <img id="barcode" alt="支払い用バーコード" />
+          <p id="display-code" class="code"></p>
+        </div>
+
+        <div class="card warn">
+          <p><strong>このバーコードがあれば、だれでもあなたの残高で払えます。</strong></p>
+          <p>人に見せたり、送ったりしないでください。</p>
+        </div>
+
+        <div class="card">
+          <h2>1. 画像を保存する</h2>
+          <p class="note">このページは5分で使えなくなります。今のうちに保存してください。</p>
+          <ul>
+            <li>上のバーコードを<strong>長押し</strong>して、「写真に追加」または「画像をダウンロード」を選ぶ</li>
+            <li>うまくいかないときは、下のボタンで保存する</li>
+          </ul>
+          <a id="download" class="button" download="sysken-pay-barcode.png">画像を保存する</a>
+        </div>
+
+        <div class="card">
+          <h2>2. Wallet に入れる（おすすめ）</h2>
+          <p class="note">Wallet に入れておくと、支払いのときにすぐ出せます。</p>
+
+          <details id="guide-ios">
+            <summary>iPhone の場合（iOS 27 以降）</summary>
+            <ul>
+              <li>「ウォレット」アプリを開き、上の「＋」→「パスを作成」を選ぶ</li>
+              <li>Apple Intelligence が使える機種なら、保存した画像を「写真」で開いて、「ウォレットに追加」からも作れます</li>
+              <li>画面の案内に従って、保存したバーコードの画像を読み込む（文字を入力する欄があれば、バーコードの下の文字を入れる）</li>
+              <li>作れないとき・iOS 26 以前のときは、保存した画像を「写真」から開いて支払いに使ってください</li>
+            </ul>
+          </details>
+
+          <details id="guide-android">
+            <summary>Android の場合</summary>
+            <ul>
+              <li>「Google ウォレット」アプリを開く</li>
+              <li>「ウォレットに追加」→「写真」を選ぶ（「写真からパスを作成」）</li>
+              <li>保存したバーコードの画像を選ぶ</li>
+              <li>うまく読み込めないときは、保存した画像を「フォト」から開いて支払いに使ってください</li>
+            </ul>
+          </details>
+        </div>
+
+        <div class="card">
+          <h2>困ったとき</h2>
+          <ul>
+            <li>読み取りにくいときは、画面を明るくしてください</li>
+            <li>スマホを替えた・画像を消してしまったときは、役員に作り直してもらってください（作り直すと、前のバーコードは使えなくなります）</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+    <script src="/claim/app.js"></script>
+  </body>
+</html>

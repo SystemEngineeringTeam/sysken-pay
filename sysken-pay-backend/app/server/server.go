@@ -80,6 +80,7 @@ func Run(db *sql.DB) error {
 	balanceHandler := api_balance.NewBalanceHandler(getBalanceUseCase, getPurchaseHistoriesUseCase)
 	paymentCardHandler := api_paymentcard.NewHandler(issuePaymentCardUseCase, resolvePaymentCardUseCase)
 	paymentCardClaimHandler := api_paymentcard.NewClaimHandler(paymentCardClaimUseCase, config.PublicBaseURL())
+	paymentCardClaimOpenHandler := api_paymentcard.NewClaimOpenHandler(paymentCardClaimUseCase)
 	r := newRouter(handlers{
 		user:     userHandler,
 		item:     itemHandler,
@@ -96,30 +97,37 @@ func Run(db *sql.DB) error {
 		timeout:        requestTimeout,
 	})
 
-	ctx, _ := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
-	srv := &http.Server{
-		Addr:              addr,
-		Handler:           r,
-		ReadHeaderTimeout: readHeaderTimeout,
-	}
+	// 部室の Wi-Fi に開ける入口（支払い用バーコードを受け取るページだけ）
+	claimRouter := newClaimRouter(paymentCardClaimOpenHandler, requestTimeout)
 
-	l, err := net.Listen("tcp", addr)
-	slog.Info("Serve on 127.0.0.1", "addr", addr)
-	if err != nil {
-		slog.Error("failed to listen", "err", err)
-	}
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
+	defer stop()
 
-	go func() {
-		if err = srv.Serve(l); err != nil {
-			slog.Error("failed to serve", "err", err)
+	servers := []*http.Server{
+		{Addr: addr, Handler: r, ReadHeaderTimeout: readHeaderTimeout},
+		{Addr: ":" + strconv.Itoa(ClaimPort), Handler: claimRouter, ReadHeaderTimeout: readHeaderTimeout},
+	}
+	for _, srv := range servers {
+		l, err := net.Listen("tcp", srv.Addr)
+		if err != nil {
+			slog.Error("failed to listen", "addr", srv.Addr, "err", err)
+			return err
 		}
-	}()
+		slog.Info("Serve", "addr", srv.Addr)
+		go func(srv *http.Server) {
+			if err := srv.Serve(l); err != nil && err != http.ErrServerClosed {
+				slog.Error("failed to serve", "addr", srv.Addr, "err", err)
+			}
+		}(srv)
+	}
 
 	<-ctx.Done()
-	ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer cancel()
-	if err = srv.Shutdown(ctx); err != nil {
-		slog.Error("failed to shutdown server", "err", err)
+	for _, srv := range servers {
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			slog.Error("failed to shutdown server", "addr", srv.Addr, "err", err)
+		}
 	}
 
 	return nil
