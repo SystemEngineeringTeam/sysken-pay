@@ -1,14 +1,68 @@
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap');
 
+/*
+ * 画面サイズの設定（Raspberry Pi 5 + 5インチ DSI タッチモニター 800x480）
+ *
+ * - スタイルはすべて rem 基準で、1600x960 の画面でちょうど収まるデザインになっている
+ * - html の font-size を --ui-scale 倍にして、デザイン全体を 800x480 に縮める
+ *   （1600 → 800 なので 0.5。1rem = 8px）
+ * - #root を 800x480 の「画面の枠」に固定する
+ *   - ラズパイのキオスク表示では、ウィンドウ全体 = この枠になる
+ *   - PC で開発するときは、枠が画面中央に出るので実機と同じ見え方で確認できる
+ * - 別のモニターに替えるときは、この3つの値だけ変える
+ */
+:root {
+  --screen-width: 800px;
+  --screen-height: 480px;
+  --ui-scale: 0.5;
+}
+
+html {
+  font-size: calc(16px * var(--ui-scale));
+  height: 100%;
+  overflow: hidden;
+  background-color: #d9dadc; /* 枠の外側（PC で開発するときだけ見える） */
+}
+
 body {
-  background-color: #FFFDFB;
+  height: 100%;
   margin: 0;
   padding: 0;
   font-family: 'Noto Sans JP', sans-serif;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-html {
-  background-color: #FFFDFB;
+#root {
+  position: relative;
+  width: var(--screen-width);
+  height: var(--screen-height);
+  flex-shrink: 0;
   overflow: hidden;
+  background-color: #FFFDFB;
+  /* position: fixed の要素（モーダル・戻るボタン等）を、ウィンドウではなくこの枠を基準に配置する */
+  contain: layout paint;
+}
+
+/*
+ * タッチパネル向けの設定
+ * - ダブルタップでの拡大、長押しでの文字選択、タップ時の青いハイライト、
+ *   引っ張ったときのバウンドを止める
+ */
+html,
+body,
+#root {
+  touch-action: manipulation;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+input,
+textarea {
+  -webkit-user-select: text;
+  user-select: text;
 }
