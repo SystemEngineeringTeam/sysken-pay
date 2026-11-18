@@ -5,6 +5,7 @@ import { useBalanceStore } from "../store/useBalanceStore";
 import { useUserStore } from "../store/useUserStore";
 import { ItemRepositoryImpl } from "../adapter/repository/ItemRepositoryImpl";
 import { UserRepositoryImpl } from "../adapter/repository/UserRepositoryImpl";
+import { toUserScanErrorMessage } from "../services/userScanErrorMessage";
 import styles from "./useBarcodeReader.module.scss";
 
 function useScanGuards() {
@@ -62,7 +63,11 @@ export function useProductScan() {
   return { onScan, ErrorMessage };
 }
 
-export function useUserScan() {
+/**
+ * 学生証を読み取り、登録済みのユーザーかを確かめてから残高を取得し、nextPath へ進む。
+ * 残高 API は未登録の学籍番号でも 0 円を返すので、必ず先にユーザー取得 API で存在を確かめる。
+ */
+export function useUserScan(nextPath: string = "/charge/select") {
   const navigate = useNavigate();
   const setBalance = useBalanceStore((state) => state.setBalance);
   const setScannedUser = useUserStore((state) => state.setScannedUser);
@@ -78,10 +83,10 @@ export function useUserScan() {
       if (!isMountedRef.current) return;
       setBalance(balance);
       setScannedUser({ user_id: user.user_id! });
-      navigate("/charge/select");
+      navigate(nextPath);
     } catch (e) {
       if (!isMountedRef.current) return;
-      setError(e instanceof Error ? e.message : "ユーザーの取得に失敗しました");
+      setError(toUserScanErrorMessage(e));
     } finally {
       isScanningRef.current = false;
     }
