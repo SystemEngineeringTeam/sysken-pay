@@ -162,6 +162,18 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "401":
           $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: ユーザーが登録されていない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: 新しい学籍番号がもう使われている
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "500":
           description: サーバーエラー
           content:
@@ -1077,6 +1089,13 @@ components:
       type: object
       required: [user_name]
       properties:
+        user_id:
+          type: string
+          maxLength: 20
+          description: |
+            新しい学籍番号（登録のときの打ち間違いを直すときだけ入れる）。
+            チャージ・購入・残高・返金・支払い用バーコードの記録も新しい学籍番号に付け替える
+          example: 20K23099
         user_name:
           type: string
           minLength: 1

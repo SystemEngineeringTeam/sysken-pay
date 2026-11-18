@@ -100,6 +100,16 @@ describe("UserRepositoryImpl", () => {
       });
     });
 
+    it("学籍番号を変えるときは user_id も送る。エラーはステータス付き", async () => {
+      mockPatch.mockResolvedValue({ data: undefined, error: { message: "user already exists" }, response: { status: 409 } });
+      const err = await UserRepositoryImpl.updateUser("24K01234", { user_id: "24K01235", user_name: "x" }).catch((e) => e);
+      expect(mockPatch).toHaveBeenCalledWith("/v1/user/{user_id}", {
+        params: { path: { user_id: "24K01234" } },
+        body: { user_id: "24K01235", user_name: "x" },
+      });
+      expect(err.status).toBe(409);
+    });
+
     it("エラー時に例外を投げる", async () => {
       mockPatch.mockResolvedValue({ data: undefined, error: { message: "更新失敗" } });
       await expect(

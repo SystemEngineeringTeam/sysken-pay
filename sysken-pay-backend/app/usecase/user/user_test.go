@@ -16,6 +16,19 @@ type mockUserRepo struct {
 	insertFunc func(ctx context.Context, u *domainuser.User) (*domainuser.User, error)
 	updateFunc func(ctx context.Context, u *domainuser.User) (*domainuser.User, error)
 	stopped    bool
+	changeFunc func(ctx context.Context, oldID, newID string) error
+}
+
+func (m *mockUserRepo) ChangeUserID(ctx context.Context, oldID, newID string) error {
+	return m.changeFunc(ctx, oldID, newID)
+}
+
+// mockTx はトランザクションの中で呼ばれたかを覚える
+type mockTx struct{ called bool }
+
+func (t *mockTx) Do(ctx context.Context, f func(ctx context.Context) error) error {
+	t.called = true
+	return f(ctx)
 }
 
 func (m *mockUserRepo) GetUserByID(ctx context.Context, userID string) (*domainuser.User, error) {
@@ -213,8 +226,8 @@ func TestUpdateUser_Success(t *testing.T) {
 			return u, nil
 		},
 	}
-	uc := NewUpdateUserUseCase(repo)
-	result, err := uc.UpdateUser(context.Background(), "20K23099", "佐藤 花子")
+	uc := NewUpdateUserUseCase(repo, &mockTx{})
+	result, err := uc.UpdateUser(context.Background(), "20K23099", "", "佐藤 花子")
 	if err != nil {
 		t.Fatalf("UpdateUser should succeed: %v", err)
 	}
@@ -228,24 +241,24 @@ func TestUpdateUser_Success(t *testing.T) {
 
 func TestUpdateUser_EmptyUserName(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUpdateUserUseCase(repo)
-	if _, err := uc.UpdateUser(context.Background(), "20K23099", ""); err == nil {
+	uc := NewUpdateUserUseCase(repo, &mockTx{})
+	if _, err := uc.UpdateUser(context.Background(), "20K23099", "", ""); err == nil {
 		t.Error("UpdateUser with empty userName should fail")
 	}
 }
 
 func TestUpdateUser_EmptyUserID(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUpdateUserUseCase(repo)
-	if _, err := uc.UpdateUser(context.Background(), "", "田中 太郎"); err == nil {
+	uc := NewUpdateUserUseCase(repo, &mockTx{})
+	if _, err := uc.UpdateUser(context.Background(), "", "", "田中 太郎"); err == nil {
 		t.Error("UpdateUser with empty userID should fail")
 	}
 }
 
 func TestUpdateUser_UserNameTooLong(t *testing.T) {
 	repo := &mockUserRepo{}
-	uc := NewUpdateUserUseCase(repo)
-	if _, err := uc.UpdateUser(context.Background(), "20K23099", strings.Repeat("a", 51)); err == nil {
+	uc := NewUpdateUserUseCase(repo, &mockTx{})
+	if _, err := uc.UpdateUser(context.Background(), "20K23099", "", strings.Repeat("a", 51)); err == nil {
 		t.Error("UpdateUser with userName > 50 chars should fail")
 	}
 }
@@ -256,8 +269,8 @@ func TestUpdateUser_RepoError(t *testing.T) {
 			return nil, errors.New("db error")
 		},
 	}
-	uc := NewUpdateUserUseCase(repo)
-	if _, err := uc.UpdateUser(context.Background(), "20K23099", "田中 太郎"); err == nil {
+	uc := NewUpdateUserUseCase(repo, &mockTx{})
+	if _, err := uc.UpdateUser(context.Background(), "20K23099", "", "田中 太郎"); err == nil {
 		t.Error("UpdateUser should propagate repo error")
 	}
 }
@@ -270,5 +283,58 @@ func TestGetUser_Stopped(t *testing.T) {
 	_, err := NewGetUserUseCase(repo).GetUser(context.Background(), "22K01234")
 	if !errors.Is(err, domainuser.ErrUserStopped) {
 		t.Fatalf("err = %v, want ErrUserStopped", err)
+	}
+}
+
+func TestUpdateUser_ChangeUserID(t *testing.T) {
+	var changed [2]string
+	repo := &mockUserRepo{
+		changeFunc: func(_ context.Context, oldID, newID string) error {
+			changed = [2]string{oldID, newID}
+			return nil
+		},
+		updateFunc: func(_ context.Context, u *domainuser.User) (*domainuser.User, error) { return u, nil },
+	}
+	tx := &mockTx{}
+	result, err := NewUpdateUserUseCase(repo, tx).UpdateUser(context.Background(), "20K23099", "20K23098", "佐藤 花子")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if changed != [2]string{"20K23099", "20K23098"} || !tx.called {
+		t.Errorf("学籍番号の付け替えがトランザクションの中で呼ばれていない: %v %v", changed, tx.called)
+	}
+	if result.ID() != "20K23098" || result.UserName() != "佐藤 花子" {
+		t.Errorf("result = %s %s", result.ID(), result.UserName())
+	}
+}
+
+func TestUpdateUser_SameOrEmptyNewIDDoesNotChange(t *testing.T) {
+	repo := &mockUserRepo{
+		changeFunc: func(context.Context, string, string) error {
+			t.Fatal("学籍番号が同じなのに付け替えた")
+			return nil
+		},
+		updateFunc: func(_ context.Context, u *domainuser.User) (*domainuser.User, error) { return u, nil },
+	}
+	for _, id := range []string{"", "20K23099", " 20K23099 "} {
+		if _, err := NewUpdateUserUseCase(repo, &mockTx{}).UpdateUser(context.Background(), "20K23099", id, "佐藤"); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
+func TestUpdateUser_ChangeUserIDErrors(t *testing.T) {
+	// 新しい学籍番号の形が不正なら付け替えない
+	repo := &mockUserRepo{changeFunc: func(context.Context, string, string) error {
+		t.Fatal("形が不正なのに付け替えた")
+		return nil
+	}}
+	if _, err := NewUpdateUserUseCase(repo, &mockTx{}).UpdateUser(context.Background(), "20K23099", "abc", "佐藤"); err == nil {
+		t.Error("形が不正な学籍番号でエラーにならない")
+	}
+	// 使われている学籍番号は 409 になるエラーをそのまま返す
+	repo = &mockUserRepo{changeFunc: func(context.Context, string, string) error { return domainuser.ErrUserAlreadyExists }}
+	if _, err := NewUpdateUserUseCase(repo, &mockTx{}).UpdateUser(context.Background(), "20K23099", "20K23098", "佐藤"); !errors.Is(err, domainuser.ErrUserAlreadyExists) {
+		t.Errorf("err = %v", err)
 	}
 }

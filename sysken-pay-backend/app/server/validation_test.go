@@ -25,7 +25,7 @@ func TestInvalidInputReturns400(t *testing.T) {
 	uh := api_user.NewUserHandler(
 		user.NewGetUserUseCase(nil),
 		user.NewRegisterUserUseCase(nil),
-		user.NewUpdateUserUseCase(nil),
+		user.NewUpdateUserUseCase(nil, nil),
 	)
 	ih := api_item.NewItemHandler(
 		item.NewRegisterItemUseCase(nil),
