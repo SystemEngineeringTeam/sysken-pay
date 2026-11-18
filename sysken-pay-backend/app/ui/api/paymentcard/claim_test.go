@@ -3,7 +3,6 @@ package paymentcard
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -22,6 +21,9 @@ type fakeClaim struct {
 	status    *paymentcard.ClaimStatus
 	statusErr error
 	called    bool
+	opened    *paymentcard.OpenedClaim
+	openErr   error
+	openToken string
 }
 
 func (f *fakeClaim) CreateClaim(context.Context, string) (*paymentcard.CreatedClaim, error) {
@@ -31,8 +33,9 @@ func (f *fakeClaim) CreateClaim(context.Context, string) (*paymentcard.CreatedCl
 func (f *fakeClaim) Status(context.Context, int64) (*paymentcard.ClaimStatus, error) {
 	return f.status, f.statusErr
 }
-func (f *fakeClaim) Open(context.Context, string) (*paymentcard.OpenedClaim, error) {
-	return nil, errors.New("not used")
+func (f *fakeClaim) Open(_ context.Context, token string) (*paymentcard.OpenedClaim, error) {
+	f.openToken = token
+	return f.opened, f.openErr
 }
 
 func claimRouter(h ClaimHandler) http.Handler {
