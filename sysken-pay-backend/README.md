@@ -72,6 +72,22 @@ make restore FILE=backups/sysken_pay-20261118-030000.sql.gz
 3. `make restore FILE=backups/<1で保存したファイル>` でデータを戻す
 4. 画面で残高・ユーザーが戻っていることを確認する
 
+## DB の変更（マイグレーション）
+
+`db/init.sql` は最初の起動時にしか実行されません。すでに動いている DB にテーブルを足すときは、`db/migrations/` の SQL を流します。
+
+```bash
+make migrate FILE=db/migrations/001_payment_card.sql
+```
+
+- 実行前に自動で `make backup` を取ります
+- `db/migrations/` の SQL は何度流しても壊れないように書く（`CREATE TABLE IF NOT EXISTS` など）
+- 新しく作る DB には `db/init.sql` の内容が入るので、テーブルを足したら `init.sql` にも同じものを足す
+
+| ファイル | 内容 |
+|---|---|
+| `001_payment_card.sql` | 支払い用バーコードの表（`docs/phone-payment.md`） |
+
 ## テスト
 
 ```bash

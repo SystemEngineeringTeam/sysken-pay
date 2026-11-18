@@ -9,6 +9,7 @@ import (
 	"sysken-pay-api/app/ui/api/health"
 	api_item "sysken-pay-api/app/ui/api/item"
 	apimw "sysken-pay-api/app/ui/api/middleware"
+	api_paymentcard "sysken-pay-api/app/ui/api/paymentcard"
 	api_purchase "sysken-pay-api/app/ui/api/purchase"
 	api_user "sysken-pay-api/app/ui/api/user"
 
@@ -23,6 +24,8 @@ type handlers struct {
 	charge   api_charge.Handler
 	purchase api_purchase.Handler
 	balance  api_balance.Handler
+	// paymentCard は支払い用バーコード（docs/phone-payment.md）
+	paymentCard api_paymentcard.Handler
 }
 
 type routerConfig struct {
@@ -35,10 +38,10 @@ type routerConfig struct {
 // newRouter はルーティングを組み立てる。
 //
 // 管理者パスワードが必要な操作（お金を動かす・登録内容を変える）は adminOnly の中に置く:
-//   - ユーザー登録・更新、商品登録・更新、チャージ、チャージ取消、購入取消
+//   - ユーザー登録・更新、商品登録・更新、チャージ、チャージ取消、購入取消、支払い用バーコードの発行
 //
 // 部員がキオスクでそのまま使う操作は認証なし:
-//   - ユーザー・残高・履歴・商品の取得、購入、ヘルスチェック
+//   - ユーザー・残高・履歴・商品の取得、購入、支払い用バーコードの照合、ヘルスチェック
 func newRouter(h handlers, cfg routerConfig) http.Handler {
 	r := chi.NewRouter()
 
@@ -61,6 +64,8 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 		r.Get("/item", h.item.GetAllItems)
 		r.Get("/item/{jan_code}", h.item.GetItemByJanCode)
 		r.Get("/health", health.Check)
+		// 支払い用バーコードの中身は URL ではなく本文で受け取る（アクセスログに残さないため）
+		r.Post("/payment-card/resolve", h.paymentCard.Resolve)
 
 		// 管理者パスワードが必要
 		r.Group(func(r chi.Router) {
@@ -73,6 +78,8 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 			r.Post("/user/{user_id}/purchase/cancel", h.purchase.CancelPurchase)
 			r.Post("/item", h.item.ResisterItem)
 			r.Patch("/item", h.item.UpdateItem)
+			// 発行と作り直しは同じ（新しく発行すると古いものは使えなくなる）
+			r.Post("/user/{user_id}/payment-card", h.paymentCard.Issue)
 		})
 	})
 

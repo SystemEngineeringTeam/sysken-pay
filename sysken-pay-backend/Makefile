@@ -13,3 +13,8 @@ backup:
 	./scripts/backup-db.sh
 restore:
 	./scripts/restore-db.sh $(FILE)
+# DB の変更（マイグレーション）。先に必ずバックアップを取る
+# 例: make migrate FILE=db/migrations/001_payment_card.sql
+migrate:
+	./scripts/backup-db.sh
+	docker exec -i sysken-db sh -c 'exec mysql -uroot -p"$$MYSQL_ROOT_PASSWORD"' < $(FILE)

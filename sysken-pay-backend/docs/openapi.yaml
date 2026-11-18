@@ -25,6 +25,8 @@ tags:
     description: ヘルスチェック
   - name: admin
     description: 管理者認証
+  - name: payment-card
+    description: 支払い用バーコード（スマホ支払い。設計は docs/phone-payment.md）
 
 paths:
   # ==================== User ====================
@@ -485,6 +487,94 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  # ==================== Payment Card ====================
+  /v1/user/{user_id}/payment-card:
+    post:
+      tags: [payment-card]
+      summary: 支払い用バーコードの発行（作り直し）
+      description: |
+        支払い用バーコードを発行する。すでに使えるものがあれば使えなくしてから新しく発行する（作り直し）。
+        `code` はこのレスポンスでしか取り出せない（DB にはハッシュだけを保存する）。
+      operationId: issuePaymentCard
+      security:
+        - adminBasicAuth: []
+      parameters:
+        - $ref: "#/components/parameters/UserId"
+      responses:
+        "201":
+          description: 発行成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/IssuePaymentCardResponse"
+        "400":
+          description: 学籍番号の形式が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: ユーザーが登録されていない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/payment-card/resolve:
+    post:
+      tags: [payment-card]
+      summary: 支払い用バーコードの照合
+      description: |
+        読み取った支払い用バーコードから持ち主を返す。中身はアクセスログに残さないため、URL ではなく本文で送る。
+        空白・ハイフン・小文字は取り除いてから照合する（4文字ずつ区切った表示を手で入力した場合のため）。
+        短い時間に失敗が続くと、しばらく 429 を返す。
+      operationId: resolvePaymentCard
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ResolvePaymentCardRequest"
+      responses:
+        "200":
+          description: 照合成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResolvePaymentCardResponse"
+        "400":
+          description: 形式が不正（支払い用バーコードではない）
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: 存在しない、または使えなくなった支払い用バーコード
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: 失敗が続いたため、しばらく受け付けない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   # ==================== Admin ====================
   /v1/admin/verify:
     get:
@@ -912,6 +1002,51 @@ components:
           description: 合計金額
         page:
           $ref: "#/components/schemas/PageInfo"
+
+    IssuePaymentCardResponse:
+      type: object
+      required: [status, user_id, user_name, code, display_code]
+      properties:
+        status:
+          type: string
+          example: "success"
+        user_id:
+          type: string
+          example: "24K01234"
+        user_name:
+          type: string
+          example: "シス研太郎"
+        code:
+          type: string
+          description: 支払い用バーコードの中身（SP + 16文字）。このレスポンスでしか取り出せない
+          example: "SP7Q2KX9MDRA4TW8YZ"
+        display_code:
+          type: string
+          description: 画面に出す見やすい形
+          example: "SP 7Q2K X9MD RA4T W8YZ"
+
+    ResolvePaymentCardRequest:
+      type: object
+      required: [code]
+      properties:
+        code:
+          type: string
+          description: 読み取った支払い用バーコード
+          example: "SP7Q2KX9MDRA4TW8YZ"
+
+    ResolvePaymentCardResponse:
+      type: object
+      required: [status, user_id, user_name]
+      properties:
+        status:
+          type: string
+          example: "success"
+        user_id:
+          type: string
+          example: "24K01234"
+        user_name:
+          type: string
+          example: "シス研太郎"
 
     ErrorResponse:
       type: object
