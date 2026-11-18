@@ -45,10 +45,8 @@
   const COLOR = {
     bg: "#F9F9FC",
     blue: "#5398E1",
+    blueLight: "#6FAAE8",
     white: "#FFFFFF",
-    // ラズパイの画面の背景色（$white-10）
-    white10: "#FFFDFB",
-    gray10: "#E8E9EB",
     gray70: "#636A74",
     gray100: "#454A53",
   };
@@ -98,26 +96,19 @@
     ctx.font = `700 56px ${FONT}`;
     ctx.fillText("支払い用バーコード", W / 2, 300);
 
-    // カード（ラズパイの画面と同じ背景色。影で浮かせる）
+    // カード（青）
     const card = { x: 60, y: 390, w: 960, h: 1220, r: 56 };
     ctx.save();
-    ctx.shadowColor = "rgba(31, 41, 55, 0.12)";
-    ctx.shadowBlur = 40;
-    ctx.shadowOffsetY = 12;
     roundRect(ctx, card.x, card.y, card.w, card.h, card.r);
-    ctx.fillStyle = COLOR.white10;
+    const grad = ctx.createLinearGradient(card.x, card.y, card.x + card.w, card.y + card.h);
+    grad.addColorStop(0, COLOR.blueLight);
+    grad.addColorStop(1, COLOR.blue);
+    ctx.fillStyle = grad;
     ctx.fill();
-    ctx.restore();
-
-    ctx.save();
-    roundRect(ctx, card.x, card.y, card.w, card.h, card.r);
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = COLOR.gray10;
-    ctx.stroke();
     ctx.clip();
 
-    // 背景の飾り（薄い青の丸）
-    ctx.fillStyle = "rgba(83, 152, 225, 0.08)";
+    // 背景の飾り（薄い丸）
+    ctx.fillStyle = "rgba(255, 255, 255, 0.08)";
     ctx.beginPath();
     ctx.arc(card.x + card.w - 40, card.y + 80, 260, 0, Math.PI * 2);
     ctx.fill();
@@ -135,7 +126,7 @@
 
     // カードの左上の文字
     ctx.textAlign = "left";
-    ctx.fillStyle = COLOR.blue;
+    ctx.fillStyle = COLOR.white;
     ctx.font = `800 44px ${FONT}`;
     ctx.fillText("シス研Pay", card.x + 56, card.y + 92);
     ctx.textAlign = "center";
@@ -145,9 +136,6 @@
     ctx.fillStyle = COLOR.white;
     roundRect(ctx, box.x, box.y, box.w, box.h, box.r);
     ctx.fill();
-    ctx.lineWidth = 3;
-    ctx.strokeStyle = COLOR.gray10;
-    ctx.stroke();
 
     // バーコードは拡大せずに貼る（ぼやけると読めなくなるため）
     ctx.imageSmoothingEnabled = false;
@@ -160,7 +148,7 @@
     fitText(ctx, code, W / 2, by + barcode.height + 96, box.w - 80, 56, 700, MONO);
 
     // 名前
-    ctx.fillStyle = COLOR.gray100;
+    ctx.fillStyle = COLOR.white;
     fitText(ctx, name, W / 2, box.y + box.h + 120, card.w - 120, 60, 700, FONT);
 
     // カードの下の案内
