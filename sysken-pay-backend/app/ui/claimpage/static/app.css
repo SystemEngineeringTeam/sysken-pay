@@ -23,7 +23,8 @@
 
 body {
   margin: 0;
-  background: var(--gray-5);
+  /* ラズパイの画面と同じ背景色 */
+  background: var(--white-10);
   color: var(--gray-100);
   font-family: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
   font-size: 16px;
@@ -109,9 +110,10 @@ code {
   gap: 12px;
   margin-bottom: 12px;
   padding: 16px;
-  background: var(--white-10);
+  background: var(--white);
+  border: 1px solid var(--gray-10);
   border-radius: 16px;
-  box-shadow: 0 2px 8px var(--shadow-40);
+  box-shadow: 0 4px 14px rgba(31, 41, 55, 0.1);
 }
 
 .panel > div {
