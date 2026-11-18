@@ -47,9 +47,9 @@ export default function PhoneRegisterPage(): JSX.Element {
             mode="member"
             onScan={start}
             placeholder="部員の学生証をかざしてください"
+            error={error}
           />
           {phase === "creating" && <p className={styles.info}>QR を作っています…</p>}
-          {error && <p className={styles.error}>{error}</p>}
         </div>
       )}
 

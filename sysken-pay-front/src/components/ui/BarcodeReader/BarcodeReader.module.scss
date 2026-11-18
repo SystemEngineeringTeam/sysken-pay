@@ -25,6 +25,29 @@
   box-sizing: border-box;
 }
 
+// 見出しと、その下のエラー
+.head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+}
+
+.error {
+  background-color: $red-10;
+  border: 0.125rem solid $red-100;
+  border-radius: 1rem;
+  color: $red-100;
+  font-size: 2.4rem;
+  font-weight: $bold;
+  padding: 1rem 2rem;
+  margin: 0;
+  max-width: 70rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 .placeholder {
   font-size: 4rem;
   font-weight: $bold;
