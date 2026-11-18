@@ -16,6 +16,11 @@ export const UserRegister: Story = {
   args: { mode: "userRegister", name: "さな" },
 };
 
+export const UserUpdate: Story = {
+  name: "ユーザー更新完了",
+  args: { mode: "userUpdate", name: "さな" },
+};
+
 export const ItemRegister: Story = {
   name: "商品登録完了",
   args: { mode: "itemRegister", name: "コカ・コーラ", price: 100 },
