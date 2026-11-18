@@ -134,7 +134,8 @@ npm run generate:api  # openapi.yaml → api-schema.d.ts
 | 変数名 | 説明 |
 |:---|:---|
 | `VITE_API_URL` | バックエンドAPIのURL（例: `http://localhost:8080`） |
-| `VITE_ADMIN_PASSWORD` | 管理者・チャージ画面のパスワード |
+
+管理者・チャージ画面のパスワードはフロントには持たず、バックエンドの `ADMIN_PASSWORD` で確認する（BASIC 認証）。確認できたパスワードは `adapter/api/adminCredentials.ts` がメモリにだけ保持し、`apiClient` が `Authorization` ヘッダーを付ける。ホーム画面に戻ると破棄される。
 
 ## ルーティング (Generouted)
 

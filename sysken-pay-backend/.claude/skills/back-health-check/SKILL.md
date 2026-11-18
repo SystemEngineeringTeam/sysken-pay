@@ -30,7 +30,7 @@ go run golang.org/x/vuln/cmd/govulncheck@latest ./...
 go list -m -u all
 ```
 
-- **OpenAPI と実装のずれ**: `docs/openapi.yaml` のパス一覧と `app/server/server.go` のルーティングを突き合わせ、片方にしか無いエンドポイントがないか
+- **OpenAPI と実装のずれ**: `docs/openapi.yaml` のパス一覧と `app/server/router.go` のルーティングを突き合わせ、片方にしか無いエンドポイントがないか
 - **Docker**: `Dockerfile` の `golang:x.y.z-alpine` が `go.mod` の go バージョンと合っているか、大きく古くなっていないか。`mysql:8` のタグが固定されていない点も報告する
 - **DB の永続化**: `docker-compose.yaml` の `db` サービスに `/var/lib/mysql` のボリュームがマウントされているか（されていなければ「今すぐ対応」）
 - 未コミットの変更（`git status -- .`）、未 push のコミット

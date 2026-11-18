@@ -1,0 +1,96 @@
+package server
+
+import (
+	"net/http"
+	"time"
+
+	api_balance "sysken-pay-api/app/ui/api/balance"
+	api_charge "sysken-pay-api/app/ui/api/charge"
+	"sysken-pay-api/app/ui/api/health"
+	api_item "sysken-pay-api/app/ui/api/item"
+	apimw "sysken-pay-api/app/ui/api/middleware"
+	api_purchase "sysken-pay-api/app/ui/api/purchase"
+	api_user "sysken-pay-api/app/ui/api/user"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	"github.com/go-chi/cors"
+)
+
+type handlers struct {
+	user     api_user.Handler
+	item     api_item.Handler
+	charge   api_charge.Handler
+	purchase api_purchase.Handler
+	balance  api_balance.Handler
+}
+
+type routerConfig struct {
+	adminUser      string
+	adminPassword  string
+	allowedOrigins []string
+	timeout        time.Duration
+}
+
+// newRouter はルーティングを組み立てる。
+//
+// 管理者パスワードが必要な操作（お金を動かす・登録内容を変える）は adminOnly の中に置く:
+//   - ユーザー登録・更新、商品登録・更新、チャージ、チャージ取消、購入取消
+//
+// 部員がキオスクでそのまま使う操作は認証なし:
+//   - ユーザー・残高・履歴・商品の取得、購入、ヘルスチェック
+func newRouter(h handlers, cfg routerConfig) http.Handler {
+	r := chi.NewRouter()
+
+	r.Use(middleware.RequestID)
+	r.Use(middleware.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(middleware.Recoverer)
+	r.Use(newCORS(cfg.allowedOrigins).Handler)
+	// リクエストがタイムアウトした場合、ctx.Done()を通じて通知し、以降の処理を停止する
+	r.Use(middleware.Timeout(cfg.timeout))
+
+	adminOnly := apimw.BasicAuth(cfg.adminUser, cfg.adminPassword)
+
+	r.Route("/v1", func(r chi.Router) {
+		// 認証なし（キオスクで部員が使う）
+		r.Get("/user/{user_id}", h.user.GetUser)
+		r.Get("/user/{user_id}/balance", h.balance.GetBalance)
+		r.Get("/user/{user_id}/history", h.balance.GetPurchaseHistories)
+		r.Post("/user/{user_id}/purchase", h.purchase.CreatePurchase)
+		r.Get("/item", h.item.GetAllItems)
+		r.Get("/item/{jan_code}", h.item.GetItemByJanCode)
+		r.Get("/health", health.Check)
+
+		// 管理者パスワードが必要
+		r.Group(func(r chi.Router) {
+			r.Use(adminOnly)
+			r.Get("/admin/verify", apimw.Verify)
+			r.Post("/user", h.user.RegisterUser)
+			r.Patch("/user/{user_id}", h.user.UpdateUser)
+			r.Post("/user/{user_id}/charge", h.charge.ChargeAmount)
+			r.Post("/user/{user_id}/charge/cancel", h.charge.ChargeCancel)
+			r.Post("/user/{user_id}/purchase/cancel", h.purchase.CancelPurchase)
+			r.Post("/item", h.item.ResisterItem)
+			r.Patch("/item", h.item.UpdateItem)
+		})
+	})
+
+	return r
+}
+
+func newCORS(allowedOrigins []string) *cors.Cors {
+	return cors.New(cors.Options{
+		AllowedOrigins: allowedOrigins,
+		AllowedHeaders: []string{"Authorization", "Content-Type", "Accept"},
+		AllowedMethods: []string{
+			http.MethodGet,
+			http.MethodHead,
+			http.MethodPut,
+			http.MethodPatch,
+			http.MethodPost,
+			http.MethodDelete,
+			http.MethodOptions,
+		},
+	})
+}

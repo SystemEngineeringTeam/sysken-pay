@@ -8,7 +8,9 @@ services:
       - ./src:/go/src/app
       - go_modules:/go/pkg/mod
     ports:
-      - "${PORT:-8080}:${PORT:-8080}"
+      # 既定ではラズパイの中（localhost）からだけ届く。
+      # フロントを別の PC で動かすときだけ、.env に API_BIND_ADDR=0.0.0.0 を書く
+      - "${API_BIND_ADDR:-127.0.0.1}:${PORT:-8080}:${PORT:-8080}"
     env_file:
       - .env
     environment:
@@ -28,7 +30,8 @@ services:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       TZ: Asia/Tokyo
     ports:
-      - 53306:3306
+      # DB にはラズパイの中からだけ届くようにする
+      - "127.0.0.1:53306:3306"
     restart: unless-stopped
     volumes:
       # DB のデータ本体。これが無いとコンテナを作り直したときに全データが消える

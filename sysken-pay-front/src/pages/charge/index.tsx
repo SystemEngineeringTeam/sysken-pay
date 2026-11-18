@@ -7,6 +7,7 @@ import { Input } from "../../components/ui/Input";
 import { BarcodeReader } from "../../components/ui/BarcodeReader";
 import ArrowButton from "../../components/ui/ArrowButton";
 import { useUserScan } from "../../hooks/useBarcodeReader";
+import { useAdminLogin } from "../../hooks/useAdminLogin";
 import styles from "./index.module.scss";
 
 export default function ChargePage(): JSX.Element {
@@ -14,20 +15,18 @@ export default function ChargePage(): JSX.Element {
   const { onScan, ErrorMessage } = useUserScan();
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
+  const { login, isLoading, error: errorMessage, clearError } = useAdminLogin();
 
-  const handleSubmit = () => {
-    if (password !== import.meta.env.VITE_ADMIN_PASSWORD) {
-      setErrorMessage("パスワードが違います");
-      return;
+  const handleSubmit = async () => {
+    if (isLoading) return;
+    if (await login(password)) {
+      setAuthenticated(true);
     }
-    setErrorMessage("");
-    setAuthenticated(true);
   }
 
   const handlePasswordChange = (value: string) => {
     setPassword(value);
-    if (errorMessage) setErrorMessage("");
+    if (errorMessage) clearError();
   }
 
   if (!authenticated) {

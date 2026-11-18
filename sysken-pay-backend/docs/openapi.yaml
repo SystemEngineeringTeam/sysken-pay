@@ -23,6 +23,8 @@ tags:
     description: 商品管理
   - name: health
     description: ヘルスチェック
+  - name: admin
+    description: 管理者認証
 
 paths:
   # ==================== User ====================
@@ -31,6 +33,8 @@ paths:
       tags: [user]
       summary: ユーザー登録
       operationId: registerUser
+      security:
+        - adminBasicAuth: []
       requestBody:
         required: true
         content:
@@ -56,6 +60,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "500":
           description: サーバーエラー
           content:
@@ -99,6 +105,8 @@ paths:
       tags: [user]
       summary: ユーザー更新
       operationId: updateUser
+      security:
+        - adminBasicAuth: []
       parameters:
         - $ref: "#/components/parameters/UserId"
       requestBody:
@@ -120,6 +128,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "500":
           description: サーバーエラー
           content:
@@ -133,6 +143,8 @@ paths:
       tags: [charge]
       summary: チャージ
       operationId: chargeAmount
+      security:
+        - adminBasicAuth: []
       parameters:
         - $ref: "#/components/parameters/UserId"
       requestBody:
@@ -154,6 +166,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "500":
           description: サーバーエラー
           content:
@@ -166,6 +180,8 @@ paths:
       tags: [charge]
       summary: チャージキャンセル
       operationId: chargeCancel
+      security:
+        - adminBasicAuth: []
       parameters:
         - $ref: "#/components/parameters/UserId"
       requestBody:
@@ -187,6 +203,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "500":
           description: サーバーエラー
           content:
@@ -239,6 +257,8 @@ paths:
       tags: [purchase]
       summary: 購入キャンセル
       operationId: cancelPurchase
+      security:
+        - adminBasicAuth: []
       parameters:
         - $ref: "#/components/parameters/UserId"
       requestBody:
@@ -260,6 +280,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "500":
           description: サーバーエラー
           content:
@@ -344,6 +366,8 @@ paths:
       tags: [item]
       summary: 商品登録
       operationId: registerItem
+      security:
+        - adminBasicAuth: []
       requestBody:
         required: true
         content:
@@ -363,6 +387,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "500":
           description: サーバーエラー
           content:
@@ -373,6 +399,8 @@ paths:
       tags: [item]
       summary: 商品更新
       operationId: updateItem
+      security:
+        - adminBasicAuth: []
       requestBody:
         required: true
         content:
@@ -392,6 +420,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
         "500":
           description: サーバーエラー
           content:
@@ -455,6 +485,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  # ==================== Admin ====================
+  /v1/admin/verify:
+    get:
+      tags: [admin]
+      summary: 管理者パスワードの確認
+      description: BASIC 認証が通れば 204 を返す。フロントのパスワード入力画面で、パスワードが正しいかを確かめるのに使う
+      operationId: verifyAdmin
+      security:
+        - adminBasicAuth: []
+      responses:
+        "204":
+          description: 認証成功
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
   # ==================== Health ====================
   /v1/health:
     get:
@@ -471,6 +516,22 @@ paths:
                 example: "OK"
 
 components:
+  securitySchemes:
+    adminBasicAuth:
+      type: http
+      scheme: basic
+      description: |
+        管理者パスワードによる BASIC 認証（ユーザー名は ADMIN_USER、既定 "admin"）。
+        ユーザー登録・更新、商品登録・更新、チャージ、チャージ取消、購入取消で必要。
+
+  responses:
+    Unauthorized:
+      description: 認証エラー（管理者パスワードが無い・違う）
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+
   parameters:
     UserId:
       name: user_id

@@ -19,7 +19,8 @@ description: フロントエンド（sysken-pay-front）を部室のラズパイ
 
 **秘密情報**
 - `.env` が Git 管理に入っていないか（`git ls-files | grep -i '\.env'`。`.env.sample` は可）。過去の履歴も確認（`git log --all --diff-filter=A --name-only -- '*.env*'`）
-- **`VITE_` で始まる環境変数はすべてビルド後の JS に埋め込まれ、誰でも読める**。特に `VITE_ADMIN_PASSWORD` は、ブラウザの開発者ツールや `dist/` から読める。キオスクに触れる人には管理パスワードが見えている前提で許容できるか、ユーザーに判断してもらう。根本対策（パスワード判定をバックエンドに移す）は issue 化を提案する
+- **`VITE_` で始まる環境変数はすべてビルド後の JS に埋め込まれ、誰でも読める**。パスワード・トークンなどが `VITE_` 変数や `src/` に入っていないか確認する（管理者パスワードはバックエンドの `ADMIN_PASSWORD` で確認する作りになっている）
+- 管理者パスワードがホーム画面に戻ったときに破棄されるか（`pages/index.tsx` の `clearAdminPassword()`）
 - `git grep -n -i -E 'password|secret|token' -- src` でハードコードがないか
 
 **お金の表示と操作**
