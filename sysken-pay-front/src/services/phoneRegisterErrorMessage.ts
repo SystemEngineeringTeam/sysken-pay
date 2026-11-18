@@ -14,7 +14,7 @@ export const toPhoneRegisterErrorMessage = (e: unknown): string => {
         return "QR に入れる URL が設定されていません。バックエンドの .env の PUBLIC_BASE_URL を設定してください。";
     }
   }
-  return "スマホ登録の QR を作れませんでした。もう一度お試しください。";
+  return "QR を作れませんでした。もう一度お試しください。";
 };
 
 /** 残り秒数を「4:05」の形にする */
