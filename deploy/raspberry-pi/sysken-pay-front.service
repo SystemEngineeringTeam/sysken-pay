@@ -1,0 +1,17 @@
+# シス研Pay のフロント（ビルド済みの dist を配信する）
+# install-front-service.sh が /etc/systemd/system/ に置く
+[Unit]
+Description=sysken-pay frontend (vite preview)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=sysken-pay
+WorkingDirectory=/home/sysken-pay/sysken-pay/sysken-pay-front
+# 127.0.0.1 だけで待つ（キオスクの Chromium だけが開ける。部室の Wi-Fi には出さない）
+ExecStart=/usr/bin/env pnpm exec vite preview --host 127.0.0.1 --port 3000 --strictPort
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
