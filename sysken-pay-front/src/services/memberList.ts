@@ -1,9 +1,9 @@
 import type { Member } from "../adapter/repository/MemberRepositoryImpl";
 
-/** ユーザー一覧のタブ */
-export type MemberTab = "all" | "unrefunded" | "graduation";
+/** ユーザー一覧のタブ。"stopped"（停止中）はタブには並べず、「全員」の右下のボタンから入る */
+export type MemberTab = "all" | "unrefunded" | "graduation" | "stopped";
 
-export const MEMBER_TABS: { key: MemberTab; label: string }[] = [
+export const MEMBER_TABS: { key: "all" | "unrefunded" | "graduation"; label: string }[] = [
   { key: "all", label: "全員" },
   { key: "unrefunded", label: "未返金" },
   { key: "graduation", label: "卒業候補" },
@@ -16,16 +16,20 @@ export const filterMembers = (members: Member[], tab: MemberTab): Member[] => {
       return members.filter((m) => m.unrefunded);
     case "graduation":
       return members.filter((m) => m.graduation_candidate);
+    case "stopped":
+      return members.filter((m) => m.status === "stopped");
     default:
-      return members;
+      // 「全員」は使える人だけ。止めた人は「停止中」に分ける
+      return members.filter((m) => m.status !== "stopped");
   }
 };
 
 /** タブごとの人数 */
 export const countMembers = (members: Member[]): Record<MemberTab, number> => ({
-  all: members.length,
+  all: filterMembers(members, "all").length,
   unrefunded: filterMembers(members, "unrefunded").length,
   graduation: filterMembers(members, "graduation").length,
+  stopped: filterMembers(members, "stopped").length,
 });
 
 /** 名前か学籍番号に、検索の文字が入っている人だけにする（大文字・小文字は区別しない） */
