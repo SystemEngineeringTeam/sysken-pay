@@ -17,6 +17,9 @@ var ErrUserAlreadyExists = errors.New("user already exists")
 // ErrUserStopped はユーザーが利用停止している（退部・卒業）ことを表す（API では 403）
 var ErrUserStopped = errors.New("user stopped")
 
+// ErrUserNotFound はユーザーがいないことを表す（API では 404）
+var ErrUserNotFound = errors.New("user not found")
+
 //TODO モデル（データベースに入れる型を宣言する）
 //データベースの制約通りになるようにエラーハンドリングをガチる
 //ユーザーID、名前、作成日時、更新日時など

@@ -8,13 +8,16 @@ import Header from "../../../components/layouts/Header";
 import ArrowButton from "../../../components/ui/ArrowButton";
 import { useUserStore } from "../../../store/useUserStore";
 import { UserRepositoryImpl } from "../../../adapter/repository/UserRepositoryImpl";
+import { isValidStudentId, toUserUpdateErrorMessage } from "../../../services/userUpdate";
 import styles from "./name.module.scss";
 
 export default function UserUpdateNamePage(): JSX.Element {
   const navigate = useNavigate();
   const scannedUser = useUserStore((state) => state.scannedUser);
+  const setScannedUser = useUserStore((state) => state.setScannedUser);
+  // 今の学籍番号と名前を最初から入れておく（変えるところだけ直せばよい）
   const [newUserId, setNewUserId] = useState(scannedUser?.user_id ?? "");
-  const [name, setName] = useState("");
+  const [name, setName] = useState(scannedUser?.user_name ?? "");
   const [showModal, setShowModal] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -24,8 +27,13 @@ export default function UserUpdateNamePage(): JSX.Element {
   }
 
   const handleUpdate = async () => {
-    if (!newUserId.trim()) {
-      setErrorMessage("IDを入力してください");
+    const nextId = newUserId.trim();
+    if (!nextId) {
+      setErrorMessage("学籍番号を入力してください");
+      return;
+    }
+    if (!isValidStudentId(nextId)) {
+      setErrorMessage("学籍番号は「24K01234」の形で入れてください");
       return;
     }
     if (!name.trim()) {
@@ -36,12 +44,18 @@ export default function UserUpdateNamePage(): JSX.Element {
       setErrorMessage("ユーザー情報が見つかりません。再度バーコードをスキャンしてください");
       return;
     }
+    const idChanged = nextId !== scannedUser.user_id;
     try {
-      await UserRepositoryImpl.updateUser(scannedUser.user_id, { user_name: name }); // TODO user_id: newUserId 追加
+      const data = await UserRepositoryImpl.updateUser(scannedUser.user_id, {
+        user_name: name,
+        // 学籍番号は変えるときだけ送る
+        ...(idChanged ? { user_id: nextId } : {}),
+      });
+      setScannedUser({ user_id: data?.user_id ?? nextId, user_name: data?.user_name ?? name });
       setErrorMessage("");
       setShowModal(true);
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : "更新に失敗しました");
+      setErrorMessage(toUserUpdateErrorMessage(e));
     }
   }
 
@@ -51,13 +65,13 @@ export default function UserUpdateNamePage(): JSX.Element {
       <div className={styles.content}>
         <div className={styles.field}>
           <Input
-            label="新しいID"
-            placeholder="20k24000"
+            label="学籍番号"
+            placeholder="24K01234"
             value={newUserId}
             onChange={handleChange(setNewUserId)}
           />
           <Input
-            label="新しい名前"
+            label="名前"
             placeholder="k24000_yamadataro"
             value={name}
             onChange={handleChange(setName)}

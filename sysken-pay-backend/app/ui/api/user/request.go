@@ -8,5 +8,7 @@ type PostUserRequest struct {
 
 // PatchUser Request: ユーザー更新のリクエスト
 type PatchUserRequest struct {
+	// UserID は新しい学籍番号（変えるときだけ入れる）
+	UserID   string `json:"user_id,omitempty"`
 	UserName string `json:"user_name"`
 }

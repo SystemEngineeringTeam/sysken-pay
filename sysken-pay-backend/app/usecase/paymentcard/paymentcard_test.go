@@ -18,6 +18,8 @@ type memUserRepo struct {
 	stopped map[string]bool
 }
 
+func (m *memUserRepo) ChangeUserID(context.Context, string, string) error { return nil }
+
 func (m *memUserRepo) IsStopped(_ context.Context, id string) (bool, error) {
 	return m.stopped[id], nil
 }

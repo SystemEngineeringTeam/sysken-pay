@@ -24,8 +24,9 @@ export default function UserUpdatePage(): JSX.Element {
     setError(null);
     clearScannedUser();
     try {
-      await UserRepositoryImpl.getUser(barcode);
-      setScannedUser({ user_id: barcode });
+      const user = await UserRepositoryImpl.getUser(barcode);
+      // 名前の画面で、今の名前を最初から入れておくため
+      setScannedUser({ user_id: user.user_id ?? barcode, user_name: user.user_name });
       navigate("/admin/user-update/name");
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) {

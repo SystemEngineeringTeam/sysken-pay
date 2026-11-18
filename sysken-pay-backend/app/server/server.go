@@ -60,7 +60,7 @@ func Run(db *sql.DB) error {
 	// UseCase
 	getUserUseCase := user.NewGetUserUseCase(userRepo)
 	registerUserUseCase := user.NewRegisterUserUseCase(userRepo)
-	updateUserUseCase := user.NewUpdateUserUseCase(userRepo)
+	updateUserUseCase := user.NewUpdateUserUseCase(userRepo, txManager)
 	registerItemUseCase := item.NewRegisterItemUseCase(itemRepo)
 	updateItemUseCase := item.NewUpdateItemUseCase(itemRepo)
 	findItemByJanCodeUseCase := item.NewFindItemByJanCodeUseCase(itemRepo)

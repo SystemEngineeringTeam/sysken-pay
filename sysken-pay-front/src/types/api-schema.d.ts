@@ -425,6 +425,12 @@ export interface components {
             user_name: string;
         };
         PatchUserRequest: {
+            /**
+             * @description 新しい学籍番号（登録のときの打ち間違いを直すときだけ入れる）。
+             *     チャージ・購入・残高・返金・支払い用バーコードの記録も新しい学籍番号に付け替える
+             * @example 20K23099
+             */
+            user_id?: string;
             /** @description ユーザー名 */
             user_name: string;
         };
@@ -1019,6 +1025,24 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            /** @description ユーザーが登録されていない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 新しい学籍番号がもう使われている */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description サーバーエラー */
             500: {
                 headers: {

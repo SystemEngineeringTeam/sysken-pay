@@ -71,6 +71,45 @@ func (r *UserRepositoryImpl) IsStopped(ctx context.Context, userID string) (bool
 	return stopped, err
 }
 
+// userIDTables は user.id を参照している表（学籍番号を変えるときに付け替える）
+var userIDTables = []string{"charge", "purchase", "balance", "payment_card", "payment_card_claim", "refund"}
+
+func (r *UserRepositoryImpl) ChangeUserID(ctx context.Context, oldID, newID string) error {
+	executor := getExecutor(ctx, r.db)
+
+	// 変えている途中に、同じ人の購入・チャージが走らないようにロックする
+	var locked string
+	err := executor.QueryRowContext(ctx, "SELECT id FROM `user` WHERE id = ? FOR UPDATE", oldID).Scan(&locked)
+	if errors.Is(err, sql.ErrNoRows) {
+		return user.ErrUserNotFound
+	}
+	if err != nil {
+		return err
+	}
+
+	// 主キーは他の表から参照されていて直接は変えられないので、
+	// 新しい学籍番号の行を作る → 記録を付け替える → 古い行を消す、の順で行う（記録そのものは消さない）
+	_, err = executor.ExecContext(ctx, `
+	INSERT INTO `+"`user`"+` (id, name, created_at, updated_at, deleted_at, hidden_at)
+	SELECT ?, name, created_at, updated_at, deleted_at, hidden_at FROM `+"`user`"+` WHERE id = ?
+	`, newID, oldID)
+	if err != nil {
+		var mysqlErr *mysql.MySQLError
+		if errors.As(err, &mysqlErr) && mysqlErr.Number == mysqlErrDupEntry {
+			return user.ErrUserAlreadyExists
+		}
+		return err
+	}
+	for _, table := range userIDTables {
+		if _, err := executor.ExecContext(ctx,
+			"UPDATE `"+table+"` SET user_id = ? WHERE user_id = ?", newID, oldID); err != nil {
+			return err
+		}
+	}
+	_, err = executor.ExecContext(ctx, "DELETE FROM `user` WHERE id = ?", oldID)
+	return err
+}
+
 func (r *UserRepositoryImpl) InsertUser(
 	ctx context.Context, u *user.User) (*user.User, error) {
 

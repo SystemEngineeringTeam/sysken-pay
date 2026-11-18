@@ -128,10 +128,17 @@ func (h *userHandlerImpl) UpdateUser(w http.ResponseWriter, r *http.Request) {
 
 	ctx := r.Context()
 	//ユースケースの呼び出し
-	updatedUser, err := h.updateUserUseCase.UpdateUser(ctx, userID, req.UserName)
+	updatedUser, err := h.updateUserUseCase.UpdateUser(ctx, userID, req.UserID, req.UserName)
 	if err != nil {
-		log.Printf("Failed to register user: %v", err)
-		apierrors.RespondUseCaseError(w, err)
+		log.Printf("Failed to update user: %v", err)
+		switch {
+		case errors.Is(err, domainuser.ErrUserAlreadyExists):
+			apierrors.RespondError(w, http.StatusConflict, "user already exists")
+		case errors.Is(err, domainuser.ErrUserNotFound):
+			apierrors.RespondError(w, http.StatusNotFound, "user not found")
+		default:
+			apierrors.RespondUseCaseError(w, err)
+		}
 		return
 	}
 
