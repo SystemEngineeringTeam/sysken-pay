@@ -120,8 +120,7 @@ code {
 }
 
 .panel.center,
-.panel.column,
-.panel.warn {
+.panel.column {
   flex-direction: column;
 }
 
@@ -165,24 +164,6 @@ code {
   margin: 4px 0 0;
   color: var(--gray-70);
   font-size: 14px;
-}
-
-.warn {
-  gap: 2px;
-  background: var(--red-10);
-  border: 2px solid var(--red-100);
-  box-shadow: none;
-}
-
-.warn p {
-  margin: 0;
-  font-size: 14px;
-}
-
-.warn .warn-title {
-  color: var(--red-100);
-  font-size: 16px;
-  font-weight: 700;
 }
 
 details {

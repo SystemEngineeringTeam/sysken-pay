@@ -116,11 +116,11 @@
     ctx.arc(card.x + 60, card.y + card.h - 40, 200, 0, Math.PI * 2);
     ctx.fill();
 
-    // マスコット（右下からのぞく。カードからはみ出た分は切る）
+    // マスコット（カードの下の真ん中からのぞく。画像の下端をカードの下端に合わせる）
     if (mascot) {
-      const mw = 560;
+      const mw = 420;
       const mh = (mascot.height / mascot.width) * mw;
-      ctx.drawImage(mascot, card.x + card.w - mw + 40, card.y + card.h - mh + 60, mw, mh);
+      ctx.drawImage(mascot, card.x + (card.w - mw) / 2, card.y + card.h - mh, mw, mh);
     }
     ctx.restore();
 
