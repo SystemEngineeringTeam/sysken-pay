@@ -3,6 +3,7 @@ package user
 import (
 	"errors"
 	"regexp"
+	"sysken-pay-api/app/domain/derrors"
 	"time"
 	"unicode/utf8"
 )
@@ -28,15 +29,15 @@ type User struct {
 func (p *User) SetUserID(userID string) error {
 	// userIDは空でないこと
 	if userID == "" {
-		return errors.New("userID must not be empty")
+		return derrors.Invalid("userID must not be empty")
 	}
 	// userIDは20文字以下であること
 	if utf8.RuneCountInString(userID) > 20 {
-		return errors.New("userID must be 20 characters or less")
+		return derrors.Invalid("userID must be 20 characters or less")
 	}
 	// 学籍番号フォーマット (例: 20K23099)
 	if !userIDPattern.MatchString(userID) {
-		return errors.New("userID must be in student ID format (e.g., 20K23099)")
+		return derrors.Invalid("userID must be in student ID format (e.g., 20K23099)")
 	}
 
 	p.userID = userID
@@ -46,12 +47,12 @@ func (p *User) SetUserID(userID string) error {
 func (p *User) SetUserName(userName string) error {
 	// 表示名は1文字以上であること
 	if !(utf8.RuneCountInString(userName) >= 1) {
-		return errors.New("display name must be more than 0 characters")
+		return derrors.Invalid("display name must be more than 0 characters")
 	}
 
 	// 表示名は50文字以下であること
 	if !(utf8.RuneCountInString(userName) <= 50) {
-		return errors.New("display name must be less than or equal to 50 characters")
+		return derrors.Invalid("display name must be less than or equal to 50 characters")
 	}
 
 	p.userName = userName

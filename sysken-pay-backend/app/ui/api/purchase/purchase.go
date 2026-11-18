@@ -62,7 +62,7 @@ func (h *purchaseHandlerImpl) CreatePurchase(w http.ResponseWriter, r *http.Requ
 			apierrors.RespondError(w, http.StatusBadRequest, "insufficient balance")
 			return
 		}
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 
@@ -98,7 +98,7 @@ func (h *purchaseHandlerImpl) CancelPurchase(w http.ResponseWriter, r *http.Requ
 	canceledPurchase, err := h.cancelPurchaseUseCase.CancelPurchase(ctx, userID, inputs)
 	if err != nil {
 		log.Printf("Failed to cancel purchase: %v", err)
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 

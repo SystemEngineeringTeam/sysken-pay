@@ -2,6 +2,7 @@ package purchase
 
 import (
 	"errors"
+	"sysken-pay-api/app/domain/derrors"
 	"time"
 )
 
@@ -21,10 +22,10 @@ type PurchaseItem struct {
 
 func NewPurchaseItem(itemID int, quantity int) (PurchaseItem, error) {
 	if itemID <= 0 {
-		return PurchaseItem{}, errors.New("itemID must be positive")
+		return PurchaseItem{}, derrors.Invalid("itemID must be positive")
 	}
 	if quantity <= 0 {
-		return PurchaseItem{}, errors.New("quantity must be positive")
+		return PurchaseItem{}, derrors.Invalid("quantity must be positive")
 	}
 	return PurchaseItem{itemID: itemID, quantity: quantity}, nil
 }
@@ -47,7 +48,7 @@ func (p *Purchase) SetID(id int) error {
 
 func (p *Purchase) SetUserID(userID string) error {
 	if userID == "" {
-		return errors.New("userID must not be empty")
+		return derrors.Invalid("userID must not be empty")
 	}
 	p.userID = userID
 	return nil
@@ -63,14 +64,14 @@ func (p *Purchase) SetBalance(balance int) error {
 
 func (p *Purchase) SetItems(items []PurchaseItem) error {
 	if len(items) == 0 {
-		return errors.New("items must not be empty")
+		return derrors.Invalid("items must not be empty")
 	}
 	for _, item := range items {
 		if item.itemID <= 0 {
-			return errors.New("itemID must be positive")
+			return derrors.Invalid("itemID must be positive")
 		}
 		if item.quantity <= 0 {
-			return errors.New("quantity must be positive")
+			return derrors.Invalid("quantity must be positive")
 		}
 	}
 	p.items = items
@@ -79,14 +80,14 @@ func (p *Purchase) SetItems(items []PurchaseItem) error {
 
 func (p *Purchase) SetCancelItems(items []PurchaseItem) error {
 	if len(items) == 0 {
-		return errors.New("items must not be empty")
+		return derrors.Invalid("items must not be empty")
 	}
 	for _, item := range items {
 		if item.itemID <= 0 {
-			return errors.New("itemID must be positive")
+			return derrors.Invalid("itemID must be positive")
 		}
 		if item.quantity <= 0 {
-			return errors.New("quantity must be positive")
+			return derrors.Invalid("quantity must be positive")
 		}
 	}
 	p.items = items

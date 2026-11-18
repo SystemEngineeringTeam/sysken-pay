@@ -2,6 +2,7 @@ package charge
 
 import (
 	"errors"
+	"sysken-pay-api/app/domain/derrors"
 	"time"
 )
 
@@ -27,7 +28,7 @@ func (c *Charge) SetID(id int) error {
 
 func (c *Charge) SetUserID(userID string) error {
 	if userID == "" {
-		return errors.New("userID must not be empty")
+		return derrors.Invalid("userID must not be empty")
 	}
 	c.userID = userID
 	return nil
@@ -42,7 +43,7 @@ var allowedAmounts = map[int]struct{}{
 
 func (c *Charge) SetAmount(amount int) error {
 	if _, ok := allowedAmounts[amount]; !ok {
-		return errors.New("amount must be one of 500, 1000, 2000")
+		return derrors.Invalid("amount must be one of 500, 1000, 2000")
 	}
 	c.amount = amount
 	return nil

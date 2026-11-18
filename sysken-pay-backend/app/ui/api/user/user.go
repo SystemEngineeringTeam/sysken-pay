@@ -55,7 +55,7 @@ func (h *userHandlerImpl) GetUser(w http.ResponseWriter, r *http.Request) {
 			apierrors.RespondError(w, http.StatusBadRequest, err.Error())
 			return
 		}
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 	if foundUser == nil {
@@ -91,7 +91,7 @@ func (h *userHandlerImpl) RegisterUser(w http.ResponseWriter, r *http.Request) {
 			apierrors.RespondError(w, http.StatusConflict, "user already exists")
 			return
 		}
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 
@@ -127,7 +127,7 @@ func (h *userHandlerImpl) UpdateUser(w http.ResponseWriter, r *http.Request) {
 	updatedUser, err := h.updateUserUseCase.UpdateUser(ctx, userID, req.UserName)
 	if err != nil {
 		log.Printf("Failed to register user: %v", err)
-		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
+		apierrors.RespondUseCaseError(w, err)
 		return
 	}
 

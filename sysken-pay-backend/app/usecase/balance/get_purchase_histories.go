@@ -2,7 +2,7 @@ package balance
 
 import (
 	"context"
-	"errors"
+	"sysken-pay-api/app/domain/derrors"
 	domainbalance "sysken-pay-api/app/domain/object/balance"
 	"sysken-pay-api/app/domain/repository"
 )
@@ -28,10 +28,10 @@ func (s *GetPurchaseHistoriesServiceImpl) GetPurchaseHistories(
 	ctx context.Context, userID string, page, perPage int,
 ) (histories []*domainbalance.PurchaseHistory, totalAmount int, pageInfo *HistoryPage, err error) {
 	if page < 1 {
-		return nil, 0, nil, errors.New("page must be >= 1")
+		return nil, 0, nil, derrors.Invalid("page must be >= 1")
 	}
 	if perPage < 1 {
-		return nil, 0, nil, errors.New("per_page must be >= 1")
+		return nil, 0, nil, derrors.Invalid("per_page must be >= 1")
 	}
 
 	limit := perPage
