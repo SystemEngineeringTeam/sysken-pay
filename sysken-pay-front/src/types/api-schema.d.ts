@@ -198,6 +198,48 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/user/{user_id}/payment-card/claim": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * スマホ登録用の発行用 QR を作る
+         * @description 支払い用バーコードを発行し（古いものは使えなくなる）、スマホで開くための5分だけ有効な URL を返す。
+         *     端末はこの URL を QR コードにして表示する。トークンは URL の `#` のあとに入っている（サーバーに送られない部分）。
+         *     `PUBLIC_BASE_URL` が未設定なら、発行せずに 503 を返す。
+         */
+        post: operations["createPaymentCardClaim"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/payment-card/claim/{claim_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 発行用 QR の状態
+         * @description 開かれた回数と残り時間を返す（管理者画面で、他の人に先に開かれていないか確かめるため）
+         */
+        get: operations["getPaymentCardClaimStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/payment-card/resolve": {
         parameters: {
             query?: never;
@@ -498,6 +540,39 @@ export interface components {
              * @example SP 7Q2K X9MD RA4T W8YZ
              */
             display_code: string;
+        };
+        CreatePaymentCardClaimResponse: {
+            /** @example success */
+            status: string;
+            /**
+             * Format: int64
+             * @example 7
+             */
+            claim_id: number;
+            /** @example 24K01234 */
+            user_id: string;
+            /** @example シス研太郎 */
+            user_name: string;
+            /**
+             * @description スマホで開く URL（QR コードにする）
+             * @example http://192.0.2.10:8081/claim#t=…
+             */
+            url: string;
+            /** @example 300 */
+            expires_in_seconds: number;
+        };
+        PaymentCardClaimStatusResponse: {
+            /** @example success */
+            status: string;
+            /**
+             * @description スマホで開かれた回数
+             * @example 1
+             */
+            open_count: number;
+            /** @example 180 */
+            remaining_seconds: number;
+            /** @example false */
+            expired: boolean;
         };
         ResolvePaymentCardRequest: {
             /**
@@ -1166,6 +1241,116 @@ export interface operations {
             };
             401: components["responses"]["Unauthorized"];
             /** @description ユーザーが登録されていない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    createPaymentCardClaim: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
+                user_id: components["parameters"]["UserId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 作成成功 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreatePaymentCardClaimResponse"];
+                };
+            };
+            /** @description 学籍番号の形式が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description ユーザーが登録されていない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description PUBLIC_BASE_URL が未設定 */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    getPaymentCardClaimStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                claim_id: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 取得成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PaymentCardClaimStatusResponse"];
+                };
+            };
+            /** @description claim_id が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description 存在しない（期限切れで消されたものを含む） */
             404: {
                 headers: {
                     [name: string]: unknown;

@@ -1,0 +1,109 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.info {
+  font-size: 2rem;
+  color: $gray-70;
+  margin: 0 0 6rem;
+}
+
+.error {
+  margin: 0 0 6rem;
+  padding: 1rem 2rem;
+  font-size: 2rem;
+  font-weight: $bold;
+  color: $red-100;
+  background-color: #fdecec;
+  border: 0.125rem solid $red-100;
+  border-radius: 1rem;
+  max-width: 80%;
+  text-align: center;
+}
+
+// QR を出しているとき：左に QR、右に名前・残り時間・開かれた回数
+.showing {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5rem;
+  padding: 2rem 4rem;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  max-width: 44rem;
+}
+
+.name {
+  margin: 0;
+  font-size: 3.5rem;
+  font-weight: $bold;
+  color: $gray-100;
+}
+
+.guide {
+  margin: 0;
+  font-size: 2rem;
+  color: $gray-70;
+  line-height: 1.5;
+}
+
+.remaining {
+  margin: 0;
+  font-size: 2.5rem;
+  color: $gray-100;
+}
+
+.time {
+  font-size: 4.5rem;
+  font-weight: $bold;
+  color: $blue-40;
+  font-variant-numeric: tabular-nums;
+}
+
+.count {
+  margin: 0;
+  font-size: 2.25rem;
+  color: $gray-100;
+}
+
+.warn {
+  margin: 0;
+  font-size: 2.25rem;
+  font-weight: $bold;
+  color: $red-100;
+}
+
+.expired {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+  max-width: 70rem;
+  text-align: center;
+}
+
+.expiredTitle {
+  margin: 0;
+  font-size: 3.5rem;
+  font-weight: $bold;
+  color: $gray-100;
+}

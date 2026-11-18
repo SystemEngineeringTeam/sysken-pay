@@ -19,6 +19,7 @@ make login    # MySQL にログイン
 | `ADMIN_PASSWORD` | 管理者・チャージ画面のパスワード。**未設定だと管理系 API はすべて 401 になる** |
 | `ADMIN_USER` | BASIC 認証のユーザー名（既定 `admin`。フロントは `admin` で送るので通常は変えない） |
 | `ALLOWED_ORIGINS` | CORS で許可するフロントの配信元（カンマ区切り）。未設定なら `localhost:5173` / `localhost:3000` |
+| `PUBLIC_BASE_URL` | スマホ登録の QR に入れる URL の頭（例：`http://<ラズパイの IP アドレス>:8081`）。未設定だとスマホ登録の QR は作れない（`docs/phone-payment.md`） |
 | `API_BIND_ADDR` | API をどこから届くようにするか。既定 `127.0.0.1`（ラズパイの中だけ）。フロントを別の PC で動かすときだけ `0.0.0.0` |
 
 ## 認証
@@ -87,6 +88,7 @@ make migrate FILE=db/migrations/001_payment_card.sql
 | ファイル | 内容 |
 |---|---|
 | `001_payment_card.sql` | 支払い用バーコードの表（`docs/phone-payment.md`） |
+| `002_payment_card_claim.sql` | 発行用 QR の表（同上） |
 
 ## テスト
 

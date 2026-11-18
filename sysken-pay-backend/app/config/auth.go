@@ -49,3 +49,12 @@ func AllowedOrigins() []string {
 	}
 	return origins
 }
+
+const publicBaseURLKey = "PUBLIC_BASE_URL"
+
+// PublicBaseURL は、スマホで発行用 QR を開くときの URL の頭（例: http://<ラズパイの IP アドレス>:8081）。
+// 部室の Wi-Fi から届く入口の場所。IP アドレスはリポジトリに書かず、.env で設定する。
+// 未設定なら空文字を返す（その場合、発行用 QR は作らない）。
+func PublicBaseURL() string {
+	return strings.TrimRight(strings.TrimSpace(os.Getenv(publicBaseURLKey)), "/")
+}

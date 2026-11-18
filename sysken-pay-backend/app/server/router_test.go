@@ -27,11 +27,13 @@ func (stub) GetBalance(w http.ResponseWriter, r *http.Request)           { ok(w,
 func (stub) GetPurchaseHistories(w http.ResponseWriter, r *http.Request) { ok(w, r) }
 func (stub) Issue(w http.ResponseWriter, r *http.Request)                { ok(w, r) }
 func (stub) Resolve(w http.ResponseWriter, r *http.Request)              { ok(w, r) }
+func (stub) Create(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
+func (stub) Status(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
 
 func testRouter(password string) http.Handler {
 	s := stub{}
 	return newRouter(
-		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s},
+		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, paymentCardClaim: s},
 		routerConfig{
 			adminUser:      "admin",
 			adminPassword:  password,
@@ -51,6 +53,8 @@ var protectedRoutes = []struct{ method, path string }{
 	{http.MethodPost, "/v1/item"},
 	{http.MethodPatch, "/v1/item"},
 	{http.MethodPost, "/v1/user/20K23099/payment-card"},
+	{http.MethodPost, "/v1/user/20K23099/payment-card/claim"},
+	{http.MethodGet, "/v1/payment-card/claim/7"},
 }
 
 var openRoutes = []struct{ method, path string }{

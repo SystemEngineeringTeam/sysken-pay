@@ -26,6 +26,8 @@ type handlers struct {
 	balance  api_balance.Handler
 	// paymentCard は支払い用バーコード（docs/phone-payment.md）
 	paymentCard api_paymentcard.Handler
+	// paymentCardClaim は支払い用バーコードの発行用 QR（5分だけ有効）
+	paymentCardClaim api_paymentcard.ClaimHandler
 }
 
 type routerConfig struct {
@@ -80,6 +82,9 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 			r.Patch("/item", h.item.UpdateItem)
 			// 発行と作り直しは同じ（新しく発行すると古いものは使えなくなる）
 			r.Post("/user/{user_id}/payment-card", h.paymentCard.Issue)
+			// 発行用 QR（スマホ登録）。作ると支払い用バーコードも作り直される
+			r.Post("/user/{user_id}/payment-card/claim", h.paymentCardClaim.Create)
+			r.Get("/payment-card/claim/{claim_id}", h.paymentCardClaim.Status)
 		})
 	})
 
