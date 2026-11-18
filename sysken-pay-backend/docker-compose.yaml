@@ -14,6 +14,7 @@ services:
     environment:
       - MYSQL_HOST=db
     tty: true
+    restart: unless-stopped
     networks:
       - private-net
     depends_on:
@@ -28,7 +29,11 @@ services:
       TZ: Asia/Tokyo
     ports:
       - 53306:3306
+    restart: unless-stopped
     volumes:
+      # DB のデータ本体。これが無いとコンテナを作り直したときに全データが消える
+      - mysql_data:/var/lib/mysql
+      # 最初の起動時（mysql_data が空のとき）だけ実行される
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - private-net

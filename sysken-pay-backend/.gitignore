@@ -24,3 +24,7 @@
 .DS_Store# Claude Code の案内とスキルはコミットする
 !CLAUDE.md
 !.claude/**/*.md
+
+# DB のバックアップ
+backups/
+!README.md

@@ -12,8 +12,8 @@ description: バックエンド（sysken-pay-backend の Go API・MySQL）が壊
 ## 大原則
 
 1. **消さない・上書きしない。** 使ってよいのは「追加する」操作（ブランチ作成、stash、revert コミット）だけ。`git reset --hard`、`git clean`、force push、`docker compose down -v`、`docker volume rm` は使わない（deny と hook でもブロックされる）
-2. **作業前に必ず退避する。** コードはバックアップブランチ、DB は `mysqldump`
-3. **`docker compose down` も使わない。** 今の `docker-compose.yaml` は MySQL のデータをボリュームに保存していないので、コンテナを消すと残高データが消える（`make down` も同じ）
+2. **作業前に必ず退避する。** コードはバックアップブランチ、DB は `make backup`（mysqldump）
+3. **DB のボリューム `mysql_data` を消さない。** データ本体はここにある。`docker compose down -v` と `docker volume rm` は使わない（`make down` はボリュームを残すので可）
 4. **1操作ごとに平易な言葉で説明する。**
 5. **2回試して直らなかったら手を止めて**、現状・試したこと・残りの選択肢を報告する
 
@@ -56,10 +56,10 @@ git branch backup/before-rollback-<日付>
 **DB に少しでも関わる場合は、ここで DB も退避する**:
 
 ```
-docker exec sysken-db mysqldump -u root -p sysken_pay > backup-<日付>.sql
+make backup
 ```
 
-パスワードはユーザーに入力してもらう（Claude は `.env` を読まない）。退避できたことをファイルサイズと先頭行で確認してから先へ進む。
+`backups/sysken_pay-<日時>.sql.gz` に保存される（パスワードはコンテナ内の環境変数を使うので、Claude が `.env` を読む必要はない）。保存できたことをファイルサイズで確認してから先へ進む。
 
 ## Step 4: 安全な手段で復旧する
 
