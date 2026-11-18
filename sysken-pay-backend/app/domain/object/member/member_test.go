@@ -29,10 +29,10 @@ func TestFiscalYear(t *testing.T) {
 }
 
 func TestEntranceYear(t *testing.T) {
-	if y, ok := EntranceYear("22K01234"); !ok || y != 2022 {
+	if y, ok := EntranceYear("20X24042"); !ok || y != 2024 {
 		t.Errorf("got %d %v", y, ok)
 	}
-	for _, id := range []string{"", "2", "K2"} {
+	for _, id := range []string{"", "2", "K2", "20X2", "20X2A042", "2020X4042", "XXX24042"} {
 		if _, ok := EntranceYear(id); ok {
 			t.Errorf("%q: ok になった", id)
 		}
@@ -47,10 +47,11 @@ func TestGraduationCandidate(t *testing.T) {
 		s    Summary
 		want bool
 	}{
-		{"入学から4年（22）は候補", Summary{UserID: "22K01234"}, true},
-		{"5年以上（21）も候補（留年など）", Summary{UserID: "21K01234"}, true},
-		{"3年（23）は候補ではない", Summary{UserID: "23K01234"}, false},
-		{"止めた人は候補ではない", Summary{UserID: "22K01234", StoppedAt: &stopped}, false},
+		{"入学から4年（22）は候補", Summary{UserID: "20K22099"}, true},
+		{"5年以上（21）も候補（留年など）", Summary{UserID: "20K21099"}, true},
+		{"3年（23）は候補ではない", Summary{UserID: "20K23099"}, false},
+		{"先頭2桁（20）は見ない", Summary{UserID: "20X24042"}, false},
+		{"止めた人は候補ではない", Summary{UserID: "20K22099", StoppedAt: &stopped}, false},
 	}
 	for _, tt := range tests {
 		if got := tt.s.GraduationCandidate(now); got != tt.want {

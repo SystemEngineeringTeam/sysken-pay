@@ -60,15 +60,23 @@ func (s *Summary) GraduationCandidate(now time.Time) bool {
 	return FiscalYear(now)-year >= GraduationYears
 }
 
-// EntranceYear は学籍番号の先頭2桁から入学年度（西暦）を返す。例: 22K01234 → 2022
+// EntranceYear は学籍番号のアルファベットの後ろの2桁から入学年度（西暦）を返す。例: 20X24042 → 2024
+// （先頭2桁は全員同じなので使わない）
 func EntranceYear(userID string) (int, bool) {
-	if len(userID) < 2 {
+	// 形式: 数字2桁 + アルファベット1文字 + 数字の連番（先頭2桁が入学年度）
+	if len(userID) < 5 {
 		return 0, false
 	}
-	yy, err := strconv.Atoi(userID[:2])
-	if err != nil || yy < 0 {
+	for _, i := range []int{0, 1, 3, 4} {
+		if userID[i] < '0' || userID[i] > '9' {
+			return 0, false
+		}
+	}
+	c := userID[2]
+	if !(c >= 'A' && c <= 'Z') && !(c >= 'a' && c <= 'z') {
 		return 0, false
 	}
+	yy, _ := strconv.Atoi(userID[3:5])
 	return 2000 + yy, true
 }
 
