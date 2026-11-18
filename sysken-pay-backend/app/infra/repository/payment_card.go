@@ -61,6 +61,22 @@ func (r *PaymentCardRepositoryImpl) FindActiveUserIDByHash(ctx context.Context, 
 	return userID, nil
 }
 
+func (r *PaymentCardRepositoryImpl) FindRevokedUserIDByHash(ctx context.Context, codeHash string) (string, error) {
+	executor := getExecutor(ctx, r.db)
+	var userID string
+	err := executor.QueryRowContext(ctx, `
+	SELECT user_id FROM payment_card
+	WHERE code_hash = ? AND revoked_at IS NOT NULL
+	`, codeHash).Scan(&userID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", nil
+	}
+	if err != nil {
+		return "", err
+	}
+	return userID, nil
+}
+
 var _ repository.PaymentCardClaimRepository = (*PaymentCardClaimRepositoryImpl)(nil)
 
 type PaymentCardClaimRepositoryImpl struct {

@@ -37,3 +37,8 @@ export const Shortage: Story = {
   name: "残高が足りない",
   args: { balance: 200 },
 };
+
+export const WithName: Story = {
+  name: "名前つき（スマホのバーコードで読み取ったとき）",
+  args: { balance: 1000, userName: "k24000_yamadataro" },
+};

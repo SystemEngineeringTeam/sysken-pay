@@ -20,6 +20,11 @@ type PaymentCardRepository interface {
 	// FindActiveUserIDByHash は使える支払い用バーコードのハッシュから学籍番号を探す。
 	// 見つからない（存在しない・使えなくなっている）ときは "" を返す。
 	FindActiveUserIDByHash(ctx context.Context, codeHash string) (string, error)
+
+	// FindRevokedUserIDByHash は使えなくなった支払い用バーコードのハッシュから、持ち主の学籍番号を探す。
+	// 「利用停止された人のバーコード」と「作り直して古くなったバーコード」を画面で出し分けるために使う。
+	// 見つからないときは "" を返す。
+	FindRevokedUserIDByHash(ctx context.Context, codeHash string) (string, error)
 }
 
 // PaymentCardClaimRepository は発行用 QR（5分だけ有効）の保存先。

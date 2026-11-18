@@ -14,6 +14,16 @@
   margin: 0;
 }
 
+// 名前が長くても1行に収める
+.name {
+  display: inline-block;
+  max-width: 48rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+}
+
 .card {
   display: flex;
   flex-direction: column;

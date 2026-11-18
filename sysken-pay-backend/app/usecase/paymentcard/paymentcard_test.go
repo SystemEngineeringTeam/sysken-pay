@@ -66,6 +66,14 @@ func (m *memCardRepo) FindActiveUserIDByHash(_ context.Context, hash string) (st
 	}
 	return "", nil
 }
+func (m *memCardRepo) FindRevokedUserIDByHash(_ context.Context, hash string) (string, error) {
+	for _, r := range m.rows {
+		if r.hash == hash && r.revoked {
+			return r.userID, nil
+		}
+	}
+	return "", nil
+}
 func (m *memCardRepo) active(userID string) int {
 	n := 0
 	for _, r := range m.rows {
@@ -249,5 +257,39 @@ func TestIssue_StoppedUser(t *testing.T) {
 	}
 	if len(cards.rows) != 0 {
 		t.Error("利用停止した人に発行された")
+	}
+}
+
+func TestResolve_StoppedUserCard(t *testing.T) {
+	users := &memUserRepo{
+		users: map[string]*domainuser.User{"24K01234": newUser(t, "24K01234", "シス研太郎")},
+	}
+	cards := &memCardRepo{}
+	issue := NewIssueUseCase(users, cards, &memTx{cards: cards})
+	resolve := NewResolveUseCase(users, cards)
+
+	got, err := issue.Issue(context.Background(), "24K01234")
+	if err != nil {
+		t.Fatal(err)
+	}
+	// 利用停止：バーコードを使えなくして、ユーザーを止める
+	_ = cards.RevokeActiveByUserID(context.Background(), "24K01234")
+	delete(users.users, "24K01234")
+	users.stopped = map[string]bool{"24K01234": true}
+
+	if _, err := resolve.Resolve(context.Background(), got.Code); !errors.Is(err, domainuser.ErrUserStopped) {
+		t.Fatalf("err = %v, want ErrUserStopped", err)
+	}
+}
+
+func TestResolve_OldCardAfterReissueIsNotStopped(t *testing.T) {
+	issue, resolve, _ := setup(t)
+	old, _ := issue.Issue(context.Background(), "24K01234")
+	if _, err := issue.Issue(context.Background(), "24K01234"); err != nil {
+		t.Fatal(err)
+	}
+	// 作り直して古くなっただけのバーコードは「使えないバーコード」（利用停止ではない）
+	if _, err := resolve.Resolve(context.Background(), old.Code); !errors.Is(err, ErrCardNotFound) {
+		t.Fatalf("err = %v, want ErrCardNotFound", err)
 	}
 }

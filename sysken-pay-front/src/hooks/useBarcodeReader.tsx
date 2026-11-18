@@ -5,7 +5,14 @@ import { useBalanceStore } from "../store/useBalanceStore";
 import { useUserStore } from "../store/useUserStore";
 import { ItemRepositoryImpl } from "../adapter/repository/ItemRepositoryImpl";
 import { UserRepositoryImpl } from "../adapter/repository/UserRepositoryImpl";
-import { toUserScanErrorMessage } from "../services/userScanErrorMessage";
+import { PaymentCardRepositoryImpl } from "../adapter/repository/PaymentCardRepositoryImpl";
+import {
+  PAYMENT_CODE_ON_HOME,
+  STUDENT_ID_NOT_ACCEPTED,
+  isStudentId,
+  looksLikePaymentCode,
+  toPaymentScanErrorMessage,
+} from "../services/paymentScan";
 import { PRODUCT_NOT_REGISTERED, toProductScanErrorMessage } from "../services/productScanErrorMessage";
 import styles from "./useBarcodeReader.module.scss";
 
@@ -46,6 +53,11 @@ export function useProductScan() {
 
   const onScan = async (barcode: string) => {
     if (isScanningRef.current) return;
+    // スマホの支払い用バーコードを商品の読み取りでかざしたとき（商品の API には送らない）
+    if (looksLikePaymentCode(barcode)) {
+      setError(PAYMENT_CODE_ON_HOME);
+      return;
+    }
     isScanningRef.current = true;
     try {
       const data = await ItemRepositoryImpl.getItemByJanCode(barcode);
@@ -68,10 +80,11 @@ export function useProductScan() {
 }
 
 /**
- * 学生証を読み取り、登録済みのユーザーかを確かめてから残高を取得し、nextPath へ進む。
- * 残高 API は未登録の学籍番号でも 0 円を返すので、必ず先にユーザー取得 API で存在を確かめる。
+ * スマホのシス研Payバーコード（支払い用バーコード）を読み取り、持ち主と残高を調べてから nextPath へ進む。
+ * 支払い・チャージで使う（docs/phone-payment.md。学生証での支払いはやめた）。
+ * 学生証を読んだときは API に送らず、「学生証は使えません」と案内する。
  */
-export function useUserScan(nextPath: string = "/charge/select") {
+export function usePaymentCardScan(nextPath: string = "/charge/select") {
   const navigate = useNavigate();
   const setBalance = useBalanceStore((state) => state.setBalance);
   const setScannedUser = useUserStore((state) => state.setScannedUser);
@@ -80,17 +93,21 @@ export function useUserScan(nextPath: string = "/charge/select") {
 
   const onScan = async (barcode: string) => {
     if (isScanningRef.current) return;
+    if (isStudentId(barcode)) {
+      setError(STUDENT_ID_NOT_ACCEPTED);
+      return;
+    }
     isScanningRef.current = true;
     try {
-      const user = await UserRepositoryImpl.getUser(barcode);
-      const balance = await UserRepositoryImpl.getBalance(user.user_id!);
+      const user = await PaymentCardRepositoryImpl.resolve(barcode);
+      const balance = await UserRepositoryImpl.getBalance(user.user_id);
       if (!isMountedRef.current) return;
       setBalance(balance);
-      setScannedUser({ user_id: user.user_id! });
+      setScannedUser({ user_id: user.user_id, user_name: user.user_name });
       navigate(nextPath);
     } catch (e) {
       if (!isMountedRef.current) return;
-      setError(toUserScanErrorMessage(e));
+      setError(toPaymentScanErrorMessage(e));
     } finally {
       isScanningRef.current = false;
     }

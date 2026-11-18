@@ -4,16 +4,24 @@ import styles from "./SyskenPayConfirm.module.scss";
 
 interface SyskenPayConfirmProps {
   balance: number; // シスPay残高
+  /** 読み取ったバーコードの持ち主の名前（本人のバーコードか確かめてもらうため） */
+  userName?: string;
 }
 
-export default function SyskenPayConfirm({ balance }: SyskenPayConfirmProps) {
+export default function SyskenPayConfirm({ balance, userName }: SyskenPayConfirmProps) {
   const totalPrice = useTotalPrice();
   const shortage = Math.max(0, totalPrice - balance); // 不足額
   const remaining = Math.max(0, balance - totalPrice); // 支払い後残高
 
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>ご購入確定</h2>
+      {userName ? (
+        <h2 className={styles.title}>
+          <span className={styles.name}>{userName}</span> さん
+        </h2>
+      ) : (
+        <h2 className={styles.title}>ご購入確定</h2>
+      )}
       <div className={styles.card}>
         <PriceLabel label="シスPay" price={balance} />
         <PriceLabel label="合計" price={totalPrice} />

@@ -745,6 +745,12 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: 利用停止した人の支払い用バーコード
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: 存在しない、または使えなくなった支払い用バーコード
           content:

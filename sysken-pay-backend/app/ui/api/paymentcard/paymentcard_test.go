@@ -104,6 +104,7 @@ func TestResolve(t *testing.T) {
 		{"持ち主が分かる", fakeResolve{user: testUser(t)}, http.StatusOK},
 		{"無い・使えないバーコードは404", fakeResolve{err: paymentcard.ErrCardNotFound}, http.StatusNotFound},
 		{"形式が不正なら400", fakeResolve{err: domainpc.ErrInvalidCode}, http.StatusBadRequest},
+		{"利用停止した人のバーコードは403", fakeResolve{err: domainuser.ErrUserStopped}, http.StatusForbidden},
 		{"それ以外は500", fakeResolve{err: errors.New("db down")}, http.StatusInternalServerError},
 	}
 	for _, tt := range tests {

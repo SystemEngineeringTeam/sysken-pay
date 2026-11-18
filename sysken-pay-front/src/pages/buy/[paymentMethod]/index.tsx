@@ -1,7 +1,7 @@
 import type { JSX } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { BarcodeReader } from "../../../components/ui/BarcodeReader";
-import { useUserScan } from "../../../hooks/useBarcodeReader";
+import { usePaymentCardScan } from "../../../hooks/useBarcodeReader";
 import Header from "../../../components/layouts/Header";
 import Total from "../../../components/features/buy/Total";
 import ArrowButton from "../../../components/ui/ArrowButton";
@@ -10,8 +10,8 @@ import styles from "./index.module.scss";
 export default function PaymentStartPage(): JSX.Element {
   const { paymentMethod } = useParams();
   const navigate = useNavigate();
-  // 登録済みのユーザーか確かめてから、購入確定画面へ進む
-  const { onScan: handleScan, ErrorMessage } = useUserScan(`/buy/${paymentMethod}/confirm`);
+  // スマホのシス研Payバーコードで持ち主を確かめてから、購入確定画面へ進む
+  const { onScan: handleScan, ErrorMessage } = usePaymentCardScan(`/buy/${paymentMethod}/confirm`);
 
   return (
     <div className={styles.container}>

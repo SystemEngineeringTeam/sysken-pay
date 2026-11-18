@@ -9,11 +9,13 @@ import { Input } from "../../components/ui/Input";
 import { useBalanceStore } from "../../store/useBalanceStore";
 import { useChargeStore } from "../../store/useChargeStore";
 import { chargeAmountsLabel, isChargeAmount } from "../../services/chargeAmounts";
+import { useUserStore } from "../../store/useUserStore";
 import styles from "./select.module.scss";
 
 export default function ChargeSelectPage(): JSX.Element {
   const navigate = useNavigate();
   const balance = useBalanceStore((state) => state.balance?.balance ?? 0);
+  const userName = useUserStore((state) => state.scannedUser?.user_name);
   const saveChargeAmount = useChargeStore((state) => state.setChargeAmount);
   const [chargeAmount, setChargeAmount] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -39,6 +41,7 @@ export default function ChargeSelectPage(): JSX.Element {
       <Header title="チャージ金額" confirmHome />
       <div className={styles.content}>
         <div className={styles.inner}>
+          {userName && <p className={styles.userName}>{userName} さん</p>}
           <PriceLabel label="残高" price={balance} />
           <div className={styles.title}>チャージ金額を選択してください</div>
           <div className={styles.inputWrapper}>
