@@ -24,5 +24,5 @@ if [ "$ANSWER" != "yes" ]; then
   exit 1
 fi
 
-gzip -dc "$FILE" | docker exec -i "$CONTAINER" sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD"'
+gzip -dc "$FILE" | docker exec -i "$CONTAINER" sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" exec mysql -uroot'
 echo "戻しました: $FILE"

@@ -73,7 +73,7 @@ docker compose up -d --build
 ```bash
 docker compose ps    # sysken-db が healthy、ポートが 127.0.0.1: から始まる
 curl -s localhost:8080/v1/health; echo    # OK
-docker exec sysken-db sh -c 'mysql -uroot -p"$MYSQL_ROOT_PASSWORD" -e "SHOW TABLES" sysken_pay' 2>/dev/null
+docker exec sysken-db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -e "SHOW TABLES" sysken_pay' 2>/dev/null
 ```
 
 新しく作る DB には `db/init.sql` がすべて入るので、`make migrate` は不要。
@@ -109,7 +109,22 @@ touch ~/.kiosk-disabled && pkill -f chromium
 # 元に戻す: rm ~/.kiosk-disabled してから sudo reboot
 ```
 
-## 7. 確認
+## 7. DB のバックアップを毎日取る
+
+```bash
+cd ~/sysken-pay/sysken-pay-backend
+mkdir -p backups
+./scripts/backup-db.sh    # 手動で1回取って、動くことを確かめる
+ls -lh backups/
+(crontab -l 2>/dev/null; echo "0 3 * * * cd /home/sysken-pay/sysken-pay/sysken-pay-backend && ./scripts/backup-db.sh >> backups/backup.log 2>&1") | crontab -
+crontab -l    # 0 3 * * * の行が1つだけあること
+```
+
+- 毎日 3:00 に `backups/` へ保存し、新しい順に30日分を残す。結果は `backups/backup.log`
+- バックアップには部員の個人情報と残高が入るので、ファイルは自分だけが読める権限で作られる
+- このままだと SD カードの中にしかない。USB メモリなど、ラズパイの外にもコピーすること（未設定）
+
+## 8. 確認
 
 - 再起動後、何も操作しなくてもシス研Pay の画面が全画面で出る
 - 右上の歯車 → 管理者パスワードで管理メニューに入れる
@@ -130,4 +145,4 @@ cd ../sysken-pay-front && pnpm install --frozen-lockfile && pnpm build && sudo s
 
 - 5インチのタッチモニターをつないでの確認（800x480 で全画面になるか、タッチが効くか）
 - ルーターでの IP アドレスの固定割り当て（管理表の値と、実際に割り当てられている値が違った）
-- DB のバックアップを毎日自動で取る設定（`sysken-pay-backend/README.md` の cron）と、ラズパイの外への保存
+- バックアップのラズパイの外（USB メモリなど）への保存
