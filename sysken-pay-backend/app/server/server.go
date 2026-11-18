@@ -52,6 +52,7 @@ func Run(db *sql.DB) error {
 	purchaseRepo := repository.NewPurchaseRepository(db)
 	balanceRepo := repository.NewBalanceRepository(db)
 	paymentCardRepo := repository.NewPaymentCardRepository(db)
+	paymentCardClaimRepo := repository.NewPaymentCardClaimRepository(db)
 
 	// UseCase
 	getUserUseCase := user.NewGetUserUseCase(userRepo)
@@ -69,6 +70,7 @@ func Run(db *sql.DB) error {
 	getPurchaseHistoriesUseCase := balance.NewGetPurchaseHistoriesUseCase(balanceRepo)
 	issuePaymentCardUseCase := paymentcard.NewIssueUseCase(userRepo, paymentCardRepo, txManager)
 	resolvePaymentCardUseCase := paymentcard.NewResolveUseCase(userRepo, paymentCardRepo)
+	paymentCardClaimUseCase := paymentcard.NewClaimUseCase(userRepo, paymentCardRepo, paymentCardClaimRepo, txManager)
 
 	// Handler
 	userHandler := api_user.NewUserHandler(getUserUseCase, registerUserUseCase, updateUserUseCase)
@@ -77,6 +79,7 @@ func Run(db *sql.DB) error {
 	purchaseHandler := api_purchase.NewPurchaseHandler(createPurchaseUseCase, cancelPurchaseUseCase)
 	balanceHandler := api_balance.NewBalanceHandler(getBalanceUseCase, getPurchaseHistoriesUseCase)
 	paymentCardHandler := api_paymentcard.NewHandler(issuePaymentCardUseCase, resolvePaymentCardUseCase)
+	paymentCardClaimHandler := api_paymentcard.NewClaimHandler(paymentCardClaimUseCase, config.PublicBaseURL())
 	r := newRouter(handlers{
 		user:     userHandler,
 		item:     itemHandler,
@@ -84,7 +87,8 @@ func Run(db *sql.DB) error {
 		purchase: purchaseHandler,
 		balance:  balanceHandler,
 
-		paymentCard: paymentCardHandler,
+		paymentCard:      paymentCardHandler,
+		paymentCardClaim: paymentCardClaimHandler,
 	}, routerConfig{
 		adminUser:      config.AdminUser(),
 		adminPassword:  config.AdminPassword(),

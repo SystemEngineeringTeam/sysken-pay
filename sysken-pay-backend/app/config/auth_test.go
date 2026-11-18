@@ -28,3 +28,14 @@ func TestAdminUser(t *testing.T) {
 		t.Errorf("設定あり: got %q", got)
 	}
 }
+
+func TestPublicBaseURL(t *testing.T) {
+	t.Setenv("PUBLIC_BASE_URL", "")
+	if got := PublicBaseURL(); got != "" {
+		t.Errorf("未設定: got %q", got)
+	}
+	t.Setenv("PUBLIC_BASE_URL", " http://192.0.2.10:8081/ ")
+	if got := PublicBaseURL(); got != "http://192.0.2.10:8081" {
+		t.Errorf("前後の空白と末尾の / を取る: got %q", got)
+	}
+}

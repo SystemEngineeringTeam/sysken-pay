@@ -12,6 +12,7 @@ export type Path =
   | `/admin/item-update`
   | `/admin/item-update/info`
   | `/admin/menu`
+  | `/admin/phone-register`
   | `/admin/user-register`
   | `/admin/user-register/name`
   | `/admin/user-update`
