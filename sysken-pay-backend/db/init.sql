@@ -14,6 +14,8 @@ CREATE TABLE `user` (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL DEFAULT NULL,
+    -- 利用停止した人を一覧から隠した日時（記録は消さない）。db/migrations/004_user_hidden.sql
+    hidden_at TIMESTAMP NULL DEFAULT NULL,
     
     PRIMARY KEY (id)
 );

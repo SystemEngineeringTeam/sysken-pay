@@ -74,9 +74,14 @@ func (m *mockMemberRepo) ListMembers(context.Context) ([]*domainmember.Summary, 
 func (m *mockMemberRepo) LockMember(context.Context, string) (domainmember.Status, bool, error) {
 	return m.status, m.found, nil
 }
-func (m *mockMemberRepo) Stop(context.Context, string) error              { return nil }
-func (m *mockMemberRepo) Resume(context.Context, string) error            { return nil }
-func (m *mockMemberRepo) InsertRefund(context.Context, string, int) error { return nil }
+func (m *mockMemberRepo) Stop(context.Context, string) error               { return nil }
+func (m *mockMemberRepo) Resume(context.Context, string) error             { return nil }
+func (m *mockMemberRepo) InsertRefund(context.Context, string, int) error  { return nil }
+func (m *mockMemberRepo) IsHidden(context.Context, string) (bool, error)   { return false, nil }
+func (m *mockMemberRepo) Hide(context.Context, string) error               { return nil }
+func (m *mockMemberRepo) Unhide(context.Context, string) error             { return nil }
+func (m *mockMemberRepo) HasHistory(context.Context, string) (bool, error) { return false, nil }
+func (m *mockMemberRepo) Delete(context.Context, string) error             { return nil }
 
 func activeMember() *mockMemberRepo {
 	return &mockMemberRepo{status: domainmember.StatusActive, found: true}

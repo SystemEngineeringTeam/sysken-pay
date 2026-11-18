@@ -90,6 +90,7 @@ make migrate FILE=db/migrations/001_payment_card.sql
 | `001_payment_card.sql` | 支払い用バーコードの表（`docs/phone-payment.md`） |
 | `002_payment_card_claim.sql` | 発行用 QR の表（同上） |
 | `003_refund.sql` | 返金の表（`docs/phone-payment.md` の「ユーザー一覧」） |
+| `004_user_hidden.sql` | `user` に `hidden_at` を足す（停止中の人の「非表示」）。**API を新しくする前に流す**（流す前の API は一覧が 500 になる） |
 
 ## テスト
 

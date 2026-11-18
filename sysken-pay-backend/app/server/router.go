@@ -93,6 +93,10 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 			r.Post("/user/{user_id}/refund", h.member.Refund)
 			r.Post("/user/{user_id}/stop", h.member.Stop)
 			r.Post("/user/{user_id}/resume", h.member.Resume)
+			// 停止中の人の整理。非表示は記録を残す。削除は記録が1件もない人だけ（取り消せない）
+			r.Post("/user/{user_id}/hide", h.member.Hide)
+			r.Post("/user/{user_id}/unhide", h.member.Unhide)
+			r.Delete("/user/{user_id}", h.member.Delete)
 		})
 	})
 
