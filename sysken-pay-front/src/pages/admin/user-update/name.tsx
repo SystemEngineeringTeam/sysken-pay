@@ -77,7 +77,7 @@ export default function UserUpdateNamePage(): JSX.Element {
         <CompletionModal
           mode="userUpdate"
           name={name}
-          onClose={() => navigate("/admin/menu")}
+          onClose={() => navigate("/admin/user-menu")}
         />
       )}
     </div>

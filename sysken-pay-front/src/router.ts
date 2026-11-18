@@ -7,12 +7,14 @@ export type Path =
   | `/`
   | `/admin`
   | `/admin/dashboard`
+  | `/admin/item-menu`
   | `/admin/item-register`
   | `/admin/item-register/info`
   | `/admin/item-update`
   | `/admin/item-update/info`
   | `/admin/menu`
   | `/admin/phone-register`
+  | `/admin/user-menu`
   | `/admin/user-register`
   | `/admin/user-register/name`
   | `/admin/user-update`

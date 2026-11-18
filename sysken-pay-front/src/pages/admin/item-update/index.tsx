@@ -35,7 +35,7 @@ export default function ItemUpdatePage(): JSX.Element {
           error={error}
         />
       </div>
-      <ArrowButton variant="prev" onClick={() => navigate("/admin/menu")}>
+      <ArrowButton variant="prev" onClick={() => navigate("/admin/item-menu")}>
         戻る
       </ArrowButton>
     </div>
