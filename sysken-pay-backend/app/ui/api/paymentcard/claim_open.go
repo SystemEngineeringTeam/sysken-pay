@@ -14,9 +14,9 @@ import (
 )
 
 const (
-	// バーコード画像の大きさ。1モジュール4ピクセル（18文字で幅およそ1000ピクセル）
-	barcodeScale  = 4
-	barcodeHeight = 260
+	// バーコード画像の大きさ。1モジュール3ピクセル（18文字で幅759ピクセル）。保存用カード（幅1080）に拡大せずに貼るため
+	barcodeScale  = 3
+	barcodeHeight = 300
 	// トークンは43文字なので、本文はこれで十分
 	maxOpenBodyBytes = 1024
 )

@@ -31,6 +31,7 @@ func newClaimRouter(open api_paymentcard.ClaimOpenHandler, timeout time.Duration
 	r.Get(claimpage.PagePath, claimpage.Page())
 	r.Get(claimpage.ScriptPath, claimpage.Script())
 	r.Get(claimpage.StylePath, claimpage.Style())
+	r.Get(claimpage.MascotPath, claimpage.Mascot())
 	r.Post(api_paymentcard.ClaimPath+"/open", open.Open)
 
 	return r
