@@ -697,8 +697,17 @@ export interface operations {
                     "application/json": components["schemas"]["PostPurchaseResponse"];
                 };
             };
-            /** @description リクエスト不正 */
+            /** @description リクエスト不正、または残高不足（message が "insufficient balance"） */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 購入対象の商品が存在しない */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -967,7 +976,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description JANコード（8桁または13桁） */
+                /** @description JANコード（8桁または13桁。チェックデジット検証あり。不正な場合は400を返す） */
                 jan_code: string;
             };
             cookie?: never;
@@ -985,6 +994,15 @@ export interface operations {
             };
             /** @description リクエスト不正 */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 商品が存在しない */
+            404: {
                 headers: {
                     [name: string]: unknown;
                 };

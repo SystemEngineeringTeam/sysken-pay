@@ -12,6 +12,10 @@ import (
 // ErrItemNotFound は購入対象の商品が存在しない場合に返されます（ハンドラ側で404にマッピングされる）。
 var ErrItemNotFound = errors.New("item not found")
 
+// ErrInsufficientBalance は残高不足の場合に返されます（ハンドラ側で400にマッピングされる）。
+// ハンドラが domain 層を直接参照しなくて済むように、ここから公開する。
+var ErrInsufficientBalance = domainservice.ErrInsufficientBalance
+
 type CreatePurchaseUseCase interface {
 	CreatePurchase(ctx context.Context, userID string, inputs []PurchaseItemInput) (*purchase.Purchase, error)
 }

@@ -1,6 +1,9 @@
 package purchase
 
-import "testing"
+import (
+	"errors"
+	"testing"
+)
 
 func TestCanPurchase_SufficientBalance(t *testing.T) {
 	if err := CanPurchase(2000, 1500); err != nil {
@@ -15,8 +18,12 @@ func TestCanPurchase_ExactBalance(t *testing.T) {
 }
 
 func TestCanPurchase_InsufficientBalance(t *testing.T) {
-	if err := CanPurchase(1000, 1500); err == nil {
-		t.Error("CanPurchase should fail when balance < total")
+	err := CanPurchase(1000, 1500)
+	if err == nil {
+		t.Fatal("CanPurchase should fail when balance < total")
+	}
+	if !errors.Is(err, ErrInsufficientBalance) {
+		t.Errorf("error should be ErrInsufficientBalance: %v", err)
 	}
 }
 

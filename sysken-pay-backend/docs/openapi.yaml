@@ -216,7 +216,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/PostPurchaseResponse"
         "400":
-          description: リクエスト不正
+          description: リクエスト不正、または残高不足（message が "insufficient balance"）
           content:
             application/json:
               schema:

@@ -10,6 +10,7 @@ import { useBalanceStore } from "../../../store/useBalanceStore";
 import { useUserStore } from "../../../store/useUserStore";
 import { useCartStore } from "../../../store/useCartStore";
 import { PurchaseRepositoryImpl } from "../../../adapter/repository/PurchaseRepositoryImpl";
+import { toPurchaseErrorMessage } from "../../../services/purchaseErrorMessage";
 import styles from "./confirm.module.scss";
 
 export default function SyskenPayConfirmPage(): JSX.Element {
@@ -41,7 +42,7 @@ export default function SyskenPayConfirmPage(): JSX.Element {
       setErrorMessage("");
       navigate("/buy/complete");
     } catch (e) {
-      setErrorMessage(e instanceof Error ? e.message : "購入に失敗しました");
+      setErrorMessage(toPurchaseErrorMessage(e));
     }
   }
 

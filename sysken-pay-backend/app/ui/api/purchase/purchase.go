@@ -58,6 +58,10 @@ func (h *purchaseHandlerImpl) CreatePurchase(w http.ResponseWriter, r *http.Requ
 			apierrors.RespondError(w, http.StatusNotFound, "item not found")
 			return
 		}
+		if errors.Is(err, purchase.ErrInsufficientBalance) {
+			apierrors.RespondError(w, http.StatusBadRequest, "insufficient balance")
+			return
+		}
 		apierrors.RespondError(w, http.StatusInternalServerError, err.Error())
 		return
 	}
