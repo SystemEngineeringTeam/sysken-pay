@@ -43,7 +43,8 @@
   // ---- 保存用のカード画像 ----
   // 色はラズパイの画面と同じ（sysken-pay-front/src/styles/scss/_design-primitive.scss）
   const COLOR = {
-    bg: "#F9F9FC",
+    // 画像の背景（カードの後ろ）。ラズパイの画面の背景色（$white-10）
+    bg: "#FFFDFB",
     blue: "#5398E1",
     blueLight: "#6FAAE8",
     white: "#FFFFFF",
