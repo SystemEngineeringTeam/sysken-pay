@@ -5,6 +5,9 @@ export const toPurchaseErrorMessage = (e: unknown): string => {
     // 画面を開いた後に残高が変わった場合など、サーバー側で残高不足と判定されたとき
     return "残高が不足しています。残高を確認してください";
   }
+  if (message === "user stopped") {
+    return "利用停止されています。役員に伝えてください。";
+  }
   if (message === "item not found") {
     return "登録されていない商品が含まれています";
   }

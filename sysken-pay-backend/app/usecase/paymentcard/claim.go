@@ -76,6 +76,12 @@ func (s *ClaimServiceImpl) CreateClaim(ctx context.Context, userID string) (*Cre
 		return nil, err
 	}
 	if u == nil {
+		// 利用停止している人は、先に「利用を再開」してから発行する
+		if stopped, err := s.userRepo.IsStopped(ctx, userID); err != nil {
+			return nil, err
+		} else if stopped {
+			return nil, fmt.Errorf("%w: userID=%s", domainuser.ErrUserStopped, userID)
+		}
 		return nil, fmt.Errorf("%w: userID=%s", ErrUserNotFound, userID)
 	}
 

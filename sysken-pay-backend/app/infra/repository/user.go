@@ -59,6 +59,18 @@ func (r *UserRepositoryImpl) GetUserByID(ctx context.Context, userID string) (*u
 	return user.NewUserFromDB(id, name, createdAt, updatedAt, deleted)
 }
 
+func (r *UserRepositoryImpl) IsStopped(ctx context.Context, userID string) (bool, error) {
+	executor := getExecutor(ctx, r.db)
+	var stopped bool
+	err := executor.QueryRowContext(ctx,
+		"SELECT deleted_at IS NOT NULL FROM `user` WHERE id = ?", userID,
+	).Scan(&stopped)
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	return stopped, err
+}
+
 func (r *UserRepositoryImpl) InsertUser(
 	ctx context.Context, u *user.User) (*user.User, error) {
 

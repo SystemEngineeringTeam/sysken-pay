@@ -6,6 +6,7 @@ import (
 	"fmt"
 	domainmember "sysken-pay-api/app/domain/object/member"
 	"sysken-pay-api/app/domain/object/purchase"
+	domainuser "sysken-pay-api/app/domain/object/user"
 	"sysken-pay-api/app/domain/repository"
 	domainservice "sysken-pay-api/app/domain/service/purchase"
 )
@@ -13,8 +14,11 @@ import (
 // ErrItemNotFound は購入対象の商品が存在しない場合に返されます（ハンドラ側で404にマッピングされる）。
 var ErrItemNotFound = errors.New("item not found")
 
-// ErrUserNotFound はユーザーがいない、または利用停止している場合に返されます（ハンドラ側で404にマッピングされる）。
+// ErrUserNotFound はユーザーがいない場合に返されます（ハンドラ側で404にマッピングされる）。
 var ErrUserNotFound = errors.New("user not found")
+
+// ErrUserStopped はユーザーが利用停止している場合に返されます（ハンドラ側で403にマッピングされる）。
+var ErrUserStopped = domainuser.ErrUserStopped
 
 // ErrInsufficientBalance は残高不足の場合に返されます（ハンドラ側で400にマッピングされる）。
 // ハンドラが domain 層を直接参照しなくて済むように、ここから公開する。
@@ -84,8 +88,11 @@ func (s *CreatePurchaseServiceImpl) CreatePurchase(
 		if err != nil {
 			return err
 		}
-		if !found || status == domainmember.StatusStopped {
+		if !found {
 			return fmt.Errorf("%w: userID=%s", ErrUserNotFound, userID)
+		}
+		if status == domainmember.StatusStopped {
+			return fmt.Errorf("%w: userID=%s", ErrUserStopped, userID)
 		}
 
 		// トランザクション内で残高チェック（同時実行安全）

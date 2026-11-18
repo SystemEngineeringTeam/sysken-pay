@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strconv"
 
+	domainuser "sysken-pay-api/app/domain/object/user"
 	apierrors "sysken-pay-api/app/ui/api/pkg/errors"
 	"sysken-pay-api/app/usecase/paymentcard"
 
@@ -67,6 +68,10 @@ func (h *claimHandlerImpl) Create(w http.ResponseWriter, r *http.Request) {
 	created, err := h.uc.CreateClaim(r.Context(), userID)
 	if err != nil {
 		log.Printf("Failed to create payment card claim: %v", err)
+		if errors.Is(err, domainuser.ErrUserStopped) {
+			apierrors.RespondError(w, http.StatusForbidden, "user stopped")
+			return
+		}
 		if errors.Is(err, paymentcard.ErrUserNotFound) {
 			apierrors.RespondError(w, http.StatusNotFound, "user not found")
 			return

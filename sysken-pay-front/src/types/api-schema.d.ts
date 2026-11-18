@@ -839,6 +839,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
+            /** @description 利用停止している（退部・卒業） */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description ユーザーが存在しない */
             404: {
                 headers: {
@@ -940,6 +949,15 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            /** @description 利用停止している（退部・卒業） */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description サーバーエラー */
             500: {
                 headers: {
@@ -1024,6 +1042,15 @@ export interface operations {
             };
             /** @description リクエスト不正、または残高不足（message が "insufficient balance"） */
             400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 利用停止している（退部・卒業） */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1380,6 +1407,15 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            /** @description 利用停止している（退部・卒業） */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description ユーザーが登録されていない */
             404: {
                 headers: {
@@ -1431,6 +1467,15 @@ export interface operations {
                 };
             };
             401: components["responses"]["Unauthorized"];
+            /** @description 利用停止している（退部・卒業） */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description ユーザーが登録されていない */
             404: {
                 headers: {

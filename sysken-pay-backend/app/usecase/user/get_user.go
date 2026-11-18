@@ -26,5 +26,17 @@ func (s *GetUserServiceImpl) GetUser(ctx context.Context, userID string) (*domai
 	if err := (&domainuser.User{}).SetUserID(userID); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrInvalidUserID, err)
 	}
-	return s.userRepo.GetUserByID(ctx, userID)
+	u, err := s.userRepo.GetUserByID(ctx, userID)
+	if err != nil || u != nil {
+		return u, err
+	}
+	// 見つからないときは、利用停止している人か確かめる（画面で理由を出し分けるため）
+	stopped, err := s.userRepo.IsStopped(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+	if stopped {
+		return nil, fmt.Errorf("%w: userID=%s", domainuser.ErrUserStopped, userID)
+	}
+	return nil, nil
 }

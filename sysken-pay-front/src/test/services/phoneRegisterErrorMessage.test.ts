@@ -29,3 +29,9 @@ describe("formatRemaining", () => {
     expect(formatRemaining(s)).toBe(want);
   });
 });
+
+describe("toPhoneRegisterErrorMessage（利用停止）", () => {
+  it("403 は「利用を再開」の案内", () => {
+    expect(toPhoneRegisterErrorMessage(new ApiError("user stopped", 403))).toContain("利用を再開");
+  });
+});

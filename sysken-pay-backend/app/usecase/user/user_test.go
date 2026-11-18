@@ -15,6 +15,7 @@ type mockUserRepo struct {
 	getFunc    func(ctx context.Context, userID string) (*domainuser.User, error)
 	insertFunc func(ctx context.Context, u *domainuser.User) (*domainuser.User, error)
 	updateFunc func(ctx context.Context, u *domainuser.User) (*domainuser.User, error)
+	stopped    bool
 }
 
 func (m *mockUserRepo) GetUserByID(ctx context.Context, userID string) (*domainuser.User, error) {
@@ -27,6 +28,10 @@ func (m *mockUserRepo) InsertUser(ctx context.Context, u *domainuser.User) (*dom
 
 func (m *mockUserRepo) UpdateUser(ctx context.Context, u *domainuser.User) (*domainuser.User, error) {
 	return m.updateFunc(ctx, u)
+}
+
+func (m *mockUserRepo) IsStopped(context.Context, string) (bool, error) {
+	return m.stopped, nil
 }
 
 // --- GetUser ---
@@ -254,5 +259,16 @@ func TestUpdateUser_RepoError(t *testing.T) {
 	uc := NewUpdateUserUseCase(repo)
 	if _, err := uc.UpdateUser(context.Background(), "20K23099", "田中 太郎"); err == nil {
 		t.Error("UpdateUser should propagate repo error")
+	}
+}
+
+func TestGetUser_Stopped(t *testing.T) {
+	repo := &mockUserRepo{
+		getFunc: func(context.Context, string) (*domainuser.User, error) { return nil, nil },
+		stopped: true,
+	}
+	_, err := NewGetUserUseCase(repo).GetUser(context.Background(), "22K01234")
+	if !errors.Is(err, domainuser.ErrUserStopped) {
+		t.Fatalf("err = %v, want ErrUserStopped", err)
 	}
 }
