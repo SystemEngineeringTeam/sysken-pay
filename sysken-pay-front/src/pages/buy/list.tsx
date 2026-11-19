@@ -1,38 +1,48 @@
 import type { JSX } from "react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ItemList } from "../../components/features/buy/ItemList";
 import { useCartStore } from "../../store/useCartStore";
 import Header from "../../components/layouts/Header";
 import ArrowButton from "../../components/ui/ArrowButton";
+import { PriceLabel } from "../../components/ui/PriceLabel";
+import { HiddenBarcodeInput } from "../../components/ui/HiddenBarcodeInput";
+import { useCartScan } from "../../hooks/useBarcodeReader";
+import { useTotalPrice } from "../../hooks/useTotalPrice";
 import styles from "./list.module.scss";
 
+/**
+ * カート。この画面でリーダーに
+ * - 商品をかざす → カートに足す
+ * - シス研Payバーコードをかざす → すぐに買って完了画面へ（ボタンは押さない）
+ * 現金の人だけ「現金で払う」を押す。
+ */
 export default function BuyListPage(): JSX.Element {
   const navigate = useNavigate();
   const { cartItems: items, removeItem, clearCart } = useCartStore();
-  const [errorMessage, setErrorMessage] = useState("");
-
-  const handleNext = () => {
-    if (items.length === 0) {
-      setErrorMessage("商品を1点以上スキャンしてください");
-      return;
-    }
-    setErrorMessage("");
-    navigate("/buy/confirm");
-  }
+  const totalPrice = useTotalPrice();
+  const { onScan, ErrorMessage } = useCartScan();
 
   return (
     <div className={styles.container}>
       <Header title="商品購入" right="toTop" />
+      <HiddenBarcodeInput onScan={onScan} />
       <div className={styles.content}>
-        <ItemList Items={items} onDelete={removeItem} />
-        {errorMessage && <p className={styles.error}>{errorMessage}</p>}
+        <ItemList
+          Items={items}
+          onDelete={removeItem}
+          title="シス研Payバーコードをかざすと、お支払いが完了します"
+        />
+        <ErrorMessage />
+        <div className={styles.footer}>
+          <p className={styles.hint}>商品を続けてかざせます</p>
+          <PriceLabel label="合計" price={totalPrice} />
+        </div>
       </div>
       <ArrowButton variant="prev" onClick={() => { clearCart(); navigate("/buy"); }}>
         戻る
       </ArrowButton>
-      <ArrowButton variant="next" onClick={handleNext}>
-        次へ
+      <ArrowButton variant="next" onClick={() => navigate("/buy/cash")}>
+        現金で払う
       </ArrowButton>
     </div>
   );

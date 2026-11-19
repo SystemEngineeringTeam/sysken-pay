@@ -23,9 +23,7 @@ export type Path =
   | `/admin/user-update/name`
   | `/buy`
   | `/buy/:paymentMethod`
-  | `/buy/:paymentMethod/confirm`
   | `/buy/complete`
-  | `/buy/confirm`
   | `/buy/list`
   | `/charge`
   | `/charge/complete`
@@ -35,7 +33,6 @@ export type Path =
 export type Params = {
   '/admin/user-list/:userId': { userId: string }
   '/buy/:paymentMethod': { paymentMethod: string }
-  '/buy/:paymentMethod/confirm': { paymentMethod: string }
 }
 
 export type ModalPath = never

@@ -20,5 +20,41 @@
   text-align: center;
   line-height: 1.6;
   margin: 0;
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
+}
+
+// シス研Payで払ったときの、名前・金額・残高（本人の買い物か確かめるため）
+.result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem 5rem;
+  border-radius: 2rem;
+  background-color: $white;
+  box-shadow: 0 0.4rem 1.4rem $shadow-40;
+}
+
+.name {
+  margin: 0;
+  max-width: 80rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 3.2rem;
+  font-weight: $bold;
+  color: $gray-100;
+}
+
+.amounts {
+  display: flex;
+  gap: 4rem;
+  margin: 0;
+  font-size: 3rem;
+  font-weight: $bold;
+  color: $gray-70;
+}
+
+.balance {
+  color: $blue-40;
 }

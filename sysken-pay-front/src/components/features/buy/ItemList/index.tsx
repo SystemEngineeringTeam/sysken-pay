@@ -5,12 +5,14 @@ import styles from "./ItemList.module.scss";
 type Props = {
   Items: CartItem[];
   onDelete: (itemId: number) => void;
+  /** 上に出す見出し */
+  title?: string;
 };
 
-export const ItemList = ({ Items, onDelete }: Props) => {
+export const ItemList = ({ Items, onDelete, title = "ご購入内容を確認してください" }: Props) => {
   return (
     <div className={styles.container}>
-      <h2 className={styles.title}>ご購入内容を確認してください</h2>
+      <h2 className={styles.title}>{title}</h2>
       <div className={styles.list}>
         {Items.map(({ item, quantity }) => (
           <PriceItemCard

@@ -33,3 +33,12 @@ describe("toPaymentScanErrorMessage", () => {
     expect(toPaymentScanErrorMessage(new TypeError("Failed to fetch"))).toContain("確かめられませんでした");
   });
 });
+
+describe("insufficientBalanceMessage", () => {
+  it("不足額と残高を出す", async () => {
+    const { insufficientBalanceMessage } = await import("../../services/paymentScan");
+    expect(insufficientBalanceMessage(100, 1250)).toBe(
+      "残高が ¥1,150 足りません（残高 ¥100）。チャージしてから、もう一度かざしてください。",
+    );
+  });
+});
