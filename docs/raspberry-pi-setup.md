@@ -214,7 +214,7 @@ sudo systemctl restart sysken-pay-front
   - キオスクの Chromium で日本語入力を使えるようにする設定（`--enable-wayland-ime` など）を `deploy/raspberry-pi/sysken-pay-kiosk.sh` に足して確かめる
   - タッチ画面だけで打つには、画面に出すキーボードも要る（今は USB キーボードか Raspberry Pi Connect でしか打てない）
   - 打てるようになったら、ユーザー登録・更新の名前の入力欄の例を `k24000_シス研太郎` に戻す（今は `k24000_yamadataro`）
-- [ ] フロントの lint のエラー（`vite.config.ts` の triple-slash reference）を直す（動きには関係ない）
+- [x] フロントの lint のエラー（`vite.config.ts` の triple-slash reference）を直す（動きには関係ない）
 
 ### ラズパイに入れて確かめること
 
