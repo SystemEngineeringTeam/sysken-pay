@@ -21,7 +21,14 @@ export const STUDENT_ID_NOT_ACCEPTED =
 
 /** ホーム画面（商品の読み取り）で支払い用バーコードを読んだときの案内 */
 export const PAYMENT_CODE_ON_HOME =
-  "これは支払い用のバーコードです。先に商品を読み取って、支払いの画面でかざしてください。";
+  "これは支払い用のバーコードです。先に商品をかざしてから、シス研Payバーコードをかざしてください。";
+
+/** カートが空のときに支払い用バーコードを読んだときの案内 */
+export const CART_EMPTY_ON_PAY = "先に商品をかざしてから、シス研Payバーコードをかざしてください。";
+
+/** 残高が足りないときの案内（不足額と今の残高を出す） */
+export const insufficientBalanceMessage = (balance: number, total: number): string =>
+  `残高が ¥${(total - balance).toLocaleString("ja-JP")} 足りません（残高 ¥${balance.toLocaleString("ja-JP")}）。チャージしてから、もう一度かざしてください。`;
 
 /** 支払い・チャージでシス研Payバーコードを読み取ったときのエラーを、画面に出す日本語のメッセージにする */
 export const toPaymentScanErrorMessage = (e: unknown): string => {

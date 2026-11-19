@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, type JSX, type KeyboardEvent, type ReactNode } from "react";
 import styles from "./BarcodeReader.module.scss";
 import { Input } from "../Input";
+import { toHalfWidth } from "../../../services/barcodeText";
 
 interface BarcodeReaderProps {
   mode: "product" | "member";
@@ -17,9 +18,6 @@ export function BarcodeReader({ mode, onScan, placeholder, error }: BarcodeReade
   const focusInput = useCallback(() => {
     containerRef.current?.querySelector("input")?.focus();
   }, []);
-
-  const toHalfWidth = (str: string) =>
-    str.replace(/[！-～]/g, (c) => String.fromCharCode(c.charCodeAt(0) - 0xfee0));
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     if (e.key === "Enter" && inputValue.trim()) {

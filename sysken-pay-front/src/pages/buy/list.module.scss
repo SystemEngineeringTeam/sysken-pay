@@ -35,6 +35,26 @@
   will-change: opacity, transform;
 }
 
+// 合計（右）と、続けてかざせる案内（左）。下の「戻る」「現金で払う」ボタンの上に置く
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  width: 100%;
+  max-width: 120rem;
+  margin-top: auto;
+  margin-bottom: 11rem;
+  padding: 0 4rem;
+  box-sizing: border-box;
+}
+
+.hint {
+  margin: 0;
+  font-size: 2.2rem;
+  color: $gray-70;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;

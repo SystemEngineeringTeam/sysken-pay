@@ -24,6 +24,12 @@
   will-change: opacity, transform;
 }
 
+// 見出しの下に出す（カートの画面など、下に合計がある画面）
+.error.top {
+  top: 15rem;
+  bottom: auto;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
