@@ -182,6 +182,29 @@ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8081/v1/health # 404�
 - 再起動後、何も操作しなくてもシス研Pay の画面が全画面で出る
 - 右上の歯車 → 管理者パスワードで管理メニューに入れる
 
+## 11. 日本語（漢字・ひらがな）を打てるようにする
+
+名前を `k24000_シス研太郎` の形で登録するため。fcitx5 と Mozc を入れる。
+
+```bash
+cd ~/sysken-pay
+sh deploy/raspberry-pi/install-japanese-input.sh
+sh deploy/raspberry-pi/install-kiosk.sh
+sudo reboot
+```
+
+- 名前の入力欄で `Ctrl + Space` を押すと、英数と日本語が切り替わる
+- キオスクの Chromium は、fcitx5 が入っていれば日本語入力を使う設定（`--enable-wayland-ime` など）で起動する
+- 切り替わらないときは、Chromium を X11 で動かして試す（効かなければファイルを消して元に戻す）
+
+```bash
+mkdir -p ~/.config/sysken-pay
+echo "--ozone-platform=x11" > ~/.config/sysken-pay/kiosk-flags
+pkill -f chromium
+```
+
+- タッチ画面だけで打つには、画面に出すキーボードが別に要る（まだ用意していない）。今は USB キーボードか Raspberry Pi Connect で打つ
+
 ## 更新するとき
 
 1行ずつ打つ（`&&` でつなぐと、`pnpm install` の `ERR_PNPM_IGNORED_BUILDS` で後ろが実行されない）。
@@ -210,7 +233,7 @@ sudo systemctl restart sysken-pay-front
 
 - [x] チャージのパスワードと、管理者画面（設定）のパスワードを分ける（`CHARGE_PASSWORD` を追加。ラズパイの `.env` に書くこと）
 - [ ] ラズパイで漢字・ひらがなを打てるようにする（日本語入力 Mozc）
-  - キオスクの Chromium で日本語入力を使えるようにする設定（`--enable-wayland-ime` など）を `deploy/raspberry-pi/sysken-pay-kiosk.sh` に足して確かめる
+  - 入れるスクリプトは用意した（上の「11.」）。ラズパイで入れて、キオスクの画面で `Ctrl + Space` で切り替わるか確かめる
   - タッチ画面だけで打つには、画面に出すキーボードも要る（今は USB キーボードか Raspberry Pi Connect でしか打てない）
   - 打てるようになったら、ユーザー登録・更新の名前の入力欄の例を `k24000_シス研太郎` に戻す（今は `k24000_yamadataro`）
 - [x] フロントの lint のエラー（`vite.config.ts` の triple-slash reference）を直す（動きには関係ない）

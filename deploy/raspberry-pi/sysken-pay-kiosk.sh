@@ -6,6 +6,17 @@
 
 URL="http://127.0.0.1:3000/"
 
+# 日本語入力（fcitx5）を入れてあれば、Chromium で使えるようにする（install-japanese-input.sh）。
+# うまくいかないときは ~/.config/sysken-pay/kiosk-flags に別のフラグを1行で書くと、そちらを使う
+#   例（X11 で動かす）: --ozone-platform=x11
+FLAGS_FILE="$HOME/.config/sysken-pay/kiosk-flags"
+IME_FLAGS=""
+if [ -f "$FLAGS_FILE" ]; then
+  IME_FLAGS="$(cat "$FLAGS_FILE")"
+elif command -v fcitx5 >/dev/null 2>&1; then
+  IME_FLAGS="--ozone-platform=wayland --enable-wayland-ime --wayland-text-input-version=3"
+fi
+
 # フロントのサーバー（sysken-pay-front.service）が立ち上がるまで待つ（最大2分）
 i=0
 while [ "$i" -lt 60 ]; do
@@ -26,6 +37,7 @@ while [ ! -f "$HOME/.kiosk-disabled" ]; do
     --hide-crash-restore-bubble \
     --disable-features=Translate \
     --check-for-update-interval=31536000 \
+    $IME_FLAGS \
     "$URL"
   sleep 2
 done
