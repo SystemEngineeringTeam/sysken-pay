@@ -154,10 +154,7 @@ func (r *MemberRepositoryImpl) HasHistory(ctx context.Context, userID string) (b
 
 func (r *MemberRepositoryImpl) Delete(ctx context.Context, userID string) error {
 	executor := getExecutor(ctx, r.db)
-	// 会計の記録ではない、支払い用バーコードと発行用 QR の行だけを先に消す
-	if _, err := executor.ExecContext(ctx, "DELETE FROM payment_card_claim WHERE user_id = ?", userID); err != nil {
-		return err
-	}
+	// 会計の記録ではない、支払い用バーコードの行だけを先に消す
 	if _, err := executor.ExecContext(ctx, "DELETE FROM payment_card WHERE user_id = ?", userID); err != nil {
 		return err
 	}

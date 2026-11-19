@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
@@ -50,16 +51,15 @@ func (f fakeResolve) Resolve(context.Context, string) (*domainuser.User, error) 
 
 func router(h Handler) http.Handler {
 	r := chi.NewRouter()
-	r.Post("/v1/user/{user_id}/payment-card", h.Issue)
-	r.Post("/v1/payment-card/resolve", h.Resolve)
+	r.Post("/v1/user/{user_id}/hri", h.Issue)
+	r.Get("/v1/user", h.Resolve)
 	return r
 }
 
 func resolveReq(t *testing.T, r http.Handler, code string) *httptest.ResponseRecorder {
 	t.Helper()
-	body, _ := json.Marshal(ResolveRequest{Code: code})
 	rec := httptest.NewRecorder()
-	r.ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/v1/payment-card/resolve", bytes.NewReader(body)))
+	r.ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/v1/user?hri="+url.QueryEscape(code), nil))
 	return rec
 }
 
@@ -77,7 +77,7 @@ func TestIssue(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			rec := httptest.NewRecorder()
-			router(NewHandler(tt.uc, nil)).ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/v1/user/24K01234/payment-card", nil))
+			router(NewHandler(tt.uc, nil)).ServeHTTP(rec, httptest.NewRequest(http.MethodPost, "/v1/user/24K01234/hri", nil))
 			if rec.Code != tt.wantStatus {
 				t.Fatalf("status = %d, want %d", rec.Code, tt.wantStatus)
 			}
@@ -88,7 +88,7 @@ func TestIssue(t *testing.T) {
 			if err := json.NewDecoder(rec.Body).Decode(&res); err != nil {
 				t.Fatal(err)
 			}
-			if res.Code != validCode || res.DisplayCode != "SP 7Q2K X9MD RA4T W8YZ" || res.UserName != "シス研太郎" {
+			if res.HRI != validCode || res.DisplayHRI != "SP 7Q2K X9MD RA4T W8YZ" || res.UserName != "シス研太郎" {
 				t.Errorf("response = %+v", res)
 			}
 		})
@@ -141,7 +141,7 @@ func TestResolve_DoesNotLogCode(t *testing.T) {
 		resolveReq(t, router(NewHandler(nil, uc)), validCode)
 	}
 	if strings.Contains(buf.String(), validCode) {
-		t.Errorf("支払い用バーコードの中身がログに出ている: %s", buf.String())
+		t.Errorf("HRI がログに出ている: %s", buf.String())
 	}
 }
 

@@ -54,7 +54,6 @@ func Run(db *sql.DB) error {
 	purchaseRepo := repository.NewPurchaseRepository(db)
 	balanceRepo := repository.NewBalanceRepository(db)
 	paymentCardRepo := repository.NewPaymentCardRepository(db)
-	paymentCardClaimRepo := repository.NewPaymentCardClaimRepository(db)
 	memberRepo := repository.NewMemberRepository(db)
 
 	// UseCase
@@ -73,7 +72,6 @@ func Run(db *sql.DB) error {
 	getPurchaseHistoriesUseCase := balance.NewGetPurchaseHistoriesUseCase(balanceRepo)
 	issuePaymentCardUseCase := paymentcard.NewIssueUseCase(userRepo, paymentCardRepo, txManager)
 	resolvePaymentCardUseCase := paymentcard.NewResolveUseCase(userRepo, paymentCardRepo)
-	paymentCardClaimUseCase := paymentcard.NewClaimUseCase(userRepo, paymentCardRepo, paymentCardClaimRepo, txManager)
 	memberUseCase := member.NewUseCase(memberRepo, balanceRepo, paymentCardRepo, txManager)
 
 	// Handler
@@ -83,8 +81,6 @@ func Run(db *sql.DB) error {
 	purchaseHandler := api_purchase.NewPurchaseHandler(createPurchaseUseCase, cancelPurchaseUseCase)
 	balanceHandler := api_balance.NewBalanceHandler(getBalanceUseCase, getPurchaseHistoriesUseCase)
 	paymentCardHandler := api_paymentcard.NewHandler(issuePaymentCardUseCase, resolvePaymentCardUseCase)
-	paymentCardClaimHandler := api_paymentcard.NewClaimHandler(paymentCardClaimUseCase, config.PublicBaseURL())
-	paymentCardClaimOpenHandler := api_paymentcard.NewClaimOpenHandler(paymentCardClaimUseCase)
 	memberHandler := api_member.NewHandler(memberUseCase)
 	r := newRouter(handlers{
 		user:     userHandler,
@@ -93,9 +89,8 @@ func Run(db *sql.DB) error {
 		purchase: purchaseHandler,
 		balance:  balanceHandler,
 
-		paymentCard:      paymentCardHandler,
-		paymentCardClaim: paymentCardClaimHandler,
-		member:           memberHandler,
+		paymentCard: paymentCardHandler,
+		member:      memberHandler,
 	}, routerConfig{
 		adminUser:      config.AdminUser(),
 		adminPassword:  config.AdminPassword(),
@@ -104,15 +99,11 @@ func Run(db *sql.DB) error {
 		timeout:        requestTimeout,
 	})
 
-	// 部室の Wi-Fi に開ける入口（支払い用バーコードを受け取るページだけ）
-	claimRouter := newClaimRouter(paymentCardClaimOpenHandler, requestTimeout)
-
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
 	defer stop()
 
 	servers := []*http.Server{
 		{Addr: addr, Handler: r, ReadHeaderTimeout: readHeaderTimeout},
-		{Addr: ":" + strconv.Itoa(ClaimPort), Handler: claimRouter, ReadHeaderTimeout: readHeaderTimeout},
 	}
 	for _, srv := range servers {
 		l, err := net.Listen("tcp", srv.Addr)

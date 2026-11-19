@@ -26,10 +26,8 @@ type handlers struct {
 	charge   api_charge.Handler
 	purchase api_purchase.Handler
 	balance  api_balance.Handler
-	// paymentCard は支払い用バーコード（docs/phone-payment.md）
+	// paymentCard は HRI（支払い用バーコードの文字列。docs/phone-payment.md）の発行と照合
 	paymentCard api_paymentcard.Handler
-	// paymentCardClaim は支払い用バーコードの発行用 QR（5分だけ有効）
-	paymentCardClaim api_paymentcard.ClaimHandler
 	// member はユーザー一覧と、退部・卒業のとき（返金・利用停止・再開）
 	member api_member.Handler
 }
@@ -77,8 +75,15 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 		r.Get("/item", h.item.GetAllItems)
 		r.Get("/item/{jan_code}", h.item.GetItemByJanCode)
 		r.Get("/health", health.Check)
-		// 支払い用バーコードの中身は URL ではなく本文で受け取る（アクセスログに残さないため）
-		r.Post("/payment-card/resolve", h.paymentCard.Resolve)
+		// GET /v1/user?hri=SP… は、読み取った HRI の持ち主を返す（認証なし・失敗が続くと 429）。
+		// hri が無ければ、管理者パスワードが必要なユーザー一覧
+		r.Get("/user", func(w http.ResponseWriter, req *http.Request) {
+			if req.URL.Query().Has("hri") {
+				h.paymentCard.Resolve(w, req)
+				return
+			}
+			adminOnly(http.HandlerFunc(h.member.List)).ServeHTTP(w, req)
+		})
 
 		// チャージ用パスワードか管理者パスワードが必要
 		r.Group(func(r chi.Router) {
@@ -97,13 +102,9 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 			r.Post("/user/{user_id}/purchase/cancel", h.purchase.CancelPurchase)
 			r.Post("/item", h.item.ResisterItem)
 			r.Patch("/item", h.item.UpdateItem)
-			// 発行と作り直しは同じ（新しく発行すると古いものは使えなくなる）
-			r.Post("/user/{user_id}/payment-card", h.paymentCard.Issue)
-			// 発行用 QR（スマホ登録）。作ると支払い用バーコードも作り直される
-			r.Post("/user/{user_id}/payment-card/claim", h.paymentCardClaim.Create)
-			r.Get("/payment-card/claim/{claim_id}", h.paymentCardClaim.Status)
-			// ユーザー一覧（止めた人も含む）と、退部・卒業のとき（docs/phone-payment.md の「退部・卒業」）
-			r.Get("/user", h.member.List)
+			// HRI の発行と作り直しは同じ（新しく発行すると古いものは使えなくなる）
+			r.Post("/user/{user_id}/hri", h.paymentCard.Issue)
+			// 退部・卒業のとき（docs/phone-payment.md の「退部・卒業」）。ユーザー一覧は上の GET /user
 			r.Post("/user/{user_id}/refund", h.member.Refund)
 			r.Post("/user/{user_id}/stop", h.member.Stop)
 			r.Post("/user/{user_id}/resume", h.member.Resume)
