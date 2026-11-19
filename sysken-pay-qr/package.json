@@ -1,0 +1,27 @@
+{
+  "name": "sysken-pay-qr",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "支払い用バーコードを作る静的ページ（ラズパイの外でホスティングする）",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "deploy": "cf deploy"
+  },
+  "dependencies": {
+    "jsbarcode": "3.12.1"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^2.0.0-rc.0",
+    "@types/jsbarcode": "3.11.4",
+    "@types/node": "^24.10.1",
+    "cf": "1.0.0-rc.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.1.4"
+  }
+}
