@@ -1,37 +1,49 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   PaymentCardRepositoryImpl,
-  type CreatedClaim,
+  type IssuedHri,
 } from "../adapter/repository/PaymentCardRepositoryImpl";
 import { toPhoneRegisterErrorMessage } from "../services/phoneRegisterErrorMessage";
-
-/** 状態を問い合わせる間隔（ミリ秒） */
-export const STATUS_POLL_MS = 2000;
+import { buildQrUrl, getQrEndpoint, QR_DISPLAY_SECONDS } from "../services/qrUrl";
 
 type Phase = "scan" | "creating" | "showing" | "expired";
 
 /**
  * スマホ登録の流れ（docs/phone-payment.md の「発行」）
- *   scan（学生証を読む）→ creating → showing（QR を表示。残り時間と開かれた回数を更新）→ expired
+ *   scan（学生証を読む）→ creating → showing（QR を表示。残り時間を数える）→ expired（QR を消す）
+ * 支払い用文字列は QR の URL の中にだけ持ち、表示が終わったら捨てる。
  */
 export const usePhoneRegister = () => {
   const [phase, setPhase] = useState<Phase>("scan");
-  const [claim, setClaim] = useState<CreatedClaim | null>(null);
+  const [userName, setUserName] = useState("");
+  const [qrUrl, setQrUrl] = useState<string | null>(null);
   const [remaining, setRemaining] = useState(0);
-  const [openCount, setOpenCount] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const creatingRef = useRef(false);
+
+  const clear = useCallback(() => {
+    setQrUrl(null);
+    setUserName("");
+    setRemaining(0);
+  }, []);
 
   const start = useCallback(async (userId: string) => {
     if (creatingRef.current) return; // 読み取りの二重送信を防ぐ
     creatingRef.current = true;
-    setPhase("creating");
     setError(null);
+    // 発行すると古いバーコードが使えなくなるので、QR を作れないときは発行より先に断る
+    const endpoint = getQrEndpoint();
+    if (endpoint === null) {
+      setError("QR の行き先が設定されていません。フロントの .env の VITE_QR_ENDPOINT を設定してください。");
+      creatingRef.current = false;
+      return;
+    }
+    setPhase("creating");
     try {
-      const created = await PaymentCardRepositoryImpl.createClaim(userId);
-      setClaim(created);
-      setRemaining(created.expires_in_seconds);
-      setOpenCount(0);
+      const issued: IssuedHri = await PaymentCardRepositoryImpl.issue(userId);
+      setUserName(issued.user_name);
+      setQrUrl(buildQrUrl(endpoint, issued.hri));
+      setRemaining(QR_DISPLAY_SECONDS);
       setPhase("showing");
     } catch (e) {
       setError(toPhoneRegisterErrorMessage(e));
@@ -42,12 +54,10 @@ export const usePhoneRegister = () => {
   }, []);
 
   const reset = useCallback(() => {
-    setClaim(null);
-    setRemaining(0);
-    setOpenCount(0);
+    clear();
     setError(null);
     setPhase("scan");
-  }, []);
+  }, [clear]);
 
   // 残り時間を1秒ごとに減らす
   useEffect(() => {
@@ -58,24 +68,13 @@ export const usePhoneRegister = () => {
     return () => clearInterval(timer);
   }, [phase]);
 
+  // 時間になったら QR を消す
   useEffect(() => {
-    if (phase === "showing" && remaining <= 0) setPhase("expired");
+    if (phase === "showing" && remaining <= 0) {
+      setQrUrl(null);
+      setPhase("expired");
+    }
   }, [phase, remaining]);
 
-  // 開かれた回数と、サーバーから見た残り時間を定期的に取り直す
-  useEffect(() => {
-    if (phase !== "showing" || !claim) return;
-    const timer = setInterval(async () => {
-      try {
-        const st = await PaymentCardRepositoryImpl.getClaimStatus(claim.claim_id);
-        setOpenCount(st.open_count);
-        setRemaining(st.expired ? 0 : st.remaining_seconds);
-      } catch {
-        // 一時的に取れなくても表示は続ける（期限は手元のカウントダウンで判定する）
-      }
-    }, STATUS_POLL_MS);
-    return () => clearInterval(timer);
-  }, [phase, claim]);
-
-  return { phase, claim, remaining, openCount, error, start, reset };
+  return { phase, userName, qrUrl, remaining, error, start, reset };
 };

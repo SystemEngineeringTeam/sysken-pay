@@ -7,7 +7,7 @@ describe("toPhoneRegisterErrorMessage", () => {
     [404, "登録されていない学生証です"],
     [400, "読み取れませんでした"],
     [401, "管理者パスワードの確認が切れました"],
-    [503, "PUBLIC_BASE_URL"],
+    [403, "利用停止しています"],
   ])("%i", (status, part) => {
     expect(toPhoneRegisterErrorMessage(new ApiError("x", status))).toContain(part);
   });

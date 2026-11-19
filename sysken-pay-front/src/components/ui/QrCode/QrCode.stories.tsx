@@ -6,7 +6,7 @@ const meta: Meta<typeof QrCode> = {
   component: QrCode,
   tags: ["autodocs"],
   args: {
-    value: "https://example.com/claim/sample-token",
+    value: "https://qr.pay.sysken.net/#a=SP7Q2KX9MDRA4TW8YZ",
     label: "スマホ登録用の QR コード",
   },
 };
@@ -20,6 +20,6 @@ export const LongUrl: Story = {
   name: "長い URL",
   args: {
     value:
-      "https://example.com/claim/0123456789abcdef0123456789abcdef0123456789abcdef?from=admin&lang=ja",
+      "https://qr.pay.sysken.net/#a=SP7Q2KX9MDRA4TW8YZ&from=admin",
   },
 };
