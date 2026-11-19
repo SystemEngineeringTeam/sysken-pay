@@ -153,29 +153,20 @@ sudo systemctl stop ip-rollback.timer # うまくいったら、元に戻す予�
 - うまくいかなければ何もしなくてよい。5分後に元の設定に戻るので、6分ほど待ってつなぎ直す
 - Wi-Fi の名前やパスワードが変わったら、やり直す
 
-## 9. スマホ登録の入口を開ける
+## 9. スマホ登録（QR）の行き先を設定する
 
-スマホで QR を読んだときに開く「支払い用バーコードを受け取るページ」の入口（ポート 8081）を、部室の Wi-Fi に開ける。
-開くのはこのページと受け取り API だけで、購入などの API は今まで通りラズパイの中からしか届かない。
-
-```bash
-cd ~/sysken-pay/sysken-pay-backend
-nano .env    # 下の2行を書く（<IP> は 8. で固定した IP アドレス）
-#   CLAIM_BIND_ADDR=0.0.0.0
-#   PUBLIC_BASE_URL=http://<IP>:8081
-docker compose up -d --build
-```
-
-確認：
+スマホ登録の QR は、ラズパイの外にある静的サイト（`sysken-pay-qr`、`https://qr.pay.sysken.net`）に飛ぶ。
+ラズパイを Wi-Fi に開ける必要はなく、ポートも増えない（購入などの API は今まで通りラズパイの中からしか届かない）。
 
 ```bash
-docker compose ps                                                       # 0.0.0.0:8081->8081 が出ること
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8081/claim    # 200
-curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8081/v1/health # 404（API は出ていない）
+cd ~/sysken-pay/sysken-pay-front
+nano .env    # 下の1行を書く（スキームは省略できる）
+#   VITE_QR_ENDPOINT=qr.pay.sysken.net
 ```
 
-- 部室の Wi-Fi につないだスマホで `http://<IP>:8081/claim` を開くと「QR コードをもう一度読み取ってください」と出れば、入口は届いている
-- 管理メニュー →「バーコード再発行」（またはユーザー登録の続き）で QR を出して、スマホで読み取れることを確かめる
+- フロントを作り直したあと、管理メニュー →「バーコード再発行」（またはユーザー登録の続き）で QR を出して、スマホで読み取れることを確かめる
+- スマホは**インターネットにつながっている**必要がある（部室の Wi-Fi の中だけでは開けない）
+- QR は2分で消える
 
 ## 10. 確認
 
