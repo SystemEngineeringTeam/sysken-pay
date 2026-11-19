@@ -24,9 +24,9 @@ func TestClaimRouterServesOnlyClaim(t *testing.T) {
 		want         int
 		contentType  string
 	}{
-		{http.MethodGet, "/claim", http.StatusOK, "text/html"},
-		{http.MethodGet, "/claim/app.js", http.StatusOK, "text/javascript"},
-		{http.MethodGet, "/claim/app.css", http.StatusOK, "text/css"},
+		// 受け取りページは別の静的サイトに移したので、この入口では配らない
+		{http.MethodGet, "/claim", http.StatusNotFound, ""},
+		{http.MethodGet, "/claim/app.js", http.StatusNotFound, ""},
 		{http.MethodPost, "/claim/open", http.StatusOK, ""},
 		// 既存の API はこの入口からは届かない
 		{http.MethodGet, "/v1/health", http.StatusNotFound, ""},
@@ -57,18 +57,5 @@ func TestClaimRouterServesOnlyClaim(t *testing.T) {
 				t.Error("CORS を許可してしまっている")
 			}
 		})
-	}
-}
-
-func TestClaimPageHasNoInlineScript(t *testing.T) {
-	// CSP で script-src 'self' にしているので、HTML の中に直接スクリプトを書くと動かない
-	rec := httptest.NewRecorder()
-	newClaimRouter(&fakeClaimOpen{}, time.Second).ServeHTTP(rec, httptest.NewRequest(http.MethodGet, "/claim", nil))
-	body := rec.Body.String()
-	if strings.Count(body, "<script") != 1 || !strings.Contains(body, `<script src="/claim/app.js"></script>`) {
-		t.Error("インラインのスクリプトがある、または app.js を読み込んでいない")
-	}
-	if strings.Contains(body, " style=") || strings.Contains(body, "onclick") {
-		t.Error("インラインの style / イベントがある（CSP で動かない）")
 	}
 }
