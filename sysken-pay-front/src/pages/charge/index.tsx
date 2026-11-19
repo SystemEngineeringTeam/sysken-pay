@@ -15,7 +15,7 @@ export default function ChargePage(): JSX.Element {
   const { onScan, ErrorMessage } = usePaymentCardScan();
   const [password, setPassword] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
-  const { login, isLoading, error: errorMessage, clearError } = useAdminLogin();
+  const { login, isLoading, error: errorMessage, clearError } = useAdminLogin("charge");
 
   const handleSubmit = async () => {
     if (isLoading) return;

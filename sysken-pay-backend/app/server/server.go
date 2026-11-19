@@ -99,6 +99,7 @@ func Run(db *sql.DB) error {
 	}, routerConfig{
 		adminUser:      config.AdminUser(),
 		adminPassword:  config.AdminPassword(),
+		chargePassword: config.ChargePassword(),
 		allowedOrigins: config.AllowedOrigins(),
 		timeout:        requestTimeout,
 	})

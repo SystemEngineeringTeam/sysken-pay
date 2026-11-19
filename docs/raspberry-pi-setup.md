@@ -59,7 +59,7 @@ DBPASS=$(openssl rand -hex 16)
 sed -i "s/^MYSQL_ROOT_PASSWORD=.*/MYSQL_ROOT_PASSWORD=$DBPASS/; s/^MYSQL_PASSWORD=.*/MYSQL_PASSWORD=$DBPASS/" .env
 unset DBPASS
 chmod 600 .env
-nano .env    # ADMIN_PASSWORD を役員が決めたパスワードにする
+nano .env    # ADMIN_PASSWORD（管理者画面）と CHARGE_PASSWORD（チャージの画面）を、役員が決めた別々のパスワードにする
 grep -c change-me .env    # 0 なら OK
 docker compose up -d --build
 ```
@@ -208,8 +208,7 @@ sudo systemctl restart sysken-pay-front
 
 ### 作るもの（コード）
 
-- [ ] チャージのパスワードと、管理者画面（設定）のパスワードを分ける
-  - 今は `.env` の `ADMIN_PASSWORD` 1つで、チャージも管理者画面も入れる
+- [x] チャージのパスワードと、管理者画面（設定）のパスワードを分ける（`CHARGE_PASSWORD` を追加。ラズパイの `.env` に書くこと）
 - [ ] ラズパイで漢字・ひらがなを打てるようにする（日本語入力 Mozc）
   - キオスクの Chromium で日本語入力を使えるようにする設定（`--enable-wayland-ime` など）を `deploy/raspberry-pi/sysken-pay-kiosk.sh` に足して確かめる
   - タッチ画面だけで打つには、画面に出すキーボードも要る（今は USB キーボードか Raspberry Pi Connect でしか打てない）
@@ -229,7 +228,7 @@ sudo systemctl restart sysken-pay-front
 - [ ] 5インチのタッチモニターをつないでの確認（800x480 で全画面になるか、タッチが効くか）
 - [ ] バックアップのラズパイの外（USB メモリなど）への保存
 - [ ] `sudo apt upgrade` でラズパイを最新にする
-- [ ] チャージ・管理者のパスワードを `change-me` から役員が決めたものに変えてあるか確かめる
+- [ ] 管理者（`ADMIN_PASSWORD`）とチャージ（`CHARGE_PASSWORD`）のパスワードを、`change-me` から役員が決めた別々のものに変えてあるか確かめる
 
 ### だれかに頼むこと
 

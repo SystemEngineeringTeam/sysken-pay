@@ -1,6 +1,7 @@
 package server
 
 import (
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -34,8 +35,10 @@ type handlers struct {
 }
 
 type routerConfig struct {
-	adminUser      string
-	adminPassword  string
+	adminUser     string
+	adminPassword string
+	// chargePassword はチャージの画面のパスワード（管理者パスワードでもチャージはできる）
+	chargePassword string
 	allowedOrigins []string
 	timeout        time.Duration
 }
@@ -59,6 +62,11 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 	r.Use(middleware.Timeout(cfg.timeout))
 
 	adminOnly := apimw.BasicAuth(cfg.adminUser, cfg.adminPassword)
+	// チャージはチャージ用パスワードか管理者パスワードのどちらでも通す
+	if cfg.chargePassword == "" {
+		slog.Warn("CHARGE_PASSWORD が設定されていないため、チャージは管理者パスワードでしか入れません")
+	}
+	chargeOrAdmin := apimw.BasicAuthAny(cfg.adminUser, cfg.adminPassword, cfg.chargePassword)
 
 	r.Route("/v1", func(r chi.Router) {
 		// 認証なし（キオスクで部員が使う）
@@ -72,13 +80,19 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 		// 支払い用バーコードの中身は URL ではなく本文で受け取る（アクセスログに残さないため）
 		r.Post("/payment-card/resolve", h.paymentCard.Resolve)
 
+		// チャージ用パスワードか管理者パスワードが必要
+		r.Group(func(r chi.Router) {
+			r.Use(chargeOrAdmin)
+			r.Get("/charge/verify", apimw.Verify)
+			r.Post("/user/{user_id}/charge", h.charge.ChargeAmount)
+		})
+
 		// 管理者パスワードが必要
 		r.Group(func(r chi.Router) {
 			r.Use(adminOnly)
 			r.Get("/admin/verify", apimw.Verify)
 			r.Post("/user", h.user.RegisterUser)
 			r.Patch("/user/{user_id}", h.user.UpdateUser)
-			r.Post("/user/{user_id}/charge", h.charge.ChargeAmount)
 			r.Post("/user/{user_id}/charge/cancel", h.charge.ChargeCancel)
 			r.Post("/user/{user_id}/purchase/cancel", h.purchase.CancelPurchase)
 			r.Post("/item", h.item.ResisterItem)

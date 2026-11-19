@@ -57,3 +57,24 @@ func TestVerify(t *testing.T) {
 		t.Fatalf("status = %d, want 204", rec.Code)
 	}
 }
+
+func TestBasicAuthAny(t *testing.T) {
+	h := BasicAuthAny("admin", "a-pass", "", "c-pass")(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusNoContent)
+	}))
+	check := func(user, pass string, want int) {
+		t.Helper()
+		req := httptest.NewRequest(http.MethodGet, "/", nil)
+		req.SetBasicAuth(user, pass)
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, req)
+		if rec.Code != want {
+			t.Errorf("%s/%q: status = %d, want %d", user, pass, rec.Code, want)
+		}
+	}
+	check("admin", "a-pass", http.StatusNoContent)
+	check("admin", "c-pass", http.StatusNoContent)
+	check("admin", "", http.StatusUnauthorized) // 空のパスワードは使わない
+	check("admin", "wrong", http.StatusUnauthorized)
+	check("other", "a-pass", http.StatusUnauthorized)
+}
