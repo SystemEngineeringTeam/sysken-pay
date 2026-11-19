@@ -242,10 +242,10 @@
 
 ### 実装の状況
 
-- 静的サイトは `issue-page/` に作った（`index.html`・`app.js`・`code.js`・`app.css`・`mascot.png`）。`#a=<支払い用文字列>` を読み、スマホの中でバーコードとカード画像を作る。通信はしない
-- バーコードは **JsBarcode**（MIT）の Code128 版を `issue-page/vendor/` に置いて使う（外部の CDN は使わない）。Go の自前実装（`app/ui/barcode`）は不要になったので、claim をやめるときに消す
-  - Go の出力と同じバーの並びになることを `issue-page/test/code.test.js` で確かめている（`pnpm test`）。部室のリーダーでの実機確認はまだ
-- 名前の受け取りは未決のため、いまは名前なしのカードになる（`app.js` の `readName`）
+- 静的サイトは `sysken-pay-qr/`（pnpm + mise + Vite + TypeScript）に作った。`#a=<支払い用文字列>` を読み、スマホの中でバーコードとカード画像を作る。通信はしない
+- バーコードは **JsBarcode**（MIT）の Code128 版を npm パッケージ（`jsbarcode`、型は `@types/jsbarcode`）で入れて、Vite でまとめる。Go の自前実装（`app/ui/barcode`）は不要になったので、claim をやめるときに消す
+  - Go の出力と同じバーの並びになることを `sysken-pay-qr/src/code.test.ts` で確かめている（`pnpm test`）。部室のリーダーでの実機確認はまだ
+- 名前の受け取りは未決のため、いまは名前なしのカードになる（`sysken-pay-qr/src/main.ts` の `readName`）。バックエンドの受け取りページ（`claimpage`）は削除済み
 - 残り：ラズパイ側の QR を `https://<ホスト>/#a=<文字列>` にして2分で消す、claim の API・表・8081 の入口・`app/ui/barcode` の削除、`openapi.yaml` の更新
 
 ## 未決事項（勝手に決めない）
