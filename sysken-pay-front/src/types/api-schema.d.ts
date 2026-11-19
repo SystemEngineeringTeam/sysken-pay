@@ -394,6 +394,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/charge/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * チャージの画面のパスワードの確認
+         * @description チャージ用パスワード（CHARGE_PASSWORD）か管理者パスワードで BASIC 認証が通れば 204 を返す。
+         *     チャージ用パスワードでできるのは、チャージ（POST /v1/user/{user_id}/charge）だけ
+         */
+        get: operations["verifyCharge"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/health": {
         parameters: {
             query?: never;
@@ -2065,6 +2086,25 @@ export interface operations {
         };
     };
     verifyAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 認証成功 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            401: components["responses"]["Unauthorized"];
+        };
+    };
+    verifyCharge: {
         parameters: {
             query?: never;
             header?: never;

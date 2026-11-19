@@ -38,12 +38,17 @@ func (stub) Unhide(w http.ResponseWriter, r *http.Request)               { ok(w,
 func (stub) Delete(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
 
 func testRouter(password string) http.Handler {
+	return testRouterWithCharge(password, "")
+}
+
+func testRouterWithCharge(password, chargePassword string) http.Handler {
 	s := stub{}
 	return newRouter(
 		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, paymentCardClaim: s, member: s},
 		routerConfig{
 			adminUser:      "admin",
 			adminPassword:  password,
+			chargePassword: chargePassword,
 			allowedOrigins: []string{"http://localhost:3000"},
 			timeout:        time.Second,
 		},
@@ -54,7 +59,6 @@ var protectedRoutes = []struct{ method, path string }{
 	{http.MethodGet, "/v1/admin/verify"},
 	{http.MethodPost, "/v1/user"},
 	{http.MethodPatch, "/v1/user/20K23099"},
-	{http.MethodPost, "/v1/user/20K23099/charge"},
 	{http.MethodPost, "/v1/user/20K23099/charge/cancel"},
 	{http.MethodPost, "/v1/user/20K23099/purchase/cancel"},
 	{http.MethodPost, "/v1/item"},
@@ -144,5 +148,54 @@ func TestCORS(t *testing.T) {
 	}
 	if got := preflight("http://evil.example.com").Header().Get("Access-Control-Allow-Origin"); got != "" {
 		t.Errorf("許可していないオリジン: Access-Control-Allow-Origin = %q, want empty", got)
+	}
+}
+
+// チャージだけは、チャージ用パスワードでも管理者パスワードでも通る
+var chargeRoutes = []struct{ method, path string }{
+	{http.MethodGet, "/v1/charge/verify"},
+	{http.MethodPost, "/v1/user/20K23099/charge"},
+}
+
+func TestChargePassword(t *testing.T) {
+	h := testRouterWithCharge("admin-pass", "charge-pass")
+	for _, rt := range chargeRoutes {
+		for _, pass := range []string{"charge-pass", "admin-pass"} {
+			if got := do(h, rt.method, rt.path, true, pass); got == http.StatusUnauthorized || got == http.StatusNotFound {
+				t.Errorf("%s %s を %s で: status = %d, want 2xx", rt.method, rt.path, pass, got)
+			}
+		}
+		if got := do(h, rt.method, rt.path, true, "wrong"); got != http.StatusUnauthorized {
+			t.Errorf("%s %s パスワード違い: status = %d, want 401", rt.method, rt.path, got)
+		}
+		if got := do(h, rt.method, rt.path, false, ""); got != http.StatusUnauthorized {
+			t.Errorf("%s %s 認証なし: status = %d, want 401", rt.method, rt.path, got)
+		}
+	}
+	// チャージ用パスワードでは、管理者の API には入れない
+	for _, rt := range protectedRoutes {
+		if got := do(h, rt.method, rt.path, true, "charge-pass"); got != http.StatusUnauthorized {
+			t.Errorf("%s %s をチャージ用パスワードで: status = %d, want 401", rt.method, rt.path, got)
+		}
+	}
+}
+
+func TestChargePasswordUnset(t *testing.T) {
+	// チャージ用パスワードを書いていないとき：空のパスワードでは入れず、管理者パスワードでは入れる
+	h := testRouterWithCharge("admin-pass", "")
+	for _, rt := range chargeRoutes {
+		if got := do(h, rt.method, rt.path, true, ""); got != http.StatusUnauthorized {
+			t.Errorf("%s %s 空のパスワード: status = %d, want 401", rt.method, rt.path, got)
+		}
+		if got := do(h, rt.method, rt.path, true, "admin-pass"); got == http.StatusUnauthorized {
+			t.Errorf("%s %s 管理者パスワード: status = %d", rt.method, rt.path, got)
+		}
+	}
+	// どちらも書いていないときは、チャージもすべて拒否
+	h = testRouterWithCharge("", "")
+	for _, rt := range chargeRoutes {
+		if got := do(h, rt.method, rt.path, true, ""); got != http.StatusUnauthorized {
+			t.Errorf("%s %s 両方未設定: status = %d, want 401", rt.method, rt.path, got)
+		}
 	}
 }

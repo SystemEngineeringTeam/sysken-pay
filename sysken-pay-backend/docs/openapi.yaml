@@ -232,6 +232,7 @@ paths:
       tags: [charge]
       summary: チャージ
       operationId: chargeAmount
+      # チャージ用パスワード（CHARGE_PASSWORD）でも管理者パスワードでも通る
       security:
         - adminBasicAuth: []
       parameters:
@@ -1015,6 +1016,22 @@ paths:
       summary: 管理者パスワードの確認
       description: BASIC 認証が通れば 204 を返す。フロントのパスワード入力画面で、パスワードが正しいかを確かめるのに使う
       operationId: verifyAdmin
+      security:
+        - adminBasicAuth: []
+      responses:
+        "204":
+          description: 認証成功
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /v1/charge/verify:
+    get:
+      tags: [admin]
+      summary: チャージの画面のパスワードの確認
+      description: |
+        チャージ用パスワード（CHARGE_PASSWORD）か管理者パスワードで BASIC 認証が通れば 204 を返す。
+        チャージ用パスワードでできるのは、チャージ（POST /v1/user/{user_id}/charge）だけ
+      operationId: verifyCharge
       security:
         - adminBasicAuth: []
       responses:

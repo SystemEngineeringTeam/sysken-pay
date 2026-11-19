@@ -8,6 +8,7 @@ import (
 const (
 	adminUserKey      = "ADMIN_USER"
 	adminPasswordKey  = "ADMIN_PASSWORD"
+	chargePasswordKey = "CHARGE_PASSWORD"
 	allowedOriginsKey = "ALLOWED_ORIGINS"
 	defaultAdminUser  = "admin"
 )
@@ -32,6 +33,12 @@ func AdminUser() string {
 // 未設定のときは空文字を返し、その場合は管理系 API をすべて拒否する。
 func AdminPassword() string {
 	return os.Getenv(adminPasswordKey)
+}
+
+// ChargePassword はチャージの画面のパスワードを返す（管理者パスワードとは別）。
+// 未設定のときは空文字を返し、その場合はチャージ用パスワードでは入れない（管理者パスワードでは入れる）。
+func ChargePassword() string {
+	return os.Getenv(chargePasswordKey)
 }
 
 // AllowedOrigins は CORS で許可するオリジンを返す。

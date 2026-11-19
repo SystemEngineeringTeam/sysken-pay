@@ -5,7 +5,7 @@ import { useAdminLogin } from "../../hooks/useAdminLogin";
 const mockVerify = vi.hoisted(() => vi.fn());
 
 vi.mock("../../adapter/repository/AuthRepositoryImpl", () => ({
-  AuthRepositoryImpl: { verifyAdmin: mockVerify },
+  AuthRepositoryImpl: { verify: mockVerify },
 }));
 
 beforeEach(() => {
@@ -54,5 +54,22 @@ describe("useAdminLogin", () => {
     });
     act(() => result.current.clearError());
     expect(result.current.error).toBeNull();
+  });
+});
+
+describe("useAdminLogin（どの画面のパスワードか）", () => {
+  it("指定しなければ管理者、charge ならチャージの画面のパスワードとして確かめる", async () => {
+    mockVerify.mockResolvedValue(true);
+    const admin = renderHook(() => useAdminLogin());
+    await act(async () => {
+      await admin.result.current.login("a");
+    });
+    expect(mockVerify).toHaveBeenLastCalledWith("admin", "a");
+
+    const charge = renderHook(() => useAdminLogin("charge"));
+    await act(async () => {
+      await charge.result.current.login("c");
+    });
+    expect(mockVerify).toHaveBeenLastCalledWith("charge", "c");
   });
 });

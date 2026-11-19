@@ -38,3 +38,16 @@ describe("AuthRepositoryImpl.verifyAdmin", () => {
     expect(getAdminPassword()).toBeNull();
   });
 });
+
+describe("AuthRepositoryImpl.verifyCharge", () => {
+  it("チャージの画面は /v1/charge/verify で確かめる", async () => {
+    mockGet.mockResolvedValue({ response: { status: 204 } });
+    await expect(AuthRepositoryImpl.verifyCharge("charge-pass")).resolves.toBe(true);
+    expect(mockGet).toHaveBeenCalledWith("/v1/charge/verify", expect.anything());
+  });
+
+  it("違えば false", async () => {
+    mockGet.mockResolvedValue({ response: { status: 401 } });
+    await expect(AuthRepositoryImpl.verifyCharge("wrong")).resolves.toBe(false);
+  });
+});
