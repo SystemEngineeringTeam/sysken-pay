@@ -205,7 +205,7 @@ pkill -f chromium
 1. ブラウザで Slack API（`api.slack.com/apps`）を開き、部の Slack にログインする
 2. 「Create New App」→「From scratch」→ 名前（例：シス研Pay）と、部の Slack ワークスペースを選ぶ
 3. 左のメニューの「Incoming Webhooks」→ 「Activate Incoming Webhooks」を On にする
-4. 「Add New Webhook to Workspace」→ 連絡を受け取るチャンネル（例：役員用）を選ぶ
+4. 「Add New Webhook to Workspace」→ 連絡を受け取るチャンネル「#set_syskenpay-notification」（役員だけのプライベートチャンネル。先に作っておく）を選ぶ。Webhook は1つだけで、すべての連絡がここに届く
 5. 出てきた `https://hooks.slack.com/...` の URL をコピーする（**URL はチャットや issue・PR に貼らない**）
 
 ### ラズパイに置く
