@@ -53,6 +53,8 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
+	// HRI（支払い用バーコードの中身）をアクセスログに残さない。Logger より前に置くこと
+	r.Use(apimw.RedactQuery("hri"))
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(newCORS(cfg.allowedOrigins).Handler)

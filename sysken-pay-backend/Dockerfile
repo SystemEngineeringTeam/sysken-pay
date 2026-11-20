@@ -11,6 +11,6 @@ RUN go mod download
 RUN go build -o /go/bin/app .
 
 ENV PORT=8080
-EXPOSE 8080 8081
+EXPOSE 8080
 
 CMD ["/go/bin/app"]
