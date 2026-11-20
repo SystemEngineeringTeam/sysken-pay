@@ -32,7 +32,7 @@ N=0
 # ケースごとに新しい状態フォルダを使う（消さずに、毎回別の場所にする）
 setup() { N=$((N + 1)); STATE="$WORK/state$N"; mkdir -p "$STATE"; export STATE; }
 m() {
-  PATH="$WORK/bin:$PATH" MIGRATIONS_DIR="$WORK/migrations" BACKUP_CMD="$WORK/backup.sh" ASSUME_YES=1 \
+  PATH="$WORK/bin:$PATH" MIGRATIONS_DIR="$WORK/migrations" BACKUP_CMD="${TEST_BACKUP_CMD:-$WORK/backup.sh}" ASSUME_YES=1 \
     "$HERE/migrate.sh" "$@"
 }
 check() { # 名前 結果（0 なら成功）
@@ -86,5 +86,27 @@ setup
 r=0; fails m baseline || r=1; check "UPTO なしは止まる" $r
 r=0; fails m baseline 999 || r=1; check "無い番号は止まる" $r
 r=0; [ ! -f "$STATE/table" ] || r=1; check "止まったときは表を作らない" $r
+
+# 9. SKIP_BACKUP=1 のときは up でバックアップを取らない（付けないときは取る）
+setup
+touch "$STATE/table"
+echo "001_a.sql" >"$STATE/applied"
+echo "-- 002" >"$WORK/migrations/002_b.sql"
+# 関数の前の変数は sh では残るので、サブシェルに閉じ込める
+( SKIP_BACKUP=1; export SKIP_BACKUP; m up >/dev/null )
+r=0; [ ! -f "$STATE/backups" ] || r=1; check "SKIP_BACKUP=1 はバックアップを取らない" $r
+r=0; grep -qx "003_c.sql" "$STATE/applied" || r=1; check "SKIP_BACKUP=1 でも当てて印をつける" $r
+setup
+touch "$STATE/table"
+echo "001_a.sql" >"$STATE/applied"
+m up >/dev/null
+r=0; [ -f "$STATE/backups" ] || r=1; check "SKIP_BACKUP なしは今までどおり取る" $r
+# 失敗したバックアップは、SKIP_BACKUP なしでは止める（SQL を流さない）
+setup
+touch "$STATE/table"
+echo "001_a.sql" >"$STATE/applied"
+printf '#!/bin/sh\nexit 1\n' >"$WORK/backup-fail.sh"; chmod +x "$WORK/backup-fail.sh"
+r=0; ( TEST_BACKUP_CMD="$WORK/backup-fail.sh"; export TEST_BACKUP_CMD; fails m up ) || r=1; check "バックアップ失敗なら up は止まる" $r
+r=0; [ ! -f "$STATE/ran" ] || r=1; check "バックアップ失敗なら SQL を流さない" $r
 
 if [ "$FAIL" -eq 0 ]; then echo "すべて成功"; else echo "失敗あり"; exit 1; fi

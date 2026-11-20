@@ -239,44 +239,94 @@ sh deploy/raspberry-pi/notify-slack.sh ok "テストです（連絡の試し）"
 - スクリプトのテスト：`sh deploy/raspberry-pi/test-notify-slack.sh`（本物の Slack には送らない）
 - Webhook の URL が漏れたら、Slack の画面でその Webhook を削除して作り直し、`notify.env` を書き換える
 
-## 更新するとき
+## 更新するとき（make deploy）
 
-1行ずつ打つ（`&&` でつなぐと、`pnpm install` の `ERR_PNPM_IGNORED_BUILDS` で後ろが実行されない）。
+```bash
+cd ~/sysken-pay/sysken-pay-backend
+make deploy
+```
+
+- 最新の `main` を取ってきて、**変わったところだけ**入れ替える。1回で終わる
+- 先に何をするか見たいとき：`DRY_RUN=1 make deploy`（pull も再起動もしない。何が変わっていて、何をするかだけ表示する）
+- 動く順番：
+  1. 変わったものを全部ビルドする（フロントは `dist-new` に作る。バックは `docker compose build`）。ここで失敗しても、動いているものには触らない
+  2. バックアップ（`sysken-pay-backend/backups/deploy/` に、新しい順 10 件だけ残す。毎日のバックアップとは別の場所）
+  3. migration（まだ当たっていないものだけ）
+  4. バックを入れ替えて、`GET /v1/health`（DB につながっていれば 200）を 2 秒おきに 15 回まで確かめる
+  5. フロントの `dist` を入れ替えて（古いものは `dist-new` に残る）、`sysken-pay-front` を再起動し、Chromium を開き直す。画面は数秒止まる
+- 変更の種類ごとの動き：
+
+  | 変わったもの | 動き |
+  | --- | --- |
+  | 更新なし | 「更新はありません」と出すだけ（Slack には送らない） |
+  | `docs/` だけ | 「ドキュメントだけの更新です（再起動なし）」（Slack には送らない） |
+  | `sysken-pay-qr/`・README だけ | 何もしない（再起動なし） |
+  | `sysken-pay-front/` | フロントだけビルドして入れ替える（`pnpm-lock.yaml` が変わったときだけ `pnpm install` もする） |
+  | `sysken-pay-backend/` のコード | バックだけビルド・バックアップ・migration・入れ替え |
+  | `db/migrations/` | バックアップして migration（`make migrate-up` と同じ） |
+  | `deploy/raspberry-pi/` | **自動では入れ直さない**。「⚠️ deploy/raspberry-pi が変わりました。手順書を見て入れ直してください」と端末と Slack に出す。この手順書の該当の節（サービス・キオスク・日本語入力など）をやり直す |
+
+- 成功すると、Slack に「✅ 更新しました（前のコミット → 新しいコミット）」が1行届く
+- 同時に2つは動かない（動いていると「更新中です」と出て止まる。終わる・落ちると自動で外れる）
+- キオスクを止めているとき（`~/.kiosk-disabled` がある）は、Chromium は触らない
+- `make deploy` はラズパイの中で打つ。スクリプトのテスト：`sh deploy/raspberry-pi/test-deploy.sh`
+
+### 失敗したとき
+
+Slack に「🚨 make deploy が「○○」で失敗しました」と届く。**自動では元に戻さない**（止まったところで、そのままにしてある）。「○○」の段階ごとに：
+
+- **フロントのビルド・バックエンドのビルド**：動いているものには触っていない。端末に出たエラーを見て直し、もう一度 `make deploy`
+- **バックアップ**：何も変えていない。`backups/deploy/` の空き容量・`docker ps` で `sysken-db` が動いているか見て、もう一度
+- **migration**：途中まで反映されていることがある（**MySQL の `CREATE` / `ALTER` / `DROP` は戻せない**）。`make migrate-status` で当たったところを見る。直前のバックアップは `backups/deploy/` の一番新しいもの。**自分で DB を消したり戻したりせず**、`back-safe-rollback`（`sysken-pay-backend/.claude/skills/back-safe-rollback/SKILL.md`）に従う
+- **バックエンドの入れ替え・health 確認**：新しいバックが DB につながっていない。`docker compose logs --tail 50` を見る（パスワードなど秘密は他の人に見せない）。`.env` の変数が足りないことが多い（「`.env` の確認」を参照）。DB が止まっているだけなら `docker compose start sysken-db`（`down` や `-v` は使わない）
+- **フロントの入れ替え**：`dist-tmp` が残っていると止まる（前の失敗の跡）。中を見て、手で片づける。古い画面は `dist-new` に残っている
+- **フロントの再起動・確認**：`sudo systemctl status sysken-pay-front`、`journalctl -u sysken-pay-front -n 50`
+- 壊れた・元に戻したいときは、画面なら `front-safe-rollback`、API・DB・残高なら `back-safe-rollback` に従う
+- 直したら、もう一度 `make deploy`（pull 済みなので「更新はありません」と出る場合は、止まった段階から手で進めるか、役員に相談する）
+
+### make deploy が使えないとき（手で更新する）
 
 ```bash
 cd ~/sysken-pay/sysken-pay-backend
 make backup                          # 先にバックアップ
 cd ~/sysken-pay
-git pull
+git pull --ff-only
 cd sysken-pay-backend
 docker compose up -d --build
+make migrate-up                      # db/migrations/ が増えたとき
 cd ../sysken-pay-front
 pnpm install --frozen-lockfile       # ERR_PNPM_IGNORED_BUILDS が出ても続けてよい
 pnpm build                           # ✓ built と出ること
 sudo systemctl restart sysken-pay-front
 ```
 
-- DB の表が増える変更（`db/migrations/` にファイルが増えた）ときは、`docker compose up` の前に `make migrate-up`（`sysken-pay-backend/README.md`）。事前に `make migrate-status` で、何が当たるか見られる
+- 1行ずつ打つ（`&&` でつなぐと、`pnpm install` の `ERR_PNPM_IGNORED_BUILDS` で後ろが実行されない）
 - キオスクの画面は、フロントを再起動すると自動で読み込み直される（読み込み直されなければ `pkill -f chromium`）
 
-## migration の最初の1回だけやること
+## 古いラズパイを今の main に追いつかせる（1 回だけ）
 
-今のラズパイの DB には `001`〜`004` が当たっていて、`005` はまだ。`make migrate-up` は一覧の表（`schema_migrations`）がないと止まるので、**更新の前に1回だけ**、人が手で印をつける。
+`make deploy` が使える前から動いているラズパイを、最初に1回だけ今の `main` に追いつかせる手順。**この順に、1つずつ**。`make migrate-up` や `make deploy` は、一覧の表（`schema_migrations`）がないと止まるので、先に人が印をつける。
 
-1. `cd ~/sysken-pay && git pull`（`005` のファイルが手元にあること）
-2. `cd sysken-pay-backend && make migrate-status`
-   - 表がまだないので、すべて「まだ」と出る（DB は変わらない）
-3. DB が本当に `004` まで当たっているか確かめる
+1. バックアップ：`cd ~/sysken-pay/sysken-pay-backend && make backup`
+2. 最新のコードを取る：`cd ~/sysken-pay && git pull --ff-only`（`deploy.sh` などが手元に来る）
+3. DB がどこまで進んでいるか、**読むだけのコマンドで**調べる（DB は変えない）
+   - `make migrate-status`（表がないので、すべて「まだ」と出るのが正しい）
    - `docker exec sysken-db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -e "SHOW TABLES; SHOW COLUMNS FROM user" sysken_pay'`
-   - `payment_card`・`refund` の表があり、`user` に `hidden_at` 列があれば `004` まで当たっている
-4. `make migrate-baseline UPTO=004`
-   - `001`〜`004` が一覧に出る。`yes` と入力する（先に自動でバックアップを取る）
-5. `make migrate-status` で `001`〜`004` が「当てた」、`005` が「まだ」になっていること
-6. `make migrate-up` で `005` が当たる（`payment_card_claim` の表が消える。先に自動でバックアップを取る）
-7. `make migrate-status` で、すべて「当てた」になっていること
+   - `db/migrations/` のファイルと見比べて、どこまで当たっているか決める（例：`payment_card` の表があれば 001、`refund` の表があれば 003、`user` に `hidden_at` 列があれば 004、`payment_card_claim` の表が**ない**なら 005 も当たっている）。**番号は、ここで調べた結果から決める**（先に決めておかない）
+4. 印をつける：`make migrate-baseline UPTO=<調べた番号>`（例：`UPTO=004`）。出た一覧を見て `yes`
+   - 印がつくのは「当たっている」と調べたところまで。まだのもの（例：005）は、あとの `make deploy` が当てる
+5. `.env` の確認（**中身は見ない・人に見せない。名前だけ**）
+   - 見本は `.env.sample`。それと見比べて、**足りない名前がないか**だけ確かめる
+   - バック（`sysken-pay-backend/.env`）の名前の例：`MYSQL_ROOT_PASSWORD`、`ADMIN_USER`、`ADMIN_PASSWORD`、`CHARGE_PASSWORD`、`ALLOWED_ORIGINS`、`PORT`、`API_BIND_ADDR`
+   - フロント（`sysken-pay-front/.env`）の名前の例：`VITE_API_URL`、`VITE_QR_ENDPOINT`
+   - 古いラズパイには、あとから増えた名前（`CHARGE_PASSWORD`・`VITE_QR_ENDPOINT` など）が足りないことがある。足りなければ `.env` に書き足す（値は役員が決める）
+6. Slack の設定（上の「12.」）：`~/.config/sysken-pay/notify.env` を置いて、**テストの1通が届くこと**を確かめる（`make deploy` の成功・失敗がここに届く）
+7. `cd ~/sysken-pay/sysken-pay-backend && DRY_RUN=1 make deploy` で、何をするか見る → よければ `make deploy`
+8. 最後に確かめる：`curl -i localhost:8080/v1/health` が `200` で `OK` を返すこと
+9. （やらなくてもよい。部室に人がいないとき）DB が止まったときの動きを確かめる：`docker compose stop sysken-db` → `curl -i localhost:8080/v1/health` が `503` で `NG` → `docker compose start sysken-db` で戻す。**`down` や `-v` は使わない**
 
-- 失敗したときは、そこで止まる。**MySQL の `CREATE` / `ALTER` / `DROP` はトランザクションで戻せない**ので、途中まで反映されていることがある。直前のバックアップ（`backups/`）の場所を控えて、連絡する
-- 2回目以降は、この手順は不要（更新のたびに `make migrate-up` だけ）
+- 途中で失敗したら、そこで止めて、上の「失敗したとき」と `back-safe-rollback` に従う
+- 2回目以降は、この手順は不要（更新のたびに `make deploy` だけ）
 
 ## まだやっていないこと
 

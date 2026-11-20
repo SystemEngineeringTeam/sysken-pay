@@ -132,22 +132,13 @@
 
 ### 更新するとき（ラズパイ）
 
-1行ずつ打ちます（`pnpm install` の `ERR_PNPM_IGNORED_BUILDS` で `&&` の後ろが実行されなくなるため）。
-
 ```bash
 cd ~/sysken-pay/sysken-pay-backend
-make backup                          # 先にバックアップ
-cd ~/sysken-pay
-git pull
-cd sysken-pay-backend
-docker compose up -d --build
-cd ../sysken-pay-front
-pnpm install --frozen-lockfile
-pnpm build                           # ✓ built と出ること
-sudo systemctl restart sysken-pay-front
+make deploy                          # 最新の main を取って、変わったところだけ入れ替える
 ```
 
-`sysken-pay-backend/db/migrations/` にファイルが増えたときは、`docker compose up` の前に `make migrate-up` を打ちます（まだのものだけ、番号の順に当たります。途中を飛ばすと API が 500 になります）。事前に `make migrate-status` で何が当たるか見られます。初めて使うときだけ、`sysken-pay-backend/README.md` の「最初の1回だけ」（`make migrate-baseline`）が要ります。
+- 先に何をするか見たいときは `DRY_RUN=1 make deploy`。失敗したときは Slack に届き、止まったところでそのままになります（自動では戻しません）
+- 動く順番・変更の種類ごとの動き・失敗したときの対応・**古いラズパイを1回だけ追いつかせる手順**は [`docs/raspberry-pi-setup.md`](docs/raspberry-pi-setup.md) の「更新するとき（make deploy）」「古いラズパイを今の main に追いつかせる」。`make deploy` の前に、migration の印（`make migrate-baseline`）が1回だけ要ります
 
 ### バックアップと復元
 

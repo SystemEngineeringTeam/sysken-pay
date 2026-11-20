@@ -13,6 +13,8 @@ node_modules
 
 # Build directory (Vite output)
 dist
+dist-new
+dist-tmp
 dist-ssr
 
 # Editor directories and files
