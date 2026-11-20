@@ -18,7 +18,8 @@
       "Bash(git status *)",
       "Bash(git diff *)",
       "Bash(git log *)",
-      "Bash(python3 .claude/hooks/test_deny_dangerous_bash.py)"
+      "Bash(python3 .claude/hooks/test_deny_dangerous_bash.py)",
+      "Read(**/.env.sample)"
     ],
     "deny": [
       "Bash(rm -rf:*)",
