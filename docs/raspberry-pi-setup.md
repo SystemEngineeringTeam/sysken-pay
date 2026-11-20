@@ -76,7 +76,7 @@ curl -s localhost:8080/v1/health; echo    # OK
 docker exec sysken-db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -e "SHOW TABLES" sysken_pay' 2>/dev/null
 ```
 
-新しく作る DB には `db/init.sql` がすべて入るので、`make migrate` は不要。
+新しく作る DB には `db/init.sql` がすべて入るので、migration は流さない。ただし、一覧の表に印をつけるため、`sysken-pay-backend/README.md` の「最初の1回だけ」の `make migrate-baseline UPTO=<一番大きい番号>` を打つ。
 
 ## 5. フロント
 
@@ -213,8 +213,27 @@ pnpm build                           # ✓ built と出ること
 sudo systemctl restart sysken-pay-front
 ```
 
-- DB の表が増える変更（`db/migrations/` にファイルが増えた）ときは、`docker compose up` の前に `make migrate FILE=...`（`sysken-pay-backend/README.md`）
+- DB の表が増える変更（`db/migrations/` にファイルが増えた）ときは、`docker compose up` の前に `make migrate-up`（`sysken-pay-backend/README.md`）。事前に `make migrate-status` で、何が当たるか見られる
 - キオスクの画面は、フロントを再起動すると自動で読み込み直される（読み込み直されなければ `pkill -f chromium`）
+
+## migration の最初の1回だけやること
+
+今のラズパイの DB には `001`〜`004` が当たっていて、`005` はまだ。`make migrate-up` は一覧の表（`schema_migrations`）がないと止まるので、**更新の前に1回だけ**、人が手で印をつける。
+
+1. `cd ~/sysken-pay && git pull`（`005` のファイルが手元にあること）
+2. `cd sysken-pay-backend && make migrate-status`
+   - 表がまだないので、すべて「まだ」と出る（DB は変わらない）
+3. DB が本当に `004` まで当たっているか確かめる
+   - `docker exec sysken-db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -e "SHOW TABLES; SHOW COLUMNS FROM user" sysken_pay'`
+   - `payment_card`・`refund` の表があり、`user` に `hidden_at` 列があれば `004` まで当たっている
+4. `make migrate-baseline UPTO=004`
+   - `001`〜`004` が一覧に出る。`yes` と入力する（先に自動でバックアップを取る）
+5. `make migrate-status` で `001`〜`004` が「当てた」、`005` が「まだ」になっていること
+6. `make migrate-up` で `005` が当たる（`payment_card_claim` の表が消える。先に自動でバックアップを取る）
+7. `make migrate-status` で、すべて「当てた」になっていること
+
+- 失敗したときは、そこで止まる。**MySQL の `CREATE` / `ALTER` / `DROP` はトランザクションで戻せない**ので、途中まで反映されていることがある。直前のバックアップ（`backups/`）の場所を控えて、連絡する
+- 2回目以降は、この手順は不要（更新のたびに `make migrate-up` だけ）
 
 ## まだやっていないこと
 

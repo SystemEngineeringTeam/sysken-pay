@@ -76,18 +76,33 @@ make restore FILE=backups/sysken_pay-20261118-030000.sql.gz
 
 ## DB の変更（マイグレーション）
 
-`db/init.sql` は最初の起動時にしか実行されません。すでに動いている DB にテーブルを足すときは、`db/migrations/` の SQL を流します。
+`db/init.sql` は最初の起動時にしか実行されません。すでに動いている DB にテーブルを足すときは、`db/migrations/` の SQL を `make migrate-up` で当てます。当てたファイル名は DB の `schema_migrations` 表（ファイル名・当てた日時）に記録されます。
 
 ```bash
-make migrate FILE=db/migrations/001_payment_card.sql
+make migrate-status    # 当てたもの・まだのものを一覧で出す（DB は変えない）
+make migrate-up        # まだのものだけ、番号の順に当てる
 ```
 
-- 実行前に自動で `make backup` を取ります
+- `make migrate-up` は、当てる前に自動で `make backup` を取ります（まだのものがあるときだけ）
+- **1つ失敗したら、そこで止まります**。次のファイルは当てず、失敗したファイルには印をつけません
+- **MySQL の `CREATE` / `ALTER` / `DROP` はトランザクションで戻せません**。失敗したファイルは、途中まで DB に反映されていることがあります。勝手に直さず、バックアップ（`backups/`）を確かめて、変更を作った人に連絡してください
 - `db/migrations/` の SQL は何度流しても壊れないように書く（`CREATE TABLE IF NOT EXISTS` など）
 - 新しく作る DB には `db/init.sql` の内容が入るので、テーブルを足したら `init.sql` にも同じものを足す
-- **まだ流していない migration は、番号の小さい順にすべて流す**。途中を飛ばすと、新しい API が古い DB にないテーブル・列を読んで、一覧などが 500 になる（例: `003_refund.sql` を流さずに `004` の API を動かすと、ユーザー一覧が `Table 'sysken_pay.refund' doesn't exist` で失敗する）
-- どこまで流したかは、DB にテーブル・列があるかで確かめる（`SHOW TABLES;`、`SHOW COLUMNS FROM user;`）
-- 本番（ラズパイ）を新しくするときは、`make backup` → 足りない migration を番号順に流す → API を作り直す、の順にする
+- 昔の `make migrate FILE=...` は廃止しました（打つと `make migrate-up` を使うように案内が出て止まります）
+- 本番（ラズパイ）を新しくするときは、`make backup` → `make migrate-up` → API を作り直す、の順にする（`migrate-up` が番号の順にすべて当てるので、途中を飛ばして API が 500 になることを防げます）
+
+### 最初の1回だけ：今の DB に印をつける（`make migrate-baseline`）
+
+`schema_migrations` 表がまだない DB（今動いているもの・`init.sql` から新しく作ったもの）では、`make migrate-up` は**止まります**（表がないまま当てると `001` から流し直してしまうため）。先に、**人が**「どこまで当たっているか」を確かめて、1回だけ印をつけます。
+
+```bash
+make migrate-baseline UPTO=004    # 001〜004 を「当てたことにする」印だけつける（SQL は流さない）
+```
+
+- 流すのは SQL ではなく**印だけ**。`yes` と入力したときだけ実行します（先に自動でバックアップを取ります）
+- 番号は、DB に表・列があるかで確かめてから決める（`SHOW TABLES;`、`SHOW COLUMNS FROM user;`）。まだ DB にない変更を「当てた」ことにすると API が壊れる
+- 表に印がもうあるときは、何もせず止まります
+- `init.sql` から新しく作った DB は全部入っているので、一番大きい番号（今なら `UPTO=005`）にする
 
 | ファイル | 内容 |
 |---|---|
@@ -102,4 +117,5 @@ make migrate FILE=db/migrations/001_payment_card.sql
 ```bash
 go vet ./...
 go test ./...
+./scripts/test-migrate.sh   # migrate.sh のテスト（本物の DB は使わない）
 ```
