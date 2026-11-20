@@ -147,7 +147,7 @@ pnpm build                           # ✓ built と出ること
 sudo systemctl restart sysken-pay-front
 ```
 
-`sysken-pay-backend/db/migrations/` にファイルが増えたときは、`docker compose up` の前に**番号の小さい順にすべて** `make migrate FILE=...` を流します（途中を飛ばすと API が 500 になります）。
+`sysken-pay-backend/db/migrations/` にファイルが増えたときは、`docker compose up` の前に `make migrate-up` を打ちます（まだのものだけ、番号の順に当たります。途中を飛ばすと API が 500 になります）。事前に `make migrate-status` で何が当たるか見られます。初めて使うときだけ、`sysken-pay-backend/README.md` の「最初の1回だけ」（`make migrate-baseline`）が要ります。
 
 ### バックアップと復元
 
