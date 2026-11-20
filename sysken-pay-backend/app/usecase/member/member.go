@@ -51,14 +51,14 @@ type UseCase interface {
 type ServiceImpl struct {
 	memberRepo  repository.MemberRepository
 	balanceRepo repository.BalanceRepository
-	cardRepo    repository.PaymentCardRepository
+	cardRepo    repository.HriRepository
 	tx          repository.Transaction
 }
 
 func NewUseCase(
 	memberRepo repository.MemberRepository,
 	balanceRepo repository.BalanceRepository,
-	cardRepo repository.PaymentCardRepository,
+	cardRepo repository.HriRepository,
 	tx repository.Transaction,
 ) *ServiceImpl {
 	return &ServiceImpl{memberRepo: memberRepo, balanceRepo: balanceRepo, cardRepo: cardRepo, tx: tx}

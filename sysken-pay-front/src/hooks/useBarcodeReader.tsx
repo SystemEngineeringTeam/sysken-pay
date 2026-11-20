@@ -5,7 +5,7 @@ import { useBalanceStore } from "../store/useBalanceStore";
 import { useUserStore } from "../store/useUserStore";
 import { ItemRepositoryImpl } from "../adapter/repository/ItemRepositoryImpl";
 import { UserRepositoryImpl } from "../adapter/repository/UserRepositoryImpl";
-import { PaymentCardRepositoryImpl } from "../adapter/repository/PaymentCardRepositoryImpl";
+import { HriRepositoryImpl } from "../adapter/repository/HriRepositoryImpl";
 import { PurchaseRepositoryImpl } from "../adapter/repository/PurchaseRepositoryImpl";
 import { toPurchaseErrorMessage } from "../services/purchaseErrorMessage";
 import {
@@ -106,7 +106,7 @@ export function usePaymentCardScan(nextPath: string = "/charge/select") {
     }
     isScanningRef.current = true;
     try {
-      const user = await PaymentCardRepositoryImpl.resolve(barcode);
+      const user = await HriRepositoryImpl.resolve(barcode);
       const balance = await UserRepositoryImpl.getBalance(user.user_id);
       if (!isMountedRef.current) return;
       setBalance(balance);
@@ -153,7 +153,7 @@ export function useCartScan() {
     }
     let user;
     try {
-      user = await PaymentCardRepositoryImpl.resolve(code);
+      user = await HriRepositoryImpl.resolve(code);
     } catch (e) {
       if (isMountedRef.current) setError(toPaymentScanErrorMessage(e));
       return;

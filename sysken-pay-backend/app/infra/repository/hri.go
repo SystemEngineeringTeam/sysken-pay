@@ -8,17 +8,19 @@ import (
 	"sysken-pay-api/app/domain/repository"
 )
 
-var _ repository.PaymentCardRepository = (*PaymentCardRepositoryImpl)(nil)
+var _ repository.HriRepository = (*HriRepositoryImpl)(nil)
 
-type PaymentCardRepositoryImpl struct {
+// HriRepositoryImpl は HRI（スマホの SP バーコードの番号）を扱う。
+// テーブル名は昔の名前のまま payment_card（名前は変えていない）。
+type HriRepositoryImpl struct {
 	db *sql.DB
 }
 
-func NewPaymentCardRepository(db *sql.DB) *PaymentCardRepositoryImpl {
-	return &PaymentCardRepositoryImpl{db: db}
+func NewHriRepository(db *sql.DB) *HriRepositoryImpl {
+	return &HriRepositoryImpl{db: db}
 }
 
-func (r *PaymentCardRepositoryImpl) RevokeActiveByUserID(ctx context.Context, userID string) error {
+func (r *HriRepositoryImpl) RevokeActiveByUserID(ctx context.Context, userID string) error {
 	executor := getExecutor(ctx, r.db)
 
 	// 同じユーザーの発行が同時に走ったときに、使えるものが2つにならないようにユーザーの行をロックする
@@ -36,7 +38,7 @@ func (r *PaymentCardRepositoryImpl) RevokeActiveByUserID(ctx context.Context, us
 	return err
 }
 
-func (r *PaymentCardRepositoryImpl) Insert(ctx context.Context, userID string, codeHash string) error {
+func (r *HriRepositoryImpl) Insert(ctx context.Context, userID string, codeHash string) error {
 	executor := getExecutor(ctx, r.db)
 	_, err := executor.ExecContext(ctx, `
 	INSERT INTO payment_card (user_id, code_hash) VALUES (?, ?)
@@ -44,7 +46,7 @@ func (r *PaymentCardRepositoryImpl) Insert(ctx context.Context, userID string, c
 	return err
 }
 
-func (r *PaymentCardRepositoryImpl) FindActiveUserIDByHash(ctx context.Context, codeHash string) (string, error) {
+func (r *HriRepositoryImpl) FindActiveUserIDByHash(ctx context.Context, codeHash string) (string, error) {
 	executor := getExecutor(ctx, r.db)
 	var userID string
 	err := executor.QueryRowContext(ctx, `
@@ -60,7 +62,7 @@ func (r *PaymentCardRepositoryImpl) FindActiveUserIDByHash(ctx context.Context, 
 	return userID, nil
 }
 
-func (r *PaymentCardRepositoryImpl) FindRevokedUserIDByHash(ctx context.Context, codeHash string) (string, error) {
+func (r *HriRepositoryImpl) FindRevokedUserIDByHash(ctx context.Context, codeHash string) (string, error) {
 	executor := getExecutor(ctx, r.db)
 	var userID string
 	err := executor.QueryRowContext(ctx, `

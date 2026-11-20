@@ -7,8 +7,8 @@ import { QR_DISPLAY_SECONDS } from "../../services/qrUrl";
 const mockIssue = vi.hoisted(() => vi.fn());
 const mockEndpoint = vi.hoisted(() => vi.fn());
 
-vi.mock("../../adapter/repository/PaymentCardRepositoryImpl", () => ({
-  PaymentCardRepositoryImpl: { issue: mockIssue },
+vi.mock("../../adapter/repository/HriRepositoryImpl", () => ({
+  HriRepositoryImpl: { issue: mockIssue },
 }));
 vi.mock("../../services/qrUrl", async (orig) => ({
   ...(await orig<typeof import("../../services/qrUrl")>()),

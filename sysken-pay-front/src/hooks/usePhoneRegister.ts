@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  PaymentCardRepositoryImpl,
+  HriRepositoryImpl,
   type IssuedHri,
-} from "../adapter/repository/PaymentCardRepositoryImpl";
+} from "../adapter/repository/HriRepositoryImpl";
 import { toPhoneRegisterErrorMessage } from "../services/phoneRegisterErrorMessage";
 import { buildQrUrl, getQrEndpoint, QR_DISPLAY_SECONDS } from "../services/qrUrl";
 
@@ -40,7 +40,7 @@ export const usePhoneRegister = () => {
     }
     setPhase("creating");
     try {
-      const issued: IssuedHri = await PaymentCardRepositoryImpl.issue(userId);
+      const issued: IssuedHri = await HriRepositoryImpl.issue(userId);
       setUserName(issued.user_name);
       setQrUrl(buildQrUrl(endpoint, issued.hri));
       setRemaining(QR_DISPLAY_SECONDS);
