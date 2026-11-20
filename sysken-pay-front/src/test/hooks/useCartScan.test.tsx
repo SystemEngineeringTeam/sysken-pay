@@ -11,8 +11,8 @@ const mockGetItem = vi.hoisted(() => vi.fn());
 const mockPurchase = vi.hoisted(() => vi.fn());
 
 vi.mock("react-router-dom", () => ({ useNavigate: () => mockNavigate }));
-vi.mock("../../adapter/repository/PaymentCardRepositoryImpl", () => ({
-  PaymentCardRepositoryImpl: { resolve: mockResolve },
+vi.mock("../../adapter/repository/HriRepositoryImpl", () => ({
+  HriRepositoryImpl: { resolve: mockResolve },
 }));
 vi.mock("../../adapter/repository/UserRepositoryImpl", () => ({
   UserRepositoryImpl: { getBalance: mockGetBalance },

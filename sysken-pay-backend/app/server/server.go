@@ -53,7 +53,7 @@ func Run(db *sql.DB) error {
 	chargeRepo := repository.NewChargeRepository(db)
 	purchaseRepo := repository.NewPurchaseRepository(db)
 	balanceRepo := repository.NewBalanceRepository(db)
-	paymentCardRepo := repository.NewPaymentCardRepository(db)
+	hriRepo := repository.NewHriRepository(db)
 	memberRepo := repository.NewMemberRepository(db)
 
 	// UseCase
@@ -70,9 +70,9 @@ func Run(db *sql.DB) error {
 	cancelPurchaseUseCase := purchase.NewCancelPurchaseUseCase(purchaseRepo)
 	getBalanceUseCase := balance.NewGetBalanceUseCase(balanceRepo)
 	getPurchaseHistoriesUseCase := balance.NewGetPurchaseHistoriesUseCase(balanceRepo)
-	issuePaymentCardUseCase := paymentcard.NewIssueUseCase(userRepo, paymentCardRepo, txManager)
-	resolvePaymentCardUseCase := paymentcard.NewResolveUseCase(userRepo, paymentCardRepo)
-	memberUseCase := member.NewUseCase(memberRepo, balanceRepo, paymentCardRepo, txManager)
+	issuePaymentCardUseCase := paymentcard.NewIssueUseCase(userRepo, hriRepo, txManager)
+	resolvePaymentCardUseCase := paymentcard.NewResolveUseCase(userRepo, hriRepo)
+	memberUseCase := member.NewUseCase(memberRepo, balanceRepo, hriRepo, txManager)
 
 	// Handler
 	userHandler := api_user.NewUserHandler(getUserUseCase, registerUserUseCase, updateUserUseCase)

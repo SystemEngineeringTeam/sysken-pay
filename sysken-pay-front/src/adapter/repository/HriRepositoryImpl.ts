@@ -6,7 +6,7 @@ export type IssuedHri = components["schemas"]["IssueHriResponse"];
 export type ResolvedUser = components["schemas"]["ResolveHriResponse"];
 
 /** HRI（支払い用バーコードの文字列。docs/phone-payment.md）の発行と照合。API は user のエンドポイント */
-export const PaymentCardRepositoryImpl = {
+export const HriRepositoryImpl = {
   /**
    * 読み取った HRI から持ち主を調べる（支払い・チャージのとき）。GET /v1/user?hri=SP…（認証なし）。
    * HRI は URL に載る。ブラウザの履歴には残らない（fetch なので）が、サーバー側のログには残さないこと

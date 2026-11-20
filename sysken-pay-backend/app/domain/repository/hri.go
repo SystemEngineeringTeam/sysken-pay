@@ -4,9 +4,9 @@ import (
 	"context"
 )
 
-// PaymentCardRepository は支払い用バーコードの保存先。
+// HriRepository は支払い用バーコードの保存先。
 // 支払い用バーコードの文字列そのものは扱わず、ハッシュだけを扱う。
-type PaymentCardRepository interface {
+type HriRepository interface {
 	// RevokeActiveByUserID はそのユーザーの使える支払い用バーコードをすべて使えなくする。
 	// 同じユーザーの発行が同時に走っても使えるものが2つにならないよう、ユーザーの行をロックしてから行う。
 	// トランザクションの中で呼ぶこと。

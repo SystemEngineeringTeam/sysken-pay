@@ -38,14 +38,14 @@ type ResolveUseCase interface {
 
 type IssueServiceImpl struct {
 	userRepo repository.UserRepository
-	cardRepo repository.PaymentCardRepository
+	cardRepo repository.HriRepository
 	tx       repository.Transaction
 	generate func() (string, error)
 }
 
 func NewIssueUseCase(
 	userRepo repository.UserRepository,
-	cardRepo repository.PaymentCardRepository,
+	cardRepo repository.HriRepository,
 	tx repository.Transaction,
 ) *IssueServiceImpl {
 	return &IssueServiceImpl{userRepo: userRepo, cardRepo: cardRepo, tx: tx, generate: domainpc.GenerateCode}
@@ -92,12 +92,12 @@ func (s *IssueServiceImpl) Issue(ctx context.Context, userID string) (*IssuedCar
 
 type ResolveServiceImpl struct {
 	userRepo repository.UserRepository
-	cardRepo repository.PaymentCardRepository
+	cardRepo repository.HriRepository
 }
 
 func NewResolveUseCase(
 	userRepo repository.UserRepository,
-	cardRepo repository.PaymentCardRepository,
+	cardRepo repository.HriRepository,
 ) *ResolveServiceImpl {
 	return &ResolveServiceImpl{userRepo: userRepo, cardRepo: cardRepo}
 }
