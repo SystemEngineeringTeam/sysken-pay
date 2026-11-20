@@ -37,7 +37,7 @@ func TestCheckOK(t *testing.T) {
 }
 
 func TestCheckDBDown(t *testing.T) {
-	rec := call(&fakePinger{err: errors.New("dial tcp 10.0.0.5:3306: connection refused")})
+	rec := call(&fakePinger{err: errors.New("dial tcp db:3306: connection refused")})
 	if rec.Code != http.StatusServiceUnavailable {
 		t.Fatalf("status = %d, want 503", rec.Code)
 	}
