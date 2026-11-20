@@ -72,7 +72,7 @@ func (r *UserRepositoryImpl) IsStopped(ctx context.Context, userID string) (bool
 }
 
 // userIDTables は user.id を参照している表（学籍番号を変えるときに付け替える）
-var userIDTables = []string{"charge", "purchase", "balance", "payment_card", "payment_card_claim", "refund"}
+var userIDTables = []string{"charge", "purchase", "balance", "payment_card", "refund"}
 
 func (r *UserRepositoryImpl) ChangeUserID(ctx context.Context, oldID, newID string) error {
 	executor := getExecutor(ctx, r.db)

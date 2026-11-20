@@ -1,6 +1,6 @@
 import { ApiError } from "../adapter/api/ApiError";
 
-/** スマホ登録（発行用 QR を作る）ときのエラーを、画面に出す日本語のメッセージにする */
+/** スマホ登録（支払い用バーコードを発行する）ときのエラーを、画面に出す日本語のメッセージにする */
 export const toPhoneRegisterErrorMessage = (e: unknown): string => {
   if (e instanceof ApiError) {
     switch (e.status) {
@@ -12,8 +12,6 @@ export const toPhoneRegisterErrorMessage = (e: unknown): string => {
         return "学生証のバーコードを読み取れませんでした。もう一度かざしてください。";
       case 401:
         return "管理者パスワードの確認が切れました。管理者画面からやり直してください。";
-      case 503:
-        return "QR に入れる URL が設定されていません。バックエンドの .env の PUBLIC_BASE_URL を設定してください。";
     }
   }
   return "QR を作れませんでした。もう一度お試しください。";

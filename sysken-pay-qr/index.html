@@ -2,12 +2,19 @@
 <html lang="ja">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
     <meta name="referrer" content="no-referrer" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'"
+    />
     <meta name="robots" content="noindex" />
     <meta name="theme-color" content="#5398E1" />
     <title>シス研Pay 支払い用バーコード</title>
-    <link rel="stylesheet" href="/claim/app.css" />
+    <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
     <header class="topbar">
@@ -45,7 +52,7 @@
               <li>「<strong>画像をダウンロード</strong>」を選ぶ</li>
               <li>「フォト」→「ライブラリ」→「Download」に入ります</li>
             </ol>
-            <p class="note">このページは<strong>5分</strong>で使えなくなります。今のうちに保存してください。</p>
+            <p class="note">保存したら、このページは閉じて大丈夫です。</p>
           </div>
         </div>
 
@@ -59,18 +66,30 @@
               <summary>iPhone（iOS 27 以降）</summary>
               <ul>
                 <li>「ウォレット」を開き、上の「＋」→「パスを作成」</li>
-                <li>Apple Intelligence が使える機種なら、保存した画像を「写真」で開いて「ウォレットに追加」でも作れます</li>
-                <li>案内に従って、保存した画像を読み込む（文字を入れる欄があれば、カードの <code>SP</code> の文字を入れる）</li>
-                <li>作れないときは、保存した画像を「写真」から開いて使ってください</li>
+                <li>
+                  Apple Intelligence
+                  が使える機種なら、保存した画像を「写真」で開いて「ウォレットに追加」でも作れます
+                </li>
+                <li>
+                  案内に従って、保存した画像を読み込む（文字を入れる欄があれば、カードの
+                  <code>SP</code> の文字を入れる）
+                </li>
+                <li>
+                  作れないときは、保存した画像を「写真」から開いて使ってください
+                </li>
               </ul>
             </details>
 
             <details id="guide-android">
               <summary>Android</summary>
               <ul>
-                <li>「Google ウォレット」を開き、「ウォレットに追加」→「写真」</li>
+                <li>
+                  「Google ウォレット」を開き、「ウォレットに追加」→「写真」
+                </li>
                 <li>保存した画像を選ぶ</li>
-                <li>読み込めないときは、保存した画像を「フォト」から開いて使ってください</li>
+                <li>
+                  読み込めないときは、保存した画像を「フォト」から開いて使ってください
+                </li>
               </ul>
             </details>
           </div>
@@ -81,11 +100,13 @@
           <ul>
             <li>保存した画像（または Wallet）を開いて、リーダーにかざします</li>
             <li>読み取りにくいときは、画面を明るくしてください</li>
-            <li>スマホを替えた・画像を消してしまったときは、役員に作り直してもらってください（作り直すと、前のバーコードは使えなくなります）</li>
+            <li>
+              スマホを替えた・画像を消してしまったときは、役員に作り直してもらってください（作り直すと、前のバーコードは使えなくなります）
+            </li>
           </ul>
         </div>
       </section>
     </main>
-    <script src="/claim/app.js"></script>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

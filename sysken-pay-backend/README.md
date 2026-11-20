@@ -20,7 +20,6 @@ make login    # MySQL にログイン
 | `CHARGE_PASSWORD` | チャージの画面のパスワード（管理者パスワードとは別にする）。チャージしかできない。未設定だとチャージの画面には管理者パスワードでしか入れない |
 | `ADMIN_USER` | BASIC 認証のユーザー名（既定 `admin`。フロントは `admin` で送るので通常は変えない） |
 | `ALLOWED_ORIGINS` | CORS で許可するフロントの配信元（カンマ区切り）。未設定なら `localhost:5173` / `localhost:3000` |
-| `PUBLIC_BASE_URL` | スマホ登録の QR に入れる URL の頭（例：`http://<ラズパイの IP アドレス>:8081`）。未設定だとスマホ登録の QR は作れない（`docs/phone-payment.md`） |
 | `API_BIND_ADDR` | API をどこから届くようにするか。既定 `127.0.0.1`（ラズパイの中だけ）。フロントを別の PC で動かすときだけ `0.0.0.0` |
 
 ## 認証
@@ -93,9 +92,10 @@ make migrate FILE=db/migrations/001_payment_card.sql
 | ファイル | 内容 |
 |---|---|
 | `001_payment_card.sql` | 支払い用バーコードの表（`docs/phone-payment.md`） |
-| `002_payment_card_claim.sql` | 発行用 QR の表（同上） |
+| `002_payment_card_claim.sql` | 発行用 QR の表（同上。005 で消える） |
 | `003_refund.sql` | 返金の表（`docs/phone-payment.md` の「ユーザー一覧」） |
 | `004_user_hidden.sql` | `user` に `hidden_at` を足す（停止中の人の「非表示」）。**API を新しくする前に流す**（流す前の API は一覧が 500 になる） |
+| `005_drop_payment_card_claim.sql` | 発行用 QR の表 `payment_card_claim` を消す（発行用 QR をやめたため）。**`make backup` を取ってから、API を新しくする前に流す**（古い表が残っていると、ユーザーの削除・学籍番号の変更が外部キーで失敗することがある） |
 
 ## テスト
 

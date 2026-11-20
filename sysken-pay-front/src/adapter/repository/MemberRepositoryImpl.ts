@@ -12,7 +12,7 @@ export const MemberRepositoryImpl = {
   /** 全員（止めた人も含む）を、残高・状態つきで返す */
   list: async (): Promise<Member[]> => {
     const { data, error, response } = await apiClient.GET("/v1/user");
-    if (error || !data) {
+    if (error || !data || !("users" in data)) {
       throw new ApiError(error?.message ?? "ユーザー一覧を取得できませんでした", response.status);
     }
     return data.users;

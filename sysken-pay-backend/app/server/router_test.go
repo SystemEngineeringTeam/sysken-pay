@@ -44,7 +44,7 @@ func testRouter(password string) http.Handler {
 func testRouterWithCharge(password, chargePassword string) http.Handler {
 	s := stub{}
 	return newRouter(
-		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, paymentCardClaim: s, member: s},
+		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, member: s},
 		routerConfig{
 			adminUser:      "admin",
 			adminPassword:  password,
@@ -63,9 +63,7 @@ var protectedRoutes = []struct{ method, path string }{
 	{http.MethodPost, "/v1/user/20K23099/purchase/cancel"},
 	{http.MethodPost, "/v1/item"},
 	{http.MethodPatch, "/v1/item"},
-	{http.MethodPost, "/v1/user/20K23099/payment-card"},
-	{http.MethodPost, "/v1/user/20K23099/payment-card/claim"},
-	{http.MethodGet, "/v1/payment-card/claim/7"},
+	{http.MethodPost, "/v1/user/20K23099/hri"},
 	{http.MethodGet, "/v1/user"},
 	{http.MethodPost, "/v1/user/20K23099/refund"},
 	{http.MethodPost, "/v1/user/20K23099/stop"},
@@ -83,7 +81,8 @@ var openRoutes = []struct{ method, path string }{
 	{http.MethodGet, "/v1/item"},
 	{http.MethodGet, "/v1/item/4901234567894"},
 	{http.MethodGet, "/v1/health"},
-	{http.MethodPost, "/v1/payment-card/resolve"},
+	// HRI（SP…）の持ち主を調べる。hri が付いていれば認証なし（付いていない GET /v1/user は管理者のみ）
+	{http.MethodGet, "/v1/user?hri=SP7Q2KX9MDRA4TW8YZ"},
 }
 
 func do(h http.Handler, method, path string, auth bool, pass string) int {

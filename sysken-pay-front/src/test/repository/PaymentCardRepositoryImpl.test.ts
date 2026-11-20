@@ -14,42 +14,38 @@ beforeEach(() => {
 });
 
 describe("PaymentCardRepositoryImpl", () => {
-  it("createClaim: 学籍番号を URL に入れて呼ぶ", async () => {
-    const data = { claim_id: 7 };
+  it("issue: 学籍番号を URL に入れて呼び、HRI を受け取る", async () => {
+    const data = { status: "success", user_id: "24K01234", user_name: "太郎", hri: "SP7Q2KX9MDRA4TW8YZ", display_hri: "SP 7Q2K X9MD RA4T W8YZ" };
     mockPost.mockResolvedValue({ data, error: undefined, response: { status: 201 } });
-    await expect(PaymentCardRepositoryImpl.createClaim("24K01234")).resolves.toEqual(data);
-    expect(mockPost).toHaveBeenCalledWith("/v1/user/{user_id}/payment-card/claim", {
+    await expect(PaymentCardRepositoryImpl.issue("24K01234")).resolves.toEqual(data);
+    expect(mockPost).toHaveBeenCalledWith("/v1/user/{user_id}/hri", {
       params: { path: { user_id: "24K01234" } },
     });
   });
 
-  it("createClaim: エラーはステータス付きで投げる", async () => {
-    mockPost.mockResolvedValue({ data: undefined, error: { message: "x" }, response: { status: 503 } });
-    const err = await PaymentCardRepositoryImpl.createClaim("24K01234").catch((e) => e);
+  it("issue: エラーはステータス付きで投げる", async () => {
+    mockPost.mockResolvedValue({ data: undefined, error: { message: "x" }, response: { status: 403 } });
+    const err = await PaymentCardRepositoryImpl.issue("24K01234").catch((e) => e);
     expect(err).toBeInstanceOf(ApiError);
-    expect(err.status).toBe(503);
-  });
-
-  it("getClaimStatus", async () => {
-    const data = { open_count: 1, remaining_seconds: 100, expired: false };
-    mockGet.mockResolvedValue({ data, error: undefined, response: { status: 200 } });
-    await expect(PaymentCardRepositoryImpl.getClaimStatus(7)).resolves.toEqual(data);
-    expect(mockGet).toHaveBeenCalledWith("/v1/payment-card/claim/{claim_id}", {
-      params: { path: { claim_id: 7 } },
-    });
+    expect(err.status).toBe(403);
   });
 });
 
 describe("PaymentCardRepositoryImpl.resolve", () => {
-  it("バーコードは URL ではなく本文で送る", async () => {
+  it("HRI は GET /v1/user の hri クエリで送る", async () => {
     const data = { status: "success", user_id: "24K01234", user_name: "太郎" };
-    mockPost.mockResolvedValue({ data, error: undefined, response: { status: 200 } });
+    mockGet.mockResolvedValue({ data, error: undefined, response: { status: 200 } });
     await expect(PaymentCardRepositoryImpl.resolve("SP7Q2KX9MDRA4TW8YZ")).resolves.toEqual(data);
-    expect(mockPost).toHaveBeenCalledWith("/v1/payment-card/resolve", { body: { code: "SP7Q2KX9MDRA4TW8YZ" } });
+    expect(mockGet).toHaveBeenCalledWith("/v1/user", { params: { query: { hri: "SP7Q2KX9MDRA4TW8YZ" } } });
+  });
+
+  it("ユーザー一覧の形（user_id が無い）が返ってきたら失敗にする", async () => {
+    mockGet.mockResolvedValue({ data: { status: "success", users: [] }, error: undefined, response: { status: 200 } });
+    await expect(PaymentCardRepositoryImpl.resolve("SP7Q2KX9MDRA4TW8YZ")).rejects.toBeInstanceOf(ApiError);
   });
 
   it("エラーはステータス付きで投げる", async () => {
-    mockPost.mockResolvedValue({ data: undefined, error: { message: "x" }, response: { status: 403 } });
+    mockGet.mockResolvedValue({ data: undefined, error: { message: "x" }, response: { status: 403 } });
     const err = await PaymentCardRepositoryImpl.resolve("SP7Q2KX9MDRA4TW8YZ").catch((e) => e);
     expect(err).toBeInstanceOf(ApiError);
     expect(err.status).toBe(403);

@@ -1,0 +1,18 @@
+[tools]
+node = "24"
+pnpm = "10"
+
+[shell_alias]
+cf = "pnpm exec cf"
+
+[tasks.cf]
+run = "pnpm exec cf"
+
+[tasks.dev]
+run = { task = "cf", args = ["dev"] }
+
+[tasks.build]
+run = { task = "cf", args = ["build"] }
+
+[tasks.check]
+run = ["nr check"]

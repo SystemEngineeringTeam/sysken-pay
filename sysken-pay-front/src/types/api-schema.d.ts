@@ -12,9 +12,16 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * ユーザー一覧（止めた人も含む）
-         * @description 管理者画面のユーザー一覧。残高・状態（使える／利用停止）・未返金か・卒業候補かを返す。
+         * ユーザー一覧（止めた人も含む）／HRI の持ち主の照合
+         * @description **`hri` を付けない場合（管理者パスワードが必要）**
+         *     管理者画面のユーザー一覧。残高・状態（使える／利用停止）・未返金か・卒業候補かを返す。
          *     卒業候補は、使える人のうち入学（学籍番号のアルファベットの後ろ2桁）から4年以上たった人。自動では止めない。
+         *
+         *     **`hri` を付ける場合（認証なし）**
+         *     読み取った HRI（支払い用バーコードの文字列）から持ち主を返す（支払い・チャージ）。
+         *     空白・ハイフン・小文字は取り除いてから照合する（4文字ずつ区切った表示を手で入力した場合のため）。
+         *     短い時間に失敗が続くと、しばらく 429 を返す。
+         *     **HRI は URL に載るので、API の前にリバースプロキシを置くときは、アクセスログにクエリを残さないこと。**
          */
         get: operations["listMembers"];
         put?: never;
@@ -188,7 +195,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/user/{user_id}/payment-card": {
+    "/v1/user/{user_id}/hri": {
         parameters: {
             query?: never;
             header?: never;
@@ -198,75 +205,12 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 支払い用バーコードの発行（作り直し）
-         * @description 支払い用バーコードを発行する。すでに使えるものがあれば使えなくしてから新しく発行する（作り直し）。
-         *     `code` はこのレスポンスでしか取り出せない（DB にはハッシュだけを保存する）。
+         * HRI（支払い用バーコードの文字列）の発行（作り直し）
+         * @description HRI（`SP` + 16文字）を発行する。すでに使えるものがあれば使えなくしてから新しく発行する（作り直し）。
+         *     `hri` はこのレスポンスでしか取り出せない（DB にはハッシュだけを保存する）。
+         *     スマホ登録の QR は、フロントがこの `hri` を静的サイト（sysken-pay-qr）の URL の `#a=` に入れて作る。
          */
-        post: operations["issuePaymentCard"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/user/{user_id}/payment-card/claim": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * スマホ登録用の発行用 QR を作る
-         * @description 支払い用バーコードを発行し（古いものは使えなくなる）、スマホで開くための5分だけ有効な URL を返す。
-         *     端末はこの URL を QR コードにして表示する。トークンは URL の `#` のあとに入っている（サーバーに送られない部分）。
-         *     `PUBLIC_BASE_URL` が未設定なら、発行せずに 503 を返す。
-         */
-        post: operations["createPaymentCardClaim"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/payment-card/claim/{claim_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * 発行用 QR の状態
-         * @description 開かれた回数と残り時間を返す（管理者画面で、他の人に先に開かれていないか確かめるため）
-         */
-        get: operations["getPaymentCardClaimStatus"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/v1/payment-card/resolve": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * 支払い用バーコードの照合
-         * @description 読み取った支払い用バーコードから持ち主を返す。中身はアクセスログに残さないため、URL ではなく本文で送る。
-         *     空白・ハイフン・小文字は取り除いてから照合する（4文字ずつ区切った表示を手で入力した場合のため）。
-         *     短い時間に失敗が続くと、しばらく 429 を返す。
-         */
-        post: operations["resolvePaymentCard"];
+        post: operations["issueHri"];
         delete?: never;
         options?: never;
         head?: never;
@@ -662,7 +606,7 @@ export interface components {
             total?: number;
             page?: components["schemas"]["PageInfo"];
         };
-        IssuePaymentCardResponse: {
+        IssueHriResponse: {
             /** @example success */
             status: string;
             /** @example 24K01234 */
@@ -670,15 +614,15 @@ export interface components {
             /** @example シス研太郎 */
             user_name: string;
             /**
-             * @description 支払い用バーコードの中身（SP + 16文字）。このレスポンスでしか取り出せない
+             * @description HRI（支払い用バーコードの文字列。SP + 16文字）。このレスポンスでしか取り出せない
              * @example SP7Q2KX9MDRA4TW8YZ
              */
-            code: string;
+            hri: string;
             /**
              * @description 画面に出す見やすい形
              * @example SP 7Q2K X9MD RA4T W8YZ
              */
-            display_code: string;
+            display_hri: string;
         };
         ListMembersResponse: {
             /** @example success */
@@ -734,47 +678,7 @@ export interface components {
             status: string;
             user_id: string;
         };
-        CreatePaymentCardClaimResponse: {
-            /** @example success */
-            status: string;
-            /**
-             * Format: int64
-             * @example 7
-             */
-            claim_id: number;
-            /** @example 24K01234 */
-            user_id: string;
-            /** @example シス研太郎 */
-            user_name: string;
-            /**
-             * @description スマホで開く URL（QR コードにする）
-             * @example http://192.0.2.10:8081/claim#t=…
-             */
-            url: string;
-            /** @example 300 */
-            expires_in_seconds: number;
-        };
-        PaymentCardClaimStatusResponse: {
-            /** @example success */
-            status: string;
-            /**
-             * @description スマホで開かれた回数
-             * @example 1
-             */
-            open_count: number;
-            /** @example 180 */
-            remaining_seconds: number;
-            /** @example false */
-            expired: boolean;
-        };
-        ResolvePaymentCardRequest: {
-            /**
-             * @description 読み取った支払い用バーコード
-             * @example SP7Q2KX9MDRA4TW8YZ
-             */
-            code: string;
-        };
-        ResolvePaymentCardResponse: {
+        ResolveHriResponse: {
             /** @example success */
             status: string;
             /** @example 24K01234 */
@@ -812,23 +716,62 @@ export type $defs = Record<string, never>;
 export interface operations {
     listMembers: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description 読み取った HRI。付けると照合になる（認証なし） */
+                hri?: string;
+            };
             header?: never;
             path?: never;
             cookie?: never;
         };
         requestBody?: never;
         responses: {
-            /** @description 取得成功 */
+            /** @description 取得成功（`hri` なら ResolveHriResponse、なしなら ListMembersResponse） */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ListMembersResponse"];
+                    "application/json": components["schemas"]["ListMembersResponse"] | components["schemas"]["ResolveHriResponse"];
+                };
+            };
+            /** @description （hri） 形式が不正（HRI ではない） */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
             401: components["responses"]["Unauthorized"];
+            /** @description （hri） 利用停止した人の HRI */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description （hri） 存在しない、または使えなくなった HRI */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description （hri） 失敗が続いたため、しばらく受け付けない */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
             /** @description サーバーエラー */
             500: {
                 headers: {
@@ -1537,7 +1480,7 @@ export interface operations {
             };
         };
     };
-    issuePaymentCard: {
+    issueHri: {
         parameters: {
             query?: never;
             header?: never;
@@ -1555,7 +1498,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssuePaymentCardResponse"];
+                    "application/json": components["schemas"]["IssueHriResponse"];
                 };
             };
             /** @description 学籍番号の形式が不正 */
@@ -1579,194 +1522,6 @@ export interface operations {
             };
             /** @description ユーザーが登録されていない */
             404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description サーバーエラー */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    createPaymentCardClaim: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
-                user_id: components["parameters"]["UserId"];
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 作成成功 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["CreatePaymentCardClaimResponse"];
-                };
-            };
-            /** @description 学籍番号の形式が不正 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            /** @description 利用停止している（退部・卒業） */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description ユーザーが登録されていない */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description サーバーエラー */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description PUBLIC_BASE_URL が未設定 */
-            503: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    getPaymentCardClaimStatus: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                claim_id: number;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 取得成功 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PaymentCardClaimStatusResponse"];
-                };
-            };
-            /** @description claim_id が不正 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: components["responses"]["Unauthorized"];
-            /** @description 存在しない（期限切れで消されたものを含む） */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description サーバーエラー */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    resolvePaymentCard: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["ResolvePaymentCardRequest"];
-            };
-        };
-        responses: {
-            /** @description 照合成功 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ResolvePaymentCardResponse"];
-                };
-            };
-            /** @description 形式が不正（支払い用バーコードではない） */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description 利用停止した人の支払い用バーコード */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description 存在しない、または使えなくなった支払い用バーコード */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            /** @description 失敗が続いたため、しばらく受け付けない */
-            429: {
                 headers: {
                     [name: string]: unknown;
                 };

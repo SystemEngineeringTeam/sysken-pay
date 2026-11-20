@@ -11,9 +11,6 @@ services:
       # 既定ではラズパイの中（localhost）からだけ届く。
       # フロントを別の PC で動かすときだけ、.env に API_BIND_ADDR=0.0.0.0 を書く
       - "${API_BIND_ADDR:-127.0.0.1}:${PORT:-8080}:${PORT:-8080}"
-      # 支払い用バーコードを受け取るページ（スマホ登録の QR から開く）。部室の Wi-Fi に開けるのはこれだけ。
-      # 既定ではラズパイの中からだけ届く。ラズパイでは .env に CLAIM_BIND_ADDR=0.0.0.0 を書いて Wi-Fi に開ける
-      - "${CLAIM_BIND_ADDR:-127.0.0.1}:${CLAIM_PORT:-8081}:8081"
     env_file:
       - .env
     environment:

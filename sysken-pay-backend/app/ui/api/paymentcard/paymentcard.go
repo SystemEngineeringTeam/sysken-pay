@@ -1,4 +1,4 @@
-// Package paymentcard は支払い用バーコードの API。設計は docs/phone-payment.md を参照。
+// Package paymentcard は HRI（支払い用バーコードの文字列）の発行・照合の API。設計は docs/phone-payment.md を参照。
 package paymentcard
 
 import (
@@ -24,9 +24,9 @@ const (
 )
 
 type Handler interface {
-	// Issue は支払い用バーコードを発行する（作り直しも同じ）。管理者パスワードが必要
+	// Issue は HRI を発行する（作り直しも同じ）。POST /v1/user/{user_id}/hri。管理者パスワードが必要
 	Issue(w http.ResponseWriter, r *http.Request)
-	// Resolve は読み取った支払い用バーコードの持ち主を返す
+	// Resolve は読み取った HRI の持ち主を返す。GET /v1/user?hri=SP…（認証なし）
 	Resolve(w http.ResponseWriter, r *http.Request)
 }
 
@@ -48,14 +48,10 @@ type IssueResponse struct {
 	Status   string `json:"status"`
 	UserID   string `json:"user_id"`
 	UserName string `json:"user_name"`
-	// Code は支払い用バーコードの中身。このレスポンスでしか取り出せない（DB にはハッシュしかない）
-	Code string `json:"code"`
-	// DisplayCode は画面に出す見やすい形（例: SP 7Q2K X9MD RA4T W8YZ）
-	DisplayCode string `json:"display_code"`
-}
-
-type ResolveRequest struct {
-	Code string `json:"code"`
+	// HRI は支払い用バーコードの文字列（SP + 16文字）。このレスポンスでしか取り出せない（DB にはハッシュしかない）
+	HRI string `json:"hri"`
+	// DisplayHRI は画面に出す見やすい形（例: SP 7Q2K X9MD RA4T W8YZ）
+	DisplayHRI string `json:"display_hri"`
 }
 
 type ResolveResponse struct {
@@ -83,28 +79,22 @@ func (h *handlerImpl) Issue(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, IssueResponse{
-		Status:      "success",
-		UserID:      issued.User.ID(),
-		UserName:    issued.User.UserName(),
-		Code:        issued.Code,
-		DisplayCode: domainpc.DisplayCode(issued.Code),
+		Status:     "success",
+		UserID:     issued.User.ID(),
+		UserName:   issued.User.UserName(),
+		HRI:        issued.Code,
+		DisplayHRI: domainpc.DisplayCode(issued.Code),
 	})
 }
 
-// Resolve の支払い用バーコードは URL ではなく本文で受け取る（URL はアクセスログに残るため）
+// Resolve の HRI はクエリ（?hri=）で受け取る。URL に載るので、リバースプロキシなどのアクセスログに残らないようにすること
 func (h *handlerImpl) Resolve(w http.ResponseWriter, r *http.Request) {
 	if h.limiter.Blocked() {
 		apierrors.RespondError(w, http.StatusTooManyRequests, "too many failed attempts")
 		return
 	}
 
-	var req ResolveRequest
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		apierrors.RespondError(w, http.StatusBadRequest, "invalid request body")
-		return
-	}
-
-	u, err := h.resolve.Resolve(r.Context(), req.Code)
+	u, err := h.resolve.Resolve(r.Context(), r.URL.Query().Get("hri"))
 	if err != nil {
 		// 支払い用バーコードの中身はログに出さない
 		switch {
