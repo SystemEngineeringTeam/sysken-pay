@@ -196,6 +196,49 @@ pkill -f chromium
 
 - タッチ画面だけで打つには、画面に出すキーボードが別に要る（まだ用意していない）。今は USB キーボードか Raspberry Pi Connect で打つ
 
+## 12. Slack に連絡する
+
+`make deploy` の成功・失敗、バックアップの失敗などを Slack に送る仕組み（`deploy/raspberry-pi/notify-slack.sh`）。**Webhook の URL は秘密**で、リポジトリには書かない（公開リポジトリのため）。置き場所はラズパイの中の、リポジトリの外。
+
+### Webhook を作る（Slack の画面で。役員のだれかが1回やる）
+
+1. ブラウザで Slack API（`api.slack.com/apps`）を開き、部の Slack にログインする
+2. 「Create New App」→「From scratch」→ 名前（例：シス研Pay）と、部の Slack ワークスペースを選ぶ
+3. 左のメニューの「Incoming Webhooks」→ 「Activate Incoming Webhooks」を On にする
+4. 「Add New Webhook to Workspace」→ 連絡を受け取るチャンネル（例：役員用）を選ぶ
+5. 出てきた `https://hooks.slack.com/...` の URL をコピーする（**URL はチャットや issue・PR に貼らない**）
+
+### ラズパイに置く
+
+```bash
+mkdir -p ~/.config/sysken-pay && chmod 700 ~/.config/sysken-pay
+cp ~/sysken-pay/deploy/raspberry-pi/notify.env.sample ~/.config/sysken-pay/notify.env
+chmod 600 ~/.config/sysken-pay/notify.env
+nano ~/.config/sysken-pay/notify.env       # SLACK_WEBHOOK_URL= のあとに、コピーした URL を貼る
+```
+
+- 置き場所は `~/.config/sysken-pay/notify.env`（リポジトリの外）。別の場所にするときは、環境変数 `SYSKEN_PAY_NOTIFY_ENV` にファイルの場所を入れる
+- 書くのは `SLACK_WEBHOOK_URL=...` の1行だけ（見本は `deploy/raspberry-pi/notify.env.sample`）
+
+### 試す
+
+```bash
+cd ~/sysken-pay
+NOTIFY_DRY_RUN=1 sh deploy/raspberry-pi/notify-slack.sh ok "テストです"   # 送らずに、送る文だけ出す
+sh deploy/raspberry-pi/notify-slack.sh ok "テストです（連絡の試し）"      # 実際に Slack へ送る
+```
+
+- チャンネルに「✅ テストです（連絡の試し）」と、日時が届けば成功
+- URL の設定が無い・送れないときは、「連絡は送れなかった」と出るだけで、`make deploy` などは止まらない（連絡が届かないことに気づくために、設定したら必ず上のテストを1回やる）
+
+### 送る・送らないもの
+
+- 送る：何が起きたか・いつ・次にやること（日本語の短い文）
+- 送らない：HRI（SP バーコードの番号）、パスワード、IP アドレス、URL、`.env` の中身、ログのまるごと
+  - スクリプトは、送る前にこれらしきものを「[省略]」に置き換え、10行・1行200文字までに切る（安全のための最後の網。呼ぶ側も、要点だけを渡す）
+- スクリプトのテスト：`sh deploy/raspberry-pi/test-notify-slack.sh`（本物の Slack には送らない）
+- Webhook の URL が漏れたら、Slack の画面でその Webhook を削除して作り直し、`notify.env` を書き換える
+
 ## 更新するとき
 
 1行ずつ打つ（`&&` でつなぐと、`pnpm install` の `ERR_PNPM_IGNORED_BUILDS` で後ろが実行されない）。
