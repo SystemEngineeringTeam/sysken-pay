@@ -935,16 +935,26 @@ paths:
   /v1/health:
     get:
       tags: [health]
-      summary: ヘルスチェック
+      summary: ヘルスチェック（DB につながっているかまで確かめる）
+      description: |
+        API が動いていて、DB に（2 秒以内に）つながれば 200。DB につながらないときは 503。
+        503 の本文は "NG" だけで、DB のエラーの中身は返さない（ログに残る）。
       operationId: healthCheck
       responses:
         "200":
-          description: OK
+          description: OK（API も DB も動いている）
           content:
             text/plain:
               schema:
                 type: string
                 example: "OK"
+        "503":
+          description: DB につながらない
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: "NG"
 
 components:
   securitySchemes:
