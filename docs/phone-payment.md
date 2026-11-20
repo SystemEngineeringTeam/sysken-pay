@@ -148,6 +148,7 @@
   - `POST /v1/user/{user_id}/hri`：HRI を発行する（作り直しも同じ。古いものはトランザクションの中で使えなくなる）。管理者パスワードが必要。応答は `hri`（`SP…`）と `display_hri`（`SP 7Q2K X9MD RA4T W8YZ`）
   - `GET /v1/user?hri=SP…`：HRI の持ち主を返す（支払い・チャージ）。認証なし。`hri` が無い `GET /v1/user` は、管理者パスワードが必要なユーザー一覧
     - **HRI が URL（クエリ）に載る**。API はラズパイの中（127.0.0.1）だけで動かしていて、アクセスログに URL を残す仕組み（リバースプロキシなど）を前に置かないこと。ブラウザの `fetch` なので履歴には残らない
+    - バックエンド自身のアクセスログ（`middleware.Logger`）は、`RedactQuery("hri")` で `hri=REDACTED` に伏せている（`app/server/router.go`）。Logger より前に置くこと
     - 失敗（形式不正・見つからない）が1分に10回続くと、1分間 429 を返す。利用停止した人の HRI は 403（失敗に数えない）
 - フロントの管理者画面（スマホ登録）は、発行した `hri` を `VITE_QR_ENDPOINT`（例：`qr.pay.sysken.net`）の URL の **`#a=`**（フラグメント）に入れて QR にする：`https://qr.pay.sysken.net/#a=SP…`。**2分**で QR を消す
   - `VITE_QR_ENDPOINT` が未設定なら、発行する前に断る（発行すると古いバーコードが使えなくなるため）
