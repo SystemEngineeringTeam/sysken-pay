@@ -15,6 +15,7 @@ import (
 	"sysken-pay-api/app/infra/transaction"
 	api_balance "sysken-pay-api/app/ui/api/balance"
 	api_charge "sysken-pay-api/app/ui/api/charge"
+	"sysken-pay-api/app/ui/api/health"
 	api_item "sysken-pay-api/app/ui/api/item"
 	api_member "sysken-pay-api/app/ui/api/member"
 	api_paymentcard "sysken-pay-api/app/ui/api/paymentcard"
@@ -91,6 +92,7 @@ func Run(db *sql.DB) error {
 
 		paymentCard: paymentCardHandler,
 		member:      memberHandler,
+		health:      health.NewCheck(db),
 	}, routerConfig{
 		adminUser:      config.AdminUser(),
 		adminPassword:  config.AdminPassword(),

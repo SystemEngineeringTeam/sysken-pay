@@ -72,7 +72,7 @@ docker compose up -d --build
 
 ```bash
 docker compose ps    # sysken-db が healthy、ポートが 127.0.0.1: から始まる
-curl -s localhost:8080/v1/health; echo    # OK
+curl -s localhost:8080/v1/health; echo    # OK（DB につながっていないときは NG と 503）
 docker exec sysken-db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -e "SHOW TABLES" sysken_pay' 2>/dev/null
 ```
 

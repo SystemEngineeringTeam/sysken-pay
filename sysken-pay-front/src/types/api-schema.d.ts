@@ -366,7 +366,11 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** ヘルスチェック */
+        /**
+         * ヘルスチェック（DB につながっているかまで確かめる）
+         * @description API が動いていて、DB に（2 秒以内に）つながれば 200。DB につながらないときは 503。
+         *     503 の本文は "NG" だけで、DB のエラーの中身は返さない（ログに残る）。
+         */
         get: operations["healthCheck"];
         put?: never;
         post?: never;
@@ -1887,8 +1891,17 @@ export interface operations {
         };
         requestBody?: never;
         responses: {
-            /** @description OK */
+            /** @description OK（API も DB も動いている） */
             200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/plain": string;
+                };
+            };
+            /** @description DB につながらない */
+            503: {
                 headers: {
                     [name: string]: unknown;
                 };

@@ -44,7 +44,7 @@ func testRouter(password string) http.Handler {
 func testRouterWithCharge(password, chargePassword string) http.Handler {
 	s := stub{}
 	return newRouter(
-		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, member: s},
+		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, member: s, health: ok},
 		routerConfig{
 			adminUser:      "admin",
 			adminPassword:  password,

@@ -7,7 +7,6 @@ import (
 
 	api_balance "sysken-pay-api/app/ui/api/balance"
 	api_charge "sysken-pay-api/app/ui/api/charge"
-	"sysken-pay-api/app/ui/api/health"
 	api_item "sysken-pay-api/app/ui/api/item"
 	api_member "sysken-pay-api/app/ui/api/member"
 	apimw "sysken-pay-api/app/ui/api/middleware"
@@ -30,6 +29,8 @@ type handlers struct {
 	paymentCard api_paymentcard.Handler
 	// member はユーザー一覧と、退部・卒業のとき（返金・利用停止・再開）
 	member api_member.Handler
+	// health は DB につながっているかまで確かめる（health.NewCheck）
+	health http.HandlerFunc
 }
 
 type routerConfig struct {
@@ -76,7 +77,7 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 		r.Post("/user/{user_id}/purchase", h.purchase.CreatePurchase)
 		r.Get("/item", h.item.GetAllItems)
 		r.Get("/item/{jan_code}", h.item.GetItemByJanCode)
-		r.Get("/health", health.Check)
+		r.Get("/health", h.health)
 		// GET /v1/user?hri=SP… は、読み取った HRI の持ち主を返す（認証なし・失敗が続くと 429）。
 		// hri が無ければ、管理者パスワードが必要なユーザー一覧
 		r.Get("/user", func(w http.ResponseWriter, req *http.Request) {
