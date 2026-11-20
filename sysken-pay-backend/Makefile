@@ -13,6 +13,10 @@ backup:
 	./scripts/backup-db.sh
 restore:
 	./scripts/restore-db.sh $(FILE)
+# 【ラズパイで】最新の main に更新する（変わったところだけ。順番は docs/raspberry-pi-setup.md の「更新するとき」）
+# DRY_RUN=1 make deploy で、何をするかだけ表示する
+deploy:
+	../deploy/raspberry-pi/deploy.sh
 # DB の変更（マイグレーション）。docs は README の「DB の変更（マイグレーション）」
 # 当てたものとまだのものを一覧で出す（DB は変えない）
 migrate-status:

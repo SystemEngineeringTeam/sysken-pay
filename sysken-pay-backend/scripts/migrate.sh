@@ -5,6 +5,7 @@
 # 使い方（Makefile から呼ぶ）:
 #   ./scripts/migrate.sh status          # 当てたもの・まだのものを出す（DB は変えない）
 #   ./scripts/migrate.sh up              # まだのものを番号の順に当てる（先にバックアップ）
+#   SKIP_BACKUP=1 ./scripts/migrate.sh up   # バックアップを取らずに当てる（make deploy が先に取ったときだけ使う）
 #   ./scripts/migrate.sh baseline 004    # 001〜004 を「当てたことにする」印だけつける（SQL は流さない）
 #
 # 注意: MySQL の CREATE / ALTER / DROP はトランザクションで戻せない。
@@ -112,10 +113,15 @@ cmd_up() {
   echo "これから当てる migration（番号の順）:"
   for f in $pending; do echo "  - $f"; done
 
-  echo "当てる前にバックアップを取ります。"
-  if ! "$BACKUP_CMD"; then
-    echo "バックアップに失敗したので、migration は当てていません。" >&2
-    exit 1
+  if [ "${SKIP_BACKUP:-}" = "1" ]; then
+    # make deploy が直前に取っている。単独で使うときは付けない（付けないと必ず取る）
+    echo "バックアップは呼び出し元（make deploy）が取ったので、ここでは取りません。"
+  else
+    echo "当てる前にバックアップを取ります。"
+    if ! "$BACKUP_CMD"; then
+      echo "バックアップに失敗したので、migration は当てていません。" >&2
+      exit 1
+    fi
   fi
 
   for f in $pending; do
