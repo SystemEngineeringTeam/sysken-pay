@@ -58,7 +58,11 @@ export default function PhoneRegisterPage(): JSX.Element {
           <QrCode value={qrUrl} label="スマホ登録用の QR コード" />
           <div className={styles.side}>
             <p className={styles.name}>{userName} さん</p>
-            <p className={styles.guide}>スマホのカメラで読み取ってください（インターネットにつないだ状態で）</p>
+            <p className={styles.guide}>
+              スマホのカメラで読み取ってください
+              <br />
+              （シス研Wi-Fiに接続）
+            </p>
             <p className={styles.remaining}>
               残り <span className={styles.time}>{formatRemaining(remaining)}</span>
             </p>

@@ -19,10 +19,6 @@ export const looksLikePaymentCode = (code: string): boolean => {
 export const STUDENT_ID_NOT_ACCEPTED =
   "学生証は使えません。スマホに保存したシス研Payバーコードをかざしてください。";
 
-/** ホーム画面（商品の読み取り）で支払い用バーコードを読んだときの案内 */
-export const PAYMENT_CODE_ON_HOME =
-  "これは支払い用のバーコードです。先に商品をかざしてから、シス研Payバーコードをかざしてください。";
-
 /** カートが空のときに支払い用バーコードを読んだときの案内 */
 export const CART_EMPTY_ON_PAY = "先に商品をかざしてから、シス研Payバーコードをかざしてください。";
 

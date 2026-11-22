@@ -20,6 +20,7 @@ export default function BuyListPage(): JSX.Element {
   const navigate = useNavigate();
   const { cartItems: items, removeItem, clearCart } = useCartStore();
   const totalPrice = useTotalPrice();
+  const itemCount = items.reduce((sum, { quantity }) => sum + quantity, 0);
   const { onScan, ErrorMessage } = useCartScan();
 
   return (
@@ -30,11 +31,14 @@ export default function BuyListPage(): JSX.Element {
         <ItemList
           Items={items}
           onDelete={removeItem}
-          title="シス研Payバーコードをかざすと、お支払いが完了します"
+          title="シス研Payバーコードをかざして購入"
+          emphasis
+          icon="/icons/Barcord.svg"
         />
+        {/* 商品が1個のあいだだけ、続けてかざせることを案内する（2個になったら消す） */}
+        {itemCount < 2 && <p className={styles.hint}>商品を続けてかざせます</p>}
         <ErrorMessage />
         <div className={styles.footer}>
-          <p className={styles.hint}>商品を続けてかざせます</p>
           <PriceLabel label="合計" price={totalPrice} />
         </div>
       </div>

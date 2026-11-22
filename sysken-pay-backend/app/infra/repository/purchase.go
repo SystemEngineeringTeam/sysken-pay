@@ -85,6 +85,16 @@ func (r *PurchaseRepositoryImpl) CreatePurchase(ctx context.Context, p *purchase
 	p.SetID(int(purchaseID))
 	p.SetCreatedAt(time.Now())
 
+	// 買ったあとの残高を集計して返す（これを入れないと、レスポンスの balance がいつも 0 になる）
+	var currentBalance int
+	querySum := `SELECT IFNULL(SUM(amount), 0) FROM balance WHERE user_id = ?`
+	if err := executor.QueryRowContext(ctx, querySum, p.UserID()).Scan(&currentBalance); err != nil {
+		return nil, err
+	}
+	if err := p.SetBalance(currentBalance); err != nil {
+		return nil, err
+	}
+
 	return p, nil
 }
 

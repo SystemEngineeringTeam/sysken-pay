@@ -9,7 +9,7 @@ export type Path =
   | `/admin/menu`
   | `/admin/phone-register`
   | `/admin/user-register`
-  | `/admin/user-register/name`
+  | `/balance`
   | `/buy`
   | `/buy/:paymentMethod`
   | `/buy/complete`

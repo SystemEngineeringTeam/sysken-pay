@@ -19,7 +19,11 @@ export default function Home(): JSX.Element {
     <div className={styles.container}>
       <Header title="シス研Pay" right="setting" shadow={true} />
       <main className={styles.main}>
-        <BarcodeReader mode="product" onScan={onScan} />
+        <BarcodeReader
+          mode="product"
+          onScan={onScan}
+          hint="シス研Payバーコードで残高確認"
+        />
         <ErrorMessage />
         <ChargeButton />
       </main>

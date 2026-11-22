@@ -1,0 +1,32 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.name {
+  margin: 0;
+  max-width: 80rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 3.2rem;
+  font-weight: $bold;
+  color: $gray-100;
+}
+
+.label {
+  margin: 0;
+  font-size: 2rem;
+  color: $gray-40;
+}
+
+.balance {
+  margin: 0 0 2rem;
+  font-size: 7rem;
+  font-weight: $bold;
+  color: $blue-40;
+}

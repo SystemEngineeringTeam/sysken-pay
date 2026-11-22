@@ -9,9 +9,11 @@ interface BarcodeReaderProps {
   placeholder?: string;
   /** 読み取りに失敗したときの案内。見出しのすぐ下に出す（画面の下だと「戻る」と重なるため） */
   error?: ReactNode;
+  /** 画面の下に小さく添える補足（目立たせたくない案内用） */
+  hint?: string;
 }
 
-export function BarcodeReader({ mode, onScan, placeholder, error }: BarcodeReaderProps): JSX.Element {
+export function BarcodeReader({ mode, onScan, placeholder, error, hint }: BarcodeReaderProps): JSX.Element {
   const [inputValue, setInputValue] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -57,6 +59,7 @@ export function BarcodeReader({ mode, onScan, placeholder, error }: BarcodeReade
             className={styles.modeIcon}
           />
         </div>
+        {hint && <p className={styles.hint}>{hint}</p>}
       </div>
       <Input
         autoFocus

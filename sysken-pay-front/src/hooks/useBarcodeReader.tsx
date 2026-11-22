@@ -10,7 +10,6 @@ import { PurchaseRepositoryImpl } from "../adapter/repository/PurchaseRepository
 import { toPurchaseErrorMessage } from "../services/purchaseErrorMessage";
 import {
   CART_EMPTY_ON_PAY,
-  PAYMENT_CODE_ON_HOME,
   insufficientBalanceMessage,
   STUDENT_ID_NOT_ACCEPTED,
   isStudentId,
@@ -52,6 +51,12 @@ function useErrorWithAutoReset(position: ErrorPosition = "bottom") {
   return { setError, ErrorMessage };
 }
 
+/** 残高の画面に渡す、持ち主の名前と残高 */
+export type BalanceView = {
+  userName: string;
+  balance: number;
+};
+
 export function useProductScan() {
   const navigate = useNavigate();
   const addItem = useCartStore((state) => state.addItem);
@@ -60,9 +65,26 @@ export function useProductScan() {
 
   const onScan = async (barcode: string) => {
     if (isScanningRef.current) return;
-    // スマホの支払い用バーコードを商品の読み取りでかざしたとき（商品の API には送らない）
+    // 学生証は使えない（商品の API にも送らない）
+    if (isStudentId(barcode)) {
+      setError(STUDENT_ID_NOT_ACCEPTED);
+      return;
+    }
+    // スマホのシス研Payバーコードをかざしたら、残高を見せる（商品の API には送らない）
     if (looksLikePaymentCode(barcode)) {
-      setError(PAYMENT_CODE_ON_HOME);
+      isScanningRef.current = true;
+      try {
+        const user = await HriRepositoryImpl.resolve(barcode);
+        const balance = await UserRepositoryImpl.getBalance(user.user_id);
+        if (!isMountedRef.current) return;
+        const state: BalanceView = { userName: user.user_name, balance: balance.balance ?? 0 };
+        navigate("/balance", { state });
+      } catch (e) {
+        if (!isMountedRef.current) return;
+        setError(toPaymentScanErrorMessage(e));
+      } finally {
+        isScanningRef.current = false;
+      }
       return;
     }
     isScanningRef.current = true;

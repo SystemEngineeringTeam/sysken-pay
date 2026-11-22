@@ -23,6 +23,7 @@
   max-width: 100%;
   text-align: center;
   box-sizing: border-box;
+  position: relative;
 }
 
 // 見出しと、その下のエラー
@@ -55,6 +56,18 @@
   margin: 0;
   line-height: 1.4;
   word-break: break-word;
+}
+
+// 枠の下に重ねて置く（置いても、見出しと画像の位置は動かない）
+.hint {
+  position: absolute;
+  bottom: 0.8rem;
+  left: 0;
+  right: 0;
+  margin: 0;
+  font-size: 1.4rem;
+  color: $gray-40;
+  text-align: center;
 }
 
 .iconWrapper {
