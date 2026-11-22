@@ -8,6 +8,8 @@ describe("toMemberErrorMessage", () => {
     expect(toMemberErrorMessage("refund", e)).toContain("0 円");
     expect(toMemberErrorMessage("update", e)).toContain("別のユーザー");
     expect(toMemberErrorMessage("delete", e)).toContain("記録がある");
+    expect(toMemberErrorMessage("hide", e)).toContain("残高が 0 円");
+    expect(toMemberErrorMessage("unhide", e)).toContain("非表示になっていません");
   });
   it("403 は再発行のときだけ利用停止の案内", () => {
     const e = new ApiError("request", "x", 403);
