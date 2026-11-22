@@ -311,6 +311,22 @@ sh deploy/raspberry-pi/notify-slack.sh ok "テストです（連絡の試し）"
 
 Drive のファイルは暗号化していない普通の `.sql.gz`。ダウンロードして `sysken-pay-backend/backups/` に置けば、これまでどおり `make restore` で戻せる（戻す前に、必ず今の状態を `make backup` で退避する）。
 
+## 14. 管理サイト（PC から商品・ユーザーを管理する）
+
+商品の登録・更新・無効化と、ユーザーの一覧・返金・利用停止/再開・非表示・削除・名前の変更・バーコード再発行は、PC のブラウザで使う管理サイト（`sysken-pay-admin`、`https://admin.pay.sysken.net`）で行う。ラズパイの画面に残っているのは、ユーザー登録（学生証を読む）とバーコード再発行（QR を出す）だけ。
+
+サイトは Cloudflare にあって、ラズパイには入らない（`make deploy` は何もしない）。ラズパイ側でやることは、API を PC から届くようにすることだけ。
+
+1. `sysken-pay-backend/.env` に書く（**中身は人に見せない**）
+   - `ALLOWED_ORIGINS` に `https://admin.pay.sysken.net` を足す（今ある値は消さない）
+   - `API_BIND_ADDR=0.0.0.0`（既定は `127.0.0.1` で、ラズパイの外から届かない。API のポートは 8080）
+2. API を作り直す：`cd ~/sysken-pay/sysken-pay-backend && docker compose up -d --build`（`.env` を変えただけでは反映されない）
+3. 確認：同じネットワークの PC から `curl -i http://sysken-pay.local:8080/v1/health` が `200` を返すこと。返らないときは、ラズパイの名前（avahi が動いているか）と `API_BIND_ADDR` を確かめる
+4. 管理サイトを出す（PC で。変更があったときだけ）：`cd sysken-pay-admin && pnpm install && pnpm build && pnpm deploy`
+
+- 管理サイトの入口は管理者パスワード（`ADMIN_PASSWORD`）。公開されたページに打つので、使い終わったらログアウトする
+- ⚠️ **未決**：公開ページ（HTTPS）から呼べるのは HTTPS の通信先だけ（混在コンテンツ）。ラズパイの API を HTTPS にする方法は決まっていない。決まるまでは、PC で `pnpm dev` を開き（`http://localhost:5173`）、通信先を「ローカル」にして試す。決まる前に、勝手に決めて入れない（`docs/phone-payment.md` と同じ扱い）
+
 ## 更新するとき（make deploy）
 
 ```bash
@@ -332,7 +348,7 @@ make deploy
   | --- | --- |
   | 更新なし | 「更新はありません」と出すだけ（Slack には送らない） |
   | `docs/` だけ | 「ドキュメントだけの更新です（再起動なし）」（Slack には送らない） |
-  | `sysken-pay-qr/`・README だけ | 何もしない（再起動なし） |
+  | `sysken-pay-qr/`・`sysken-pay-admin/`・README だけ | 何もしない（再起動なし）。この2つは Cloudflare に出すサイトで、ラズパイには入らない（出し方は「14.」） |
   | `sysken-pay-front/` | フロントだけビルドして入れ替える（`pnpm-lock.yaml` が変わったときだけ `pnpm install` もする） |
   | `sysken-pay-backend/` のコード | バックだけビルド・バックアップ・migration・入れ替え |
   | `db/migrations/` | バックアップして migration（`make migrate-up` と同じ） |
@@ -384,9 +400,9 @@ sudo systemctl restart sysken-pay-front
 3. DB がどこまで進んでいるか、**読むだけのコマンドで**調べる（DB は変えない）
    - `make migrate-status`（表がないので、すべて「まだ」と出るのが正しい）
    - `docker exec sysken-db sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -e "SHOW TABLES; SHOW COLUMNS FROM user" sysken_pay'`
-   - `db/migrations/` のファイルと見比べて、どこまで当たっているか決める（例：`payment_card` の表があれば 001、`refund` の表があれば 003、`user` に `hidden_at` 列があれば 004、`payment_card_claim` の表が**ない**なら 005 も当たっている）。**番号は、ここで調べた結果から決める**（先に決めておかない）
-4. 印をつける：`make migrate-baseline UPTO=<調べた番号>`（例：`UPTO=004`）。出た一覧を見て `yes`
-   - 印がつくのは「当たっている」と調べたところまで。まだのもの（例：005）は、あとの `make deploy` が当てる
+   - `db/migrations/` のファイルと見比べて、どこまで当たっているか決める（例：`payment_card` の表があれば 001、`refund` の表があれば 003、`user` に `hidden_at` 列があれば 004、`payment_card_claim` の表が**ない**なら 005 も当たっている、`item` に `disabled_at` 列があれば 006）。**番号は、ここで調べた結果から決める**（先に決めておかない）
+4. 印をつける：`make migrate-baseline UPTO=<調べた番号>`（例：`UPTO=006`）。出た一覧を見て `yes`
+   - 印がつくのは「当たっている」と調べたところまで。まだのもの（例：006）は、あとの `make deploy` が当てる
 5. `.env` の確認（**中身は見ない・人に見せない。名前だけ**）
    - 見本は `.env.sample`。それと見比べて、**足りない名前がないか**だけ確かめる
    - バック（`sysken-pay-backend/.env`）の名前の例：`MYSQL_ROOT_PASSWORD`、`ADMIN_USER`、`ADMIN_PASSWORD`、`CHARGE_PASSWORD`、`ALLOWED_ORIGINS`、`PORT`、`API_BIND_ADDR`
@@ -417,7 +433,7 @@ sudo systemctl restart sysken-pay-front
 
 - [x] 最新の main を入れる（DB の変更 `003_refund.sql`・`004_user_hidden.sql` も流す）
 - [ ] **支払い・チャージはスマホのバーコードだけになった（学生証では払えない）**。入れる前に
-  - [ ] 使う人全員のスマホにバーコードを入れる（「ユーザー設定 → 一覧」の「バーコードなし」で、まだの人が分かる）
+  - [ ] 使う人全員のスマホにバーコードを入れる（管理サイトの「ユーザー」一覧で、「バーコードなし」の札が付いている人がまだの人）
   - [x] スマホに保存したバーコードを、部室のリーダーで読めるか確かめる
 - [x] 本物の DB で、試し用のユーザーを使って確かめる：返金（残高がちょうど 0 になる）・利用停止（止めた人は払えない）・利用を再開・学籍番号の変更（残高・履歴・バーコードが引き継がれる）
 
