@@ -3,6 +3,7 @@ import { stopMember, stopMembers } from "../actions";
 import { canHide, countMembers, filterMembers, formatYen, MEMBER_TABS, memberBadge, searchMembers, type Member, type MemberTab } from "../members";
 import { isValidStudentId, toMemberErrorMessage, type MemberAction } from "../messages";
 import { buildQrUrl, formatRemaining, QR_DISPLAY_SECONDS, QR_ENDPOINT } from "../qr";
+import { parseStudentId, toUserId } from "../studentId";
 import { singleFlight } from "../save";
 import { confirmDialog, h, messageBox, type ViewContext } from "../ui";
 
@@ -19,7 +20,7 @@ export const usersList = async (root: HTMLElement, { api }: ViewContext) => {
   const search = h("input", { type: "search", placeholder: "名前か学籍番号で探す", "aria-label": "ユーザーを探す" });
   const list = h("ul", { class: "rows" });
   const batch = h("div", { hidden: true });
-  root.append(h("div", { class: "panel" }, h("h2", {}, "ユーザー"), tabs, search, batch, msg.el, list));
+  root.append(h("div", { class: "panel" }, h("h2", {}, "ユーザー"), h("a", { class: "button secondary", href: "#/users/new" }, "ユーザーを登録する"), tabs, search, batch, msg.el, list));
 
   let members: Member[] = [];
   let tab: MemberTab = "all";
@@ -184,6 +185,70 @@ export const userDetail = async (root: HTMLElement, { api }: ViewContext, userId
   };
 
   await load();
+};
+
+/** ユーザー登録。学籍番号（X24042）→ 氏名（Microsoft なら Graph で引く。引けなければ手で入れる）→ 登録 → そのまま QR の発行へ */
+export const userNew = (root: HTMLElement, { api, lookupName }: ViewContext) => {
+  const msg = messageBox();
+  const studentId = h("input", { required: true, maxlength: "6", placeholder: "X24042", "aria-label": "学籍番号", autocomplete: "off" });
+  const name = h("input", { required: true, maxlength: "50", "aria-label": "名前", autocomplete: "off" });
+  const find = h("button", { type: "button", class: "secondary" }, "Microsoft で名前を探す");
+  const submit = h("button", { type: "submit", class: "primary" }, "登録して QR の発行へ");
+  const form = h(
+    "form",
+    { class: "panel", autocomplete: "off" },
+    h("h2", {}, "ユーザーの登録"),
+    h("label", {}, "学籍番号（例: X24042）"),
+    studentId,
+    lookupName ? find : null,
+    h("label", {}, "名前"),
+    name,
+    h("p", { class: "note" }, lookupName ? "名前は Microsoft から取れたときだけ入ります。違っていたら直してください。" : "名前を入れてください（Microsoft でログインすると、学籍番号から名前を引けます）。"),
+    submit,
+    msg.el,
+  );
+  root.append(form, h("a", { class: "back", href: "#/users" }, "← ユーザーの一覧へ"));
+
+  const search = singleFlight(async () => {
+    msg.clear();
+    if (!lookupName) return;
+    const id = parseStudentId(studentId.value);
+    if (!id) return msg.error("学籍番号は「X24042」の形で入れてください。");
+    find.disabled = true;
+    try {
+      const found = await lookupName(id);
+      if (found) {
+        name.value = found;
+        msg.ok("Microsoft から名前を取りました。違っていたら直してください。");
+      } else {
+        msg.error("名前を取れませんでした（同意が済んでいない・見つからない）。手で入れてください。管理者の同意が要る権限なので、Entra 側で同意されていないと取れません。");
+      }
+    } finally {
+      find.disabled = false;
+    }
+  });
+
+  const register = singleFlight(async () => {
+    msg.clear();
+    const userId = toUserId(studentId.value);
+    if (!userId) return msg.error("学籍番号は「X24042」の形で入れてください。");
+    const userName = name.value.trim();
+    if (!userName) return msg.error("名前を入力してください。");
+    submit.disabled = true;
+    try {
+      await api.registerUser(userId, userName);
+      location.hash = `${userHref(userId)}/issue`; // 登録できたら、そのまま QR の発行へ
+    } catch (e) {
+      msg.error(toMemberErrorMessage("register", e));
+      submit.disabled = false;
+    }
+  });
+
+  find.addEventListener("click", () => void search());
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    void register();
+  });
 };
 
 export const userEdit = async (root: HTMLElement, { api }: ViewContext, userId: string) => {

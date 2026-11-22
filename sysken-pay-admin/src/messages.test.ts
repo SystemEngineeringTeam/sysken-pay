@@ -7,6 +7,9 @@ describe("toMemberErrorMessage", () => {
     const e = new ApiError("request", "x", 409);
     expect(toMemberErrorMessage("refund", e)).toContain("0 円");
     expect(toMemberErrorMessage("update", e)).toContain("別のユーザー");
+    expect(toMemberErrorMessage("register", e)).toContain("もう別のユーザー");
+    expect(toMemberErrorMessage("register", new ApiError("request", "x", 400))).toContain("形が正しくありません");
+    expect(toMemberErrorMessage("register", new ApiError("request", "x", 404))).toContain("登録できませんでした");
     expect(toMemberErrorMessage("delete", e)).toContain("記録がある");
     expect(toMemberErrorMessage("hide", e)).toContain("残高が 0 円");
     expect(toMemberErrorMessage("unhide", e)).toContain("非表示になっていません");

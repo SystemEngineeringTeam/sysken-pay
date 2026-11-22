@@ -10,6 +10,7 @@ describe("parseRoute", () => {
   });
   it("ユーザー", () => {
     expect(parseRoute("#/users")).toEqual({ name: "users" });
+    expect(parseRoute("#/users/new")).toEqual({ name: "userNew" });
     expect(parseRoute("#/users/24K00001")).toEqual({ name: "user", id: "24K00001" });
     expect(parseRoute("#/users/24K00001/edit")).toEqual({ name: "userEdit", id: "24K00001" });
     expect(parseRoute("#/users/24K00001/issue")).toEqual({ name: "userIssue", id: "24K00001" });
@@ -25,6 +26,7 @@ describe("parseRoute", () => {
   });
   it("区分", () => {
     expect(sectionOf({ name: "userIssue", id: "x" })).toBe("users");
+    expect(sectionOf({ name: "userNew" })).toBe("users");
     expect(sectionOf({ name: "itemNew" })).toBe("items");
   });
 });
