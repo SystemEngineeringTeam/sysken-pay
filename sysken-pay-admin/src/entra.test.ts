@@ -11,7 +11,6 @@ const fake = (over: Partial<EntraClient> = {}): EntraClient => ({
   loginRedirect: vi.fn().mockResolvedValue(undefined),
   logoutRedirect: vi.fn().mockResolvedValue(undefined),
   acquireTokenSilent: vi.fn().mockResolvedValue({ idToken: "tok" } as AuthenticationResult),
-  acquireTokenPopup: vi.fn().mockRejectedValue(new Error("popup")),
   ...over,
 });
 
@@ -47,7 +46,7 @@ describe("createEntra", () => {
     const e = createEntra(c);
     await e.init();
     await e.login();
-    expect(c.loginRedirect).toHaveBeenCalledWith({ scopes: ["openid", "profile", "User.Read"] });
+    expect(c.loginRedirect).toHaveBeenCalledWith({ scopes: ["openid", "profile", "User.Read", "User.ReadBasic.All"] });
     await e.logout();
     expect(c.logoutRedirect).toHaveBeenCalledWith({ account: acct });
     expect(e.account).toBeNull();
@@ -71,19 +70,12 @@ describe("createEntra", () => {
     expect(silent).toHaveBeenCalledWith({ scopes: ["User.ReadBasic.All"], account: acct });
   });
 
-  it("getGraphToken: silent で取れなければ、interactive のときだけポップアップで同意を求める", async () => {
+  it("getGraphToken: 同意がなく silent で取れなくても、ポップアップは出さず null", async () => {
     const silent = vi.fn().mockRejectedValue(new Error("consent_required"));
-    const popup = vi.fn().mockResolvedValue({ accessToken: "p" });
-    const e = createEntra(fake({ getAllAccounts: vi.fn().mockReturnValue([acct]), acquireTokenSilent: silent, acquireTokenPopup: popup }));
+    const c = fake({ getAllAccounts: vi.fn().mockReturnValue([acct]), acquireTokenSilent: silent });
+    const e = createEntra(c);
     await e.init();
     expect(await e.getGraphToken(LOOKUP_SCOPES)).toBeNull();
-    expect(popup).not.toHaveBeenCalled();
-    expect(await e.getGraphToken(LOOKUP_SCOPES, { interactive: true })).toBe("p");
-    expect(popup).toHaveBeenCalledWith({ scopes: ["User.ReadBasic.All"], account: acct });
-  });
-  it("getGraphToken: ポップアップで断られたら（管理者の同意が要る等）null", async () => {
-    const e = createEntra(fake({ getAllAccounts: vi.fn().mockReturnValue([acct]), acquireTokenSilent: vi.fn().mockRejectedValue(new Error("x")), acquireTokenPopup: vi.fn().mockRejectedValue(new Error("denied")) }));
-    await e.init();
-    expect(await e.getGraphToken(LOOKUP_SCOPES, { interactive: true })).toBeNull();
+    expect("acquireTokenPopup" in c).toBe(false);
   });
 });
