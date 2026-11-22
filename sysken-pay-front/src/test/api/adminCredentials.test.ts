@@ -1,9 +1,12 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
   basicAuthHeader,
+  clearAdminAccess,
   clearAdminPassword,
   getAdminPassword,
+  getAdminSession,
   setAdminPassword,
+  setAdminSession,
 } from "../../adapter/api/adminCredentials";
 import { adminAuthMiddleware } from "../../adapter/api/client";
 
@@ -22,7 +25,7 @@ const runMiddleware = async (request: Request): Promise<Request> => {
 };
 
 beforeEach(() => {
-  clearAdminPassword();
+  clearAdminAccess();
 });
 
 describe("basicAuthHeader", () => {
@@ -68,5 +71,29 @@ describe("adminAuthMiddleware", () => {
       })
     );
     expect(req.headers.get("Authorization")).toBe("Basic other");
+  });
+});
+
+describe("バーコードでの解除（Session）", () => {
+  it("Session を set するとパスワードは消え、パスワードを set すると Session は消える", () => {
+    setAdminPassword("secret");
+    setAdminSession("tok");
+    expect(getAdminSession()).toBe("tok");
+    expect(getAdminPassword()).toBeNull();
+    setAdminPassword("secret");
+    expect(getAdminSession()).toBeNull();
+  });
+
+  it("clearAdminAccess でどちらも消える", () => {
+    setAdminSession("tok");
+    clearAdminAccess();
+    expect(getAdminSession()).toBeNull();
+    expect(getAdminPassword()).toBeNull();
+  });
+
+  it("Session があれば `Authorization: Session <token>` を付ける", async () => {
+    setAdminSession("tok");
+    const req = await runMiddleware(new Request("http://localhost:8080/v1/user/20K00001/charge", { method: "POST" }));
+    expect(req.headers.get("Authorization")).toBe("Session tok");
   });
 });

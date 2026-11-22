@@ -11,7 +11,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding-top: 8rem;
+  padding-top: 5rem;
   gap: 6rem;
 }
 
@@ -26,11 +26,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3.75rem;
+  gap: 1.25rem;
 }
 
 .title {
-  font-size: 3rem;
+  font-size: 2.25rem;
   color: $blue-40;
   font-weight: $bold;
   margin: 0;
@@ -50,4 +50,33 @@
   font-size: 1.25rem;
   font-weight: $bold;
   text-align: center;
+}
+
+.scanHint {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  width: 50rem;
+  box-sizing: border-box;
+  padding: 1rem 1.5rem;
+  border: 0.125rem dashed $blue-40;
+  border-radius: 0.75rem;
+}
+
+.scanIcon {
+  width: 4rem;
+  height: 4rem;
+}
+
+.scanText {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: $bold;
+  color: $blue-40;
+}
+
+.or {
+  margin: 0;
+  font-size: 1.25rem;
+  color: $blue-40;
 }

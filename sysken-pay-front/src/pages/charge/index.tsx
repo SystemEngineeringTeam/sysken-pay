@@ -35,9 +35,22 @@ export default function ChargePage(): JSX.Element {
         <Header title="チャージ" confirmHome />
         <div className={styles.content}>
           <div className={styles.form}>
-            <h1 className={styles.title}>パスワードを入力してください</h1>
+            <h1 className={styles.title}>バーコードか、パスワードで進めます</h1>
+            <div className={styles.scanHint}>
+              <img src="/icons/BarcordReader.svg" alt="" className={styles.scanIcon} />
+              <p className={styles.scanText}>管理者のシス研Payバーコードをかざす</p>
+            </div>
+            <p className={styles.or}>または パスワードを入力</p>
             <div className={styles.inputWrapper}>
-              <Input type="password" value={password} onChange={handlePasswordChange} />
+              <Input
+              type="password"
+              autoFocus
+              value={password}
+              onChange={handlePasswordChange}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") void handleSubmit();
+              }}
+            />
               {errorMessage && <p className={styles.error}>{errorMessage}</p>}
             </div>
           </div>

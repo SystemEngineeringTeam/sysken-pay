@@ -8,10 +8,32 @@
 export const ADMIN_USER = "admin";
 
 let adminPassword: string | null = null;
+// 管理者のシス研Payバーコードで解除したときの合言葉（`Authorization: Session <token>`）。パスワードと同じくメモリにだけ置く
+let adminSession: string | null = null;
 
 export const setAdminPassword = (password: string): void => {
   adminPassword = password;
+  adminSession = null;
 };
+
+export const setAdminSession = (token: string): void => {
+  adminSession = token;
+  adminPassword = null;
+};
+
+export const getAdminSession = (): string | null => adminSession;
+
+export const clearAdminSession = (): void => {
+  adminSession = null;
+};
+
+/** パスワードも解除の合言葉も忘れる（ホームに戻ったとき） */
+export const clearAdminAccess = (): void => {
+  adminPassword = null;
+  adminSession = null;
+};
+
+export const sessionAuthHeader = (token: string): string => `Session ${token}`;
 
 export const clearAdminPassword = (): void => {
   adminPassword = null;

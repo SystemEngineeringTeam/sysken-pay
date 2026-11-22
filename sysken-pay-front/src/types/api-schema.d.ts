@@ -371,12 +371,38 @@ export interface paths {
         };
         /**
          * 管理者パスワードの確認
-         * @description BASIC 認証が通れば 204 を返す。フロントのパスワード入力画面で、パスワードが正しいかを確かめるのに使う
+         * @description BASIC 認証（または Session）が通れば 204 を返す。フロントのパスワード入力画面で、パスワードが正しいかを確かめるのに使う
          */
         get: operations["verifyAdmin"];
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/unlock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 管理者バーコードで解除する（Pi 用）
+         * @description 支払い用バーコード（HRI）の持ち主が管理者の許可リストの学籍番号にいれば、短いセッショントークンを返す。
+         *     パスワードの代わりに使える（パスワード入力は予備として残る）。認証は不要（バーコードそのものが認証）。
+         *     失敗が続くと 429（GET /v1/user?hri= と同じ上限を使う）。バーコードはログに出さない。
+         */
+        post: operations["unlockAdmin"];
+        /**
+         * セッションを破棄する（ホームに戻るとき）
+         * @description `Authorization: Session <token>` のトークンを取り消す。トークンが無くても 204。
+         */
+        delete: operations["lockAdmin"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2040,6 +2066,93 @@ export interface operations {
                 content?: never;
             };
             401: components["responses"]["Unauthorized"];
+        };
+    };
+    unlockAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @description 支払い用バーコードの値（SP + 16 文字） */
+                    hri: string;
+                };
+            };
+        };
+        responses: {
+            /** @description 解除できた */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        status?: string;
+                        /** @description Authorization: Session <token> で送る */
+                        token?: string;
+                        /** @description 操作がないときに切れるまでの秒数 */
+                        expires_in?: number;
+                    };
+                };
+            };
+            /** @description バーコードの形式が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 管理者ではない・利用停止中 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 使えない・無いバーコード */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 失敗が続いたので、しばらく受け付けない */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    lockAdmin: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 取り消した */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
         };
     };
     verifyCharge: {
