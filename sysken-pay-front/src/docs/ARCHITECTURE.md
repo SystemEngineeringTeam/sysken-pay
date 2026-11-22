@@ -24,7 +24,6 @@ src/
 ├── hooks/                      # 【Connect】 UIとRepositoryを繋ぐフック
 │   ├── useCart.ts              # カート操作・購入実行
 │   ├── useCharge.ts            # チャージ・キャンセル
-│   ├── useItem.ts              # 商品一覧取得
 │   ├── useTotalPrice.ts        # カート合計金額
 │   └── useBarcodeReader.ts     # バーコードスキャン → API呼び出し
 │
@@ -32,7 +31,6 @@ src/
 │   ├── useCartStore.ts         # カート内商品（CartItem[]）
 │   ├── useUserStore.ts         # スキャンしたユーザー情報
 │   ├── useBalanceStore.ts      # ユーザー残高
-│   ├── useItemStore.ts         # 商品カタログ・管理画面選択中商品
 │   └── useChargeStore.ts       # 選択中チャージ金額
 │
 ├── pages/                      # 【UI】 ページコンポーネント（Generouted自動ルーティング）
@@ -53,16 +51,12 @@ src/
 │   │   └── complete.tsx        # /charge/complete チャージ完了
 │   └── admin/
 │       ├── index.tsx           # /admin パスワード認証
-│       ├── menu.tsx            # /admin/menu メニュー（ユーザー設定・商品設定）
+│       ├── menu.tsx            # /admin/menu メニュー（ユーザー登録・バーコード再発行）
 │       ├── user-register/
 │       │   ├── index.tsx       # /admin/user-register 学生証スキャン
 │       │   └── name.tsx        # /admin/user-register/name 氏名入力・登録
-│       ├── item-register/
-│       │   ├── index.tsx       # /admin/item-register JANコードスキャン
-│       │   └── info.tsx        # /admin/item-register/info 商品情報入力・登録
-│       └── item-update/
-│           ├── index.tsx       # /admin/item-update JANコードスキャン
-│           └── info.tsx        # /admin/item-update/info 商品情報編集・更新
+│       └── phone-register/
+│           └── index.tsx       # /admin/phone-register スマホ用バーコードの再発行（QR を2分だけ出す）
 │
 ├── components/                 # 【UI】 再利用可能なコンポーネント
 │   ├── ui/                     # 汎用パーツ

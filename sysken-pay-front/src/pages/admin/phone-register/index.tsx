@@ -31,7 +31,7 @@ export default function PhoneRegisterPage(): JSX.Element {
     void start(passed.userId);
   }, [passed, start]);
 
-  const backToMenu = () => navigate("/admin/user-menu");
+  const backToMenu = () => navigate("/admin/menu");
 
   return (
     <div className={styles.container}>
