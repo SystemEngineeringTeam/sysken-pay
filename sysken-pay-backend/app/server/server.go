@@ -13,14 +13,17 @@ import (
 	"sysken-pay-api/app/config"
 	"sysken-pay-api/app/infra/repository"
 	"sysken-pay-api/app/infra/transaction"
+	api_adminallow "sysken-pay-api/app/ui/api/adminallow"
 	api_balance "sysken-pay-api/app/ui/api/balance"
 	api_charge "sysken-pay-api/app/ui/api/charge"
 	"sysken-pay-api/app/ui/api/health"
 	api_item "sysken-pay-api/app/ui/api/item"
 	api_member "sysken-pay-api/app/ui/api/member"
+	apimw "sysken-pay-api/app/ui/api/middleware"
 	api_paymentcard "sysken-pay-api/app/ui/api/paymentcard"
 	api_purchase "sysken-pay-api/app/ui/api/purchase"
 	api_user "sysken-pay-api/app/ui/api/user"
+	"sysken-pay-api/app/usecase/adminallow"
 	"sysken-pay-api/app/usecase/balance"
 	"sysken-pay-api/app/usecase/charge"
 	"sysken-pay-api/app/usecase/item"
@@ -56,6 +59,7 @@ func Run(db *sql.DB) error {
 	balanceRepo := repository.NewBalanceRepository(db)
 	hriRepo := repository.NewHriRepository(db)
 	memberRepo := repository.NewMemberRepository(db)
+	adminAllowlistRepo := repository.NewAdminAllowlistRepository(db)
 
 	// UseCase
 	getUserUseCase := user.NewGetUserUseCase(userRepo)
@@ -75,6 +79,7 @@ func Run(db *sql.DB) error {
 	issuePaymentCardUseCase := paymentcard.NewIssueUseCase(userRepo, hriRepo, txManager)
 	resolvePaymentCardUseCase := paymentcard.NewResolveUseCase(userRepo, hriRepo)
 	memberUseCase := member.NewUseCase(memberRepo, balanceRepo, hriRepo, txManager)
+	adminAllowUseCase := adminallow.NewUseCase(adminAllowlistRepo, txManager)
 
 	// Handler
 	userHandler := api_user.NewUserHandler(getUserUseCase, registerUserUseCase, updateUserUseCase)
@@ -84,6 +89,13 @@ func Run(db *sql.DB) error {
 	balanceHandler := api_balance.NewBalanceHandler(getBalanceUseCase, getPurchaseHistoriesUseCase)
 	paymentCardHandler := api_paymentcard.NewHandler(issuePaymentCardUseCase, resolvePaymentCardUseCase)
 	memberHandler := api_member.NewHandler(memberUseCase)
+	adminAllowHandler := api_adminallow.NewHandler(adminAllowUseCase)
+
+	// Entra ID ログイン。テナント ID かクライアント ID が未設定なら nil（Bearer はすべて拒否）
+	var entraVerifier apimw.TokenVerifier
+	if tenant, client := config.EntraTenantID(), config.EntraClientID(); tenant != "" && client != "" {
+		entraVerifier = apimw.NewEntraVerifier(tenant, client, apimw.NewJWKSKeyfunc(tenant).Keyfunc)
+	}
 	r := newRouter(handlers{
 		user:     userHandler,
 		item:     itemHandler,
@@ -93,6 +105,7 @@ func Run(db *sql.DB) error {
 
 		paymentCard: paymentCardHandler,
 		member:      memberHandler,
+		adminAllow:  adminAllowHandler,
 		health:      health.NewCheck(db),
 	}, routerConfig{
 		adminUser:      config.AdminUser(),
@@ -100,6 +113,8 @@ func Run(db *sql.DB) error {
 		chargePassword: config.ChargePassword(),
 		allowedOrigins: config.AllowedOrigins(),
 		timeout:        requestTimeout,
+		entra:          entraVerifier,
+		adminAllowlist: adminAllowlistRepo,
 	})
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)

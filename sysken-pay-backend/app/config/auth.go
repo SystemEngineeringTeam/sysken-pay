@@ -56,3 +56,15 @@ func AllowedOrigins() []string {
 	}
 	return origins
 }
+
+// EntraTenantID は管理サイトの Entra ID ログインで受け入れるテナント（ディレクトリ）の ID を返す。
+// 未設定のときは空文字を返し、その場合は Entra のトークン（Bearer）をすべて拒否する。
+func EntraTenantID() string {
+	return strings.TrimSpace(os.Getenv("ENTRA_TENANT_ID"))
+}
+
+// EntraClientID は管理サイトの Entra アプリ登録のクライアント ID（ID トークンの aud）を返す。
+// 未設定のときは空文字を返し、その場合は Entra のトークン（Bearer）をすべて拒否する。
+func EntraClientID() string {
+	return strings.TrimSpace(os.Getenv("ENTRA_CLIENT_ID"))
+}

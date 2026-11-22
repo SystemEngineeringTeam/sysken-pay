@@ -1,10 +1,13 @@
 package server
 
 import (
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	apimw "sysken-pay-api/app/ui/api/middleware"
 )
 
 // stub は呼ばれたら 200 を返すだけのハンドラ（全 Handler インターフェースを満たす）
@@ -38,27 +41,39 @@ func (stub) Resume(w http.ResponseWriter, r *http.Request)               { ok(w,
 func (stub) Hide(w http.ResponseWriter, r *http.Request)                 { ok(w, r) }
 func (stub) Unhide(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
 func (stub) Delete(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
+func (stub) ListAllowed(w http.ResponseWriter, r *http.Request)          { ok(w, r) }
+func (stub) AddAllowed(w http.ResponseWriter, r *http.Request)           { ok(w, r) }
+func (stub) RemoveAllowed(w http.ResponseWriter, r *http.Request)        { ok(w, r) }
 
 func testRouter(password string) http.Handler {
 	return testRouterWithCharge(password, "")
 }
 
 func testRouterWithCharge(password, chargePassword string) http.Handler {
+	return testRouterWithEntra(password, chargePassword, nil, nil)
+}
+
+func testRouterWithEntra(password, chargePassword string, entra apimw.TokenVerifier, allow apimw.AllowChecker) http.Handler {
 	s := stub{}
 	return newRouter(
-		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, member: s, health: ok},
+		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, member: s, adminAllow: s, health: ok},
 		routerConfig{
 			adminUser:      "admin",
 			adminPassword:  password,
 			chargePassword: chargePassword,
 			allowedOrigins: []string{"http://localhost:3000"},
 			timeout:        time.Second,
+			entra:          entra,
+			adminAllowlist: allow,
 		},
 	)
 }
 
 var protectedRoutes = []struct{ method, path string }{
 	{http.MethodGet, "/v1/admin/verify"},
+	{http.MethodGet, "/v1/admin/allowlist"},
+	{http.MethodPost, "/v1/admin/allowlist"},
+	{http.MethodDelete, "/v1/admin/allowlist/k23099kk@aitech.ac.jp"},
 	{http.MethodPost, "/v1/user"},
 	{http.MethodPatch, "/v1/user/20K23099"},
 	{http.MethodPost, "/v1/user/20K23099/charge/cancel"},
@@ -199,6 +214,72 @@ func TestChargePasswordUnset(t *testing.T) {
 	for _, rt := range chargeRoutes {
 		if got := do(h, rt.method, rt.path, true, ""); got != http.StatusUnauthorized {
 			t.Errorf("%s %s 両方未設定: status = %d, want 401", rt.method, rt.path, got)
+		}
+	}
+}
+
+// --- Entra（Bearer）---
+
+type fakeVerifier map[string]string // トークン → UPN
+
+func (f fakeVerifier) Verify(_ context.Context, raw string) (string, error) {
+	if upn, ok := f[raw]; ok {
+		return upn, nil
+	}
+	return "", apimw.ErrInvalidToken
+}
+
+type fakeAllow map[string]bool
+
+func (f fakeAllow) Exists(_ context.Context, upn string) (bool, error) { return f[upn], nil }
+
+func doBearer(h http.Handler, method, path, token string) int {
+	req := httptest.NewRequest(method, path, nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	return rec.Code
+}
+
+// 管理者の API は、許可リストにいる人の Bearer でも同じように通り、いない人・不正なトークンは通らない
+func TestProtectedRoutesWithBearer(t *testing.T) {
+	h := testRouterWithEntra("secret", "charge-pass",
+		fakeVerifier{"good": "x24042xx@aitech.ac.jp", "stranger": "k23099kk@aitech.ac.jp"},
+		fakeAllow{"x24042xx@aitech.ac.jp": true})
+	for _, rt := range protectedRoutes {
+		if got := doBearer(h, rt.method, rt.path, "good"); got == http.StatusUnauthorized || got == http.StatusForbidden || got == http.StatusNotFound {
+			t.Errorf("%s %s 許可済みの Bearer: status = %d, want 2xx", rt.method, rt.path, got)
+		}
+		if got := doBearer(h, rt.method, rt.path, "stranger"); got != http.StatusForbidden {
+			t.Errorf("%s %s 許可リスト外: status = %d, want 403", rt.method, rt.path, got)
+		}
+		if got := doBearer(h, rt.method, rt.path, "forged"); got != http.StatusUnauthorized {
+			t.Errorf("%s %s 不正なトークン: status = %d, want 401", rt.method, rt.path, got)
+		}
+		// 予備のパスワードは、Entra を設定していても今まで通り通る
+		if got := do(h, rt.method, rt.path, true, "secret"); got == http.StatusUnauthorized {
+			t.Errorf("%s %s パスワード: status = %d, want 2xx", rt.method, rt.path, got)
+		}
+	}
+}
+
+// Entra が未設定なら、Bearer はどの API でも拒否される
+func TestBearerRejectedWhenEntraUnset(t *testing.T) {
+	h := testRouter("secret")
+	for _, rt := range protectedRoutes {
+		if got := doBearer(h, rt.method, rt.path, "anything"); got != http.StatusUnauthorized {
+			t.Errorf("%s %s Entra 未設定: status = %d, want 401", rt.method, rt.path, got)
+		}
+	}
+}
+
+// チャージ用の API（ラズパイ）は Bearer では入れない（Entra は PC の管理サイトだけ）
+func TestChargeRoutesIgnoreBearer(t *testing.T) {
+	h := testRouterWithEntra("secret", "charge-pass",
+		fakeVerifier{"good": "x24042xx@aitech.ac.jp"}, fakeAllow{"x24042xx@aitech.ac.jp": true})
+	for _, rt := range chargeRoutes {
+		if got := doBearer(h, rt.method, rt.path, "good"); got != http.StatusUnauthorized {
+			t.Errorf("%s %s Bearer: status = %d, want 401", rt.method, rt.path, got)
 		}
 	}
 }
