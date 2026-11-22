@@ -31,6 +31,22 @@ func (r *AdminAllowlistRepositoryImpl) Exists(ctx context.Context, upn string) (
 	return true, nil
 }
 
+func (r *AdminAllowlistRepositoryImpl) ExistsByStudentID(ctx context.Context, studentID string) (bool, error) {
+	if studentID == "" {
+		return false, nil // 学籍番号を持たない行（システムアカウント）には一致させない
+	}
+	executor := getExecutor(ctx, r.db)
+	var one int
+	err := executor.QueryRowContext(ctx, "SELECT 1 FROM admin_allowlist WHERE student_id = ? LIMIT 1", studentID).Scan(&one)
+	if err == sql.ErrNoRows {
+		return false, nil
+	}
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (r *AdminAllowlistRepositoryImpl) List(ctx context.Context) ([]repository.AdminAllow, error) {
 	executor := getExecutor(ctx, r.db)
 	rows, err := executor.QueryContext(ctx, `

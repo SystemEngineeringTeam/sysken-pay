@@ -11,6 +11,7 @@ import (
 	domainpc "sysken-pay-api/app/domain/object/paymentcard"
 	domainuser "sysken-pay-api/app/domain/object/user"
 	apierrors "sysken-pay-api/app/ui/api/pkg/errors"
+	"sysken-pay-api/app/ui/api/pkg/failurelimit"
 	"sysken-pay-api/app/usecase/paymentcard"
 
 	"github.com/go-chi/chi/v5"
@@ -34,14 +35,14 @@ func NewHandler(issue paymentcard.IssueUseCase, resolve paymentcard.ResolveUseCa
 	return &handlerImpl{
 		issue:   issue,
 		resolve: resolve,
-		limiter: newFailureLimiter(maxFailures, failureWindow, blockDuration),
+		limiter: failurelimit.New(maxFailures, failureWindow, blockDuration),
 	}
 }
 
 type handlerImpl struct {
 	issue   paymentcard.IssueUseCase
 	resolve paymentcard.ResolveUseCase
-	limiter *failureLimiter
+	limiter *failurelimit.Limiter
 }
 
 type IssueResponse struct {

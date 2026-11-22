@@ -20,6 +20,8 @@ type AdminAllow struct {
 type AdminAllowlistRepository interface {
 	// Exists は UPN が許可リストにあるか
 	Exists(ctx context.Context, upn string) (bool, error)
+	// ExistsByStudentID は学籍番号（例: X24042）が許可リストにあるか。Pi の管理者バーコードの判定に使う
+	ExistsByStudentID(ctx context.Context, studentID string) (bool, error)
 	// List は許可リストを追加の古い順に返す
 	List(ctx context.Context) ([]AdminAllow, error)
 	// Insert は追加する。すでにあれば false（何も変えない）

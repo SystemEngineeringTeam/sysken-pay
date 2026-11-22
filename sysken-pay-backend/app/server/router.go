@@ -6,6 +6,7 @@ import (
 	"time"
 
 	api_adminallow "sysken-pay-api/app/ui/api/adminallow"
+	api_adminunlock "sysken-pay-api/app/ui/api/adminunlock"
 	api_balance "sysken-pay-api/app/ui/api/balance"
 	api_charge "sysken-pay-api/app/ui/api/charge"
 	api_item "sysken-pay-api/app/ui/api/item"
@@ -32,6 +33,8 @@ type handlers struct {
 	member api_member.Handler
 	// adminAllow は管理サイトに Entra でログインしてよい人（許可リスト）の編集
 	adminAllow api_adminallow.Handler
+	// adminUnlock は管理者のシス研Payバーコードでの解除（ラズパイのチャージ画面・管理メニュー）
+	adminUnlock api_adminunlock.Handler
 	// health は DB につながっているかまで確かめる（health.NewCheck）
 	health http.HandlerFunc
 }
@@ -47,6 +50,8 @@ type routerConfig struct {
 	entra apimw.TokenVerifier
 	// adminAllowlist は Entra でログインした人が許可リストにいるかの確認
 	adminAllowlist apimw.AllowChecker
+	// sessions は管理者バーコードで解除したあとのトークン。nil なら Session はすべて拒否する
+	sessions *apimw.SessionStore
 }
 
 // newRouter はルーティングを組み立てる。
@@ -74,11 +79,13 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 		apimw.BasicAuth(cfg.adminUser, cfg.adminPassword),
 		apimw.EntraAuth(cfg.entra, cfg.adminAllowlist),
 	)
+	// 管理者バーコードで解除したあとの Session も通す。許可リストの編集（権限を増やす操作）だけは通さない
+	adminOrSession := apimw.WithSession(cfg.sessions, adminOnly)
 	// チャージはチャージ用パスワードか管理者パスワードのどちらでも通す
 	if cfg.chargePassword == "" {
 		slog.Warn("CHARGE_PASSWORD が設定されていないため、チャージは管理者パスワードでしか入れません")
 	}
-	chargeOrAdmin := apimw.BasicAuthAny(cfg.adminUser, cfg.adminPassword, cfg.chargePassword)
+	chargeOrAdmin := apimw.WithSession(cfg.sessions, apimw.BasicAuthAny(cfg.adminUser, cfg.adminPassword, cfg.chargePassword))
 
 	r.Route("/v1", func(r chi.Router) {
 		// 認証なし（キオスクで部員が使う）
@@ -96,7 +103,7 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 				h.paymentCard.Resolve(w, req)
 				return
 			}
-			adminOnly(http.HandlerFunc(h.member.List)).ServeHTTP(w, req)
+			adminOrSession(http.HandlerFunc(h.member.List)).ServeHTTP(w, req)
 		})
 
 		// チャージ用パスワードか管理者パスワードが必要
@@ -106,16 +113,26 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 			r.Post("/user/{user_id}/charge", h.charge.ChargeAmount)
 		})
 
-		// 管理者パスワードが必要
+		// 管理者のバーコードをかざして解除する（認証なし・失敗が続くと 429）。DELETE は解除を取り消す
+		r.Post("/admin/unlock", h.adminUnlock.Unlock)
+		r.Delete("/admin/unlock", h.adminUnlock.Lock)
+
+		// 管理サイトに Entra でログインしてよい人。最後の1人と自分自身は消せない。
+		// 権限を増やす操作なので、バーコードの Session では通さない（Entra か管理者パスワードだけ）
 		r.Group(func(r chi.Router) {
 			r.Use(adminOnly)
-			r.Get("/admin/verify", apimw.Verify)
-			// 管理サイトに Entra でログインしてよい人。最後の1人と自分自身は消せない
 			r.Get("/admin/allowlist", h.adminAllow.ListAllowed)
 			r.Post("/admin/allowlist", h.adminAllow.AddAllowed)
 			r.Delete("/admin/allowlist/{upn}", h.adminAllow.RemoveAllowed)
+		})
+
+		// 管理者パスワードか、管理者バーコードの Session が必要
+		r.Group(func(r chi.Router) {
+			r.Use(adminOrSession)
+			r.Get("/admin/verify", apimw.Verify)
 			r.Post("/user", h.user.RegisterUser)
-			r.Patch("/user/{user_id}", h.user.UpdateUser)
+			// HRI の発行と作り直しは同じ。バーコードの Session でも通す（ラズパイの再発行用。リスクは docs/phone-payment.md）（新しく発行すると古いものは使えなくなる）
+			r.Post("/user/{user_id}/hri", h.paymentCard.Issue)
 			r.Post("/user/{user_id}/charge/cancel", h.charge.ChargeCancel)
 			r.Post("/user/{user_id}/purchase/cancel", h.purchase.CancelPurchase)
 			r.Post("/item", h.item.ResisterItem)
@@ -123,8 +140,14 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 			// 商品は消さずに無効にする（買えなくなる）。有効に戻せる
 			r.Post("/item/{jan_code}/disable", h.item.DisableItem)
 			r.Post("/item/{jan_code}/enable", h.item.EnableItem)
-			// HRI の発行と作り直しは同じ（新しく発行すると古いものは使えなくなる）
-			r.Post("/user/{user_id}/hri", h.paymentCard.Issue)
+		})
+
+		// ユーザーの登録内容・利用状態と、残高を戻す・記録を消す操作は、
+		// バーコードの Session では通さない（Entra か管理者パスワードだけ）。管理者のバーコードを
+		// 写し取られても、ユーザーを消されたり返金されたりしないようにする
+		r.Group(func(r chi.Router) {
+			r.Use(adminOnly)
+			r.Patch("/user/{user_id}", h.user.UpdateUser)
 			// 退部・卒業のとき（docs/phone-payment.md の「退部・卒業」）。ユーザー一覧は上の GET /user
 			r.Post("/user/{user_id}/refund", h.member.Refund)
 			r.Post("/user/{user_id}/stop", h.member.Stop)

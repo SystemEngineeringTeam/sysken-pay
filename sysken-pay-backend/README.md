@@ -29,7 +29,7 @@ make login    # MySQL にログイン
 お金を動かす・登録内容を変える API は BASIC 認証（ユーザー名は `ADMIN_USER`）が必要です。
 
 - チャージ用パスワード（`CHARGE_PASSWORD`）か管理者パスワードで通る: チャージ、`GET /v1/charge/verify`
-- 管理者パスワード（`ADMIN_PASSWORD`）か、Entra の ID トークン（`Authorization: Bearer`。許可リストにいる人だけ）で通る: それ以外のすべて（許可リストの編集 `/v1/admin/allowlist` も含む。ユーザー登録・更新・一覧・返金・利用停止、商品登録・更新、バーコードの発行、チャージ取消、購入取消、`GET /v1/admin/verify` など）。Entra は PC の管理サイトだけが使い、ラズパイとチャージの画面は今まで通りパスワード。許可リスト（`admin_allowlist`、migration `007`）の最初の 1 人は、管理者パスワードで管理サイトに入って足す
+- 管理者パスワード（`ADMIN_PASSWORD`）か、Entra の ID トークン（`Authorization: Bearer`。許可リストにいる人だけ）で通る: それ以外のすべて（許可リストの編集 `/v1/admin/allowlist` も含む。ユーザー登録・更新・一覧・返金・利用停止、商品登録・更新、バーコードの発行、チャージ取消、購入取消、`GET /v1/admin/verify` など）。Entra は PC の管理サイトだけが使う。ラズパイは今まで通りパスワードに加えて、**管理者に登録された人の支払い用バーコードをかざす**と短い間だけ解除できる（`POST /v1/admin/unlock` が返す `Authorization: Session <token>`。10 分で切れ、許可リストの編集・ユーザーの更新/削除/停止/再開/非表示/返金には使えない。`docs/phone-payment.md` の「管理者バーコードでの解除」）。許可リスト（`admin_allowlist`、migration `007`）の最初の 1 人は、管理者パスワードで管理サイトに入って足す
 - 認証なし（キオスクで部員が使う）: ユーザー・残高・履歴・商品の取得、購入、ヘルスチェック
 
 MySQL（53306）はラズパイの中からだけ届きます。

@@ -46,6 +46,7 @@ paths:
       security:
         - adminBasicAuth: []
         - entraBearer: []
+        - adminSession: []
         - {}
       parameters:
         - name: hri
@@ -103,6 +104,7 @@ paths:
       security:
         - adminBasicAuth: []
         - entraBearer: []
+        - adminSession: []
       requestBody:
         required: true
         content:
@@ -279,6 +281,7 @@ paths:
       # チャージ用パスワード（CHARGE_PASSWORD）でも管理者パスワードでも通る
       security:
         - adminBasicAuth: []
+        - adminSession: []
       parameters:
         - $ref: "#/components/parameters/UserId"
       requestBody:
@@ -323,6 +326,7 @@ paths:
       security:
         - adminBasicAuth: []
         - entraBearer: []
+        - adminSession: []
       parameters:
         - $ref: "#/components/parameters/UserId"
       requestBody:
@@ -407,6 +411,7 @@ paths:
       security:
         - adminBasicAuth: []
         - entraBearer: []
+        - adminSession: []
       parameters:
         - $ref: "#/components/parameters/UserId"
       requestBody:
@@ -517,6 +522,7 @@ paths:
       security:
         - adminBasicAuth: []
         - entraBearer: []
+        - adminSession: []
       requestBody:
         required: true
         content:
@@ -551,6 +557,7 @@ paths:
       security:
         - adminBasicAuth: []
         - entraBearer: []
+        - adminSession: []
       requestBody:
         required: true
         content:
@@ -655,6 +662,7 @@ paths:
       security:
         - adminBasicAuth: []
         - entraBearer: []
+        - adminSession: []
       parameters:
         - $ref: "#/components/parameters/JanCode"
       responses:
@@ -699,6 +707,7 @@ paths:
       security:
         - adminBasicAuth: []
         - entraBearer: []
+        - adminSession: []
       parameters:
         - $ref: "#/components/parameters/JanCode"
       responses:
@@ -748,6 +757,7 @@ paths:
       security:
         - adminBasicAuth: []
         - entraBearer: []
+        - adminSession: []
       parameters:
         - $ref: "#/components/parameters/UserId"
       responses:
@@ -1019,16 +1029,86 @@ paths:
     get:
       tags: [admin]
       summary: 管理者パスワードの確認
-      description: BASIC 認証が通れば 204 を返す。フロントのパスワード入力画面で、パスワードが正しいかを確かめるのに使う
+      description: BASIC 認証（または Session）が通れば 204 を返す。フロントのパスワード入力画面で、パスワードが正しいかを確かめるのに使う
       operationId: verifyAdmin
       security:
         - adminBasicAuth: []
         - entraBearer: []
+        - adminSession: []
       responses:
         "204":
           description: 認証成功
         "401":
           $ref: "#/components/responses/Unauthorized"
+
+  /v1/admin/unlock:
+    post:
+      tags: [admin]
+      summary: 管理者バーコードで解除する（Pi 用）
+      description: |
+        支払い用バーコード（HRI）の持ち主が管理者の許可リストの学籍番号にいれば、短いセッショントークンを返す。
+        パスワードの代わりに使える（パスワード入力は予備として残る）。認証は不要（バーコードそのものが認証）。
+        失敗が続くと 429（GET /v1/user?hri= と同じ上限を使う）。バーコードはログに出さない。
+      operationId: unlockAdmin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [hri]
+              properties:
+                hri:
+                  type: string
+                  description: 支払い用バーコードの値（SP + 16 文字）
+      responses:
+        "200":
+          description: 解除できた
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  token:
+                    type: string
+                    description: "Authorization: Session <token> で送る"
+                  expires_in:
+                    type: integer
+                    description: 操作がないときに切れるまでの秒数
+        "400":
+          description: バーコードの形式が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: 管理者ではない・利用停止中
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "404":
+          description: 使えない・無いバーコード
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "429":
+          description: 失敗が続いたので、しばらく受け付けない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    delete:
+      tags: [admin]
+      summary: セッションを破棄する（ホームに戻るとき）
+      description: "`Authorization: Session <token>` のトークンを取り消す。トークンが無くても 204。"
+      operationId: lockAdmin
+      responses:
+        "204":
+          description: 取り消した
 
   /v1/charge/verify:
     get:
@@ -1040,6 +1120,7 @@ paths:
       operationId: verifyCharge
       security:
         - adminBasicAuth: []
+        - adminSession: []
       responses:
         "204":
           description: 認証成功
@@ -1079,6 +1160,20 @@ components:
       description: |
         管理者パスワードによる BASIC 認証（ユーザー名は ADMIN_USER、既定 "admin"）。
         ユーザー登録・更新、商品登録・更新、チャージ、チャージ取消、購入取消で必要。
+    entraBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Entra ID の ID トークン（PC の管理サイト用）。許可リスト（admin_allowlist）にある UPN だけ通る。
+    adminSession:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: |
+        管理者バーコードで解除したセッション。`Authorization: Session <token>` の形で送る（Bearer は Entra 用なので別の名前）。
+        トークンは POST /v1/admin/unlock で受け取る。10 分操作がないか、発行から 1 時間で切れる。
+        **許可リストの編集（/v1/admin/allowlist）には使えない**（権限を増やす操作は Basic か Entra だけ）。
 
   responses:
     Unauthorized:

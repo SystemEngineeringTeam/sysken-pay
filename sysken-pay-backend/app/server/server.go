@@ -14,6 +14,7 @@ import (
 	"sysken-pay-api/app/infra/repository"
 	"sysken-pay-api/app/infra/transaction"
 	api_adminallow "sysken-pay-api/app/ui/api/adminallow"
+	api_adminunlock "sysken-pay-api/app/ui/api/adminunlock"
 	api_balance "sysken-pay-api/app/ui/api/balance"
 	api_charge "sysken-pay-api/app/ui/api/charge"
 	"sysken-pay-api/app/ui/api/health"
@@ -24,6 +25,7 @@ import (
 	api_purchase "sysken-pay-api/app/ui/api/purchase"
 	api_user "sysken-pay-api/app/ui/api/user"
 	"sysken-pay-api/app/usecase/adminallow"
+	"sysken-pay-api/app/usecase/adminunlock"
 	"sysken-pay-api/app/usecase/balance"
 	"sysken-pay-api/app/usecase/charge"
 	"sysken-pay-api/app/usecase/item"
@@ -90,6 +92,8 @@ func Run(db *sql.DB) error {
 	paymentCardHandler := api_paymentcard.NewHandler(issuePaymentCardUseCase, resolvePaymentCardUseCase)
 	memberHandler := api_member.NewHandler(memberUseCase)
 	adminAllowHandler := api_adminallow.NewHandler(adminAllowUseCase)
+	sessions := apimw.NewSessionStore()
+	adminUnlockHandler := api_adminunlock.NewHandler(adminunlock.NewUseCase(resolvePaymentCardUseCase, adminAllowlistRepo), sessions)
 
 	// Entra ID ログイン。テナント ID かクライアント ID が未設定なら nil（Bearer はすべて拒否）
 	var entraVerifier apimw.TokenVerifier
@@ -106,6 +110,7 @@ func Run(db *sql.DB) error {
 		paymentCard: paymentCardHandler,
 		member:      memberHandler,
 		adminAllow:  adminAllowHandler,
+		adminUnlock: adminUnlockHandler,
 		health:      health.NewCheck(db),
 	}, routerConfig{
 		adminUser:      config.AdminUser(),
@@ -115,6 +120,7 @@ func Run(db *sql.DB) error {
 		timeout:        requestTimeout,
 		entra:          entraVerifier,
 		adminAllowlist: adminAllowlistRepo,
+		sessions:       sessions,
 	})
 
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGTERM, os.Interrupt)
