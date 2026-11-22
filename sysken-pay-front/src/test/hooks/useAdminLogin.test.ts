@@ -2,14 +2,18 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderHook, act } from "@testing-library/react";
 import { useAdminLogin } from "../../hooks/useAdminLogin";
 
+import { ApiError } from "../../adapter/api/ApiError";
+
 const mockVerify = vi.hoisted(() => vi.fn());
+const mockUnlock = vi.hoisted(() => vi.fn());
 
 vi.mock("../../adapter/repository/AuthRepositoryImpl", () => ({
-  AuthRepositoryImpl: { verify: mockVerify },
+  AuthRepositoryImpl: { verify: mockVerify, unlock: mockUnlock },
 }));
 
 beforeEach(() => {
   mockVerify.mockReset();
+  mockUnlock.mockReset();
 });
 
 describe("useAdminLogin", () => {
@@ -71,5 +75,51 @@ describe("useAdminLogin（どの画面のパスワードか）", () => {
       await charge.result.current.login("c");
     });
     expect(mockVerify).toHaveBeenLastCalledWith("charge", "c");
+  });
+});
+
+describe("useAdminLogin（管理者バーコード）", () => {
+  const HRI = "SP7Q2KX9MDRA4TW8YZ";
+
+  it("支払い用バーコードの形なら、パスワードの確認ではなく解除をする", async () => {
+    mockUnlock.mockResolvedValue(undefined);
+    const { result } = renderHook(() => useAdminLogin("charge"));
+    let ok = false;
+    await act(async () => {
+      ok = await result.current.login(HRI);
+    });
+    expect(ok).toBe(true);
+    expect(mockUnlock).toHaveBeenCalledWith(HRI);
+    expect(mockVerify).not.toHaveBeenCalled();
+  });
+
+  it("管理者でないバーコードは false で、パスワードに誘導する", async () => {
+    mockUnlock.mockRejectedValue(new ApiError("not an admin", 403));
+    const { result } = renderHook(() => useAdminLogin());
+    let ok = true;
+    await act(async () => {
+      ok = await result.current.login(HRI);
+    });
+    expect(ok).toBe(false);
+    expect(result.current.error).toContain("管理者として登録されていない");
+  });
+
+  it("失敗が続いて 429 のときは、止めている旨を出す", async () => {
+    mockUnlock.mockRejectedValue(new ApiError("too many", 429));
+    const { result } = renderHook(() => useAdminLogin());
+    await act(async () => {
+      await result.current.login(HRI);
+    });
+    expect(result.current.error).toContain("1分ほど");
+  });
+
+  it("バーコードの形でない文字列は、これまで通りパスワードとして確かめる", async () => {
+    mockVerify.mockResolvedValue(true);
+    const { result } = renderHook(() => useAdminLogin());
+    await act(async () => {
+      await result.current.login("hunter2");
+    });
+    expect(mockUnlock).not.toHaveBeenCalled();
+    expect(mockVerify).toHaveBeenCalledWith("admin", "hunter2");
   });
 });

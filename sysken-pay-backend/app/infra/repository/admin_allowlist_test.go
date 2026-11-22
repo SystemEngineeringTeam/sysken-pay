@@ -85,3 +85,24 @@ func TestAdminAllowlist_LockAllとDelete(t *testing.T) {
 		t.Fatalf("ok=%v err=%v", ok, err)
 	}
 }
+
+func TestAdminAllowlist_ExistsByStudentID(t *testing.T) {
+	repo, mock := newAllowlistRepoForTest(t)
+	mock.ExpectQuery("FROM admin_allowlist WHERE student_id").WithArgs("X24042").
+		WillReturnRows(sqlmock.NewRows([]string{"1"}).AddRow(1))
+	mock.ExpectQuery("FROM admin_allowlist WHERE student_id").WithArgs("K23099").WillReturnError(sql.ErrNoRows)
+
+	if ok, err := repo.ExistsByStudentID(context.Background(), "X24042"); err != nil || !ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	if ok, err := repo.ExistsByStudentID(context.Background(), "K23099"); err != nil || ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	// 空の学籍番号は DB に問い合わせず false（NULL の行に一致させない）
+	if ok, err := repo.ExistsByStudentID(context.Background(), ""); err != nil || ok {
+		t.Fatalf("ok=%v err=%v", ok, err)
+	}
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Fatal(err)
+	}
+}

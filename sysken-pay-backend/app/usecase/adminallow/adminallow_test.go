@@ -27,6 +27,14 @@ func (f *fakeRepo) Exists(_ context.Context, upn string) (bool, error) {
 	_, ok := f.rows[upn]
 	return ok, nil
 }
+func (f *fakeRepo) ExistsByStudentID(_ context.Context, id string) (bool, error) {
+	for _, r := range f.rows {
+		if r.StudentID != "" && r.StudentID == id {
+			return true, nil
+		}
+	}
+	return false, nil
+}
 func (f *fakeRepo) List(context.Context) ([]repository.AdminAllow, error) {
 	var l []repository.AdminAllow
 	for _, r := range f.rows {

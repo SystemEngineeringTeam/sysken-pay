@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -43,7 +44,12 @@ func (stub) Unhide(w http.ResponseWriter, r *http.Request)               { ok(w,
 func (stub) Delete(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
 func (stub) ListAllowed(w http.ResponseWriter, r *http.Request)          { ok(w, r) }
 func (stub) AddAllowed(w http.ResponseWriter, r *http.Request)           { ok(w, r) }
+func (stub) Unlock(w http.ResponseWriter, r *http.Request)               { ok(w, r) }
+func (stub) Lock(w http.ResponseWriter, r *http.Request)                 { ok(w, r) }
 func (stub) RemoveAllowed(w http.ResponseWriter, r *http.Request)        { ok(w, r) }
+
+// testSessions はテスト用の解除トークンの置き場（router_test のルーターが共有する）
+var testSessions = apimw.NewSessionStore()
 
 func testRouter(password string) http.Handler {
 	return testRouterWithCharge(password, "")
@@ -56,7 +62,7 @@ func testRouterWithCharge(password, chargePassword string) http.Handler {
 func testRouterWithEntra(password, chargePassword string, entra apimw.TokenVerifier, allow apimw.AllowChecker) http.Handler {
 	s := stub{}
 	return newRouter(
-		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, member: s, adminAllow: s, health: ok},
+		handlers{user: s, item: s, charge: s, purchase: s, balance: s, paymentCard: s, member: s, adminAllow: s, adminUnlock: s, health: ok},
 		routerConfig{
 			adminUser:      "admin",
 			adminPassword:  password,
@@ -65,6 +71,7 @@ func testRouterWithEntra(password, chargePassword string, entra apimw.TokenVerif
 			timeout:        time.Second,
 			entra:          entra,
 			adminAllowlist: allow,
+			sessions:       testSessions,
 		},
 	)
 }
@@ -280,6 +287,86 @@ func TestChargeRoutesIgnoreBearer(t *testing.T) {
 	for _, rt := range chargeRoutes {
 		if got := doBearer(h, rt.method, rt.path, "good"); got != http.StatusUnauthorized {
 			t.Errorf("%s %s Bearer: status = %d, want 401", rt.method, rt.path, got)
+		}
+	}
+}
+
+// --- 管理者バーコードで解除した Session ---
+
+func doSession(h http.Handler, method, path, token string) int {
+	req := httptest.NewRequest(method, path, nil)
+	req.Header.Set("Authorization", "Session "+token)
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	return rec.Code
+}
+
+// 解除した Session は、管理者の API とチャージの API に通る。ただし許可リストの編集（権限を増やす操作）は通さない
+// Session では通さない操作: 許可リストの編集、ユーザーの更新・削除・停止・再開・非表示・返金
+func sessionDenied(method, path string) bool {
+	if strings.HasPrefix(path, "/v1/admin/allowlist") {
+		return true
+	}
+	if method == http.MethodPatch && strings.HasPrefix(path, "/v1/user/") {
+		return true
+	}
+	if method == http.MethodDelete && strings.HasPrefix(path, "/v1/user/") {
+		return true
+	}
+	for _, suffix := range []string{"/refund", "/stop", "/resume", "/hide", "/unhide"} {
+		if method == http.MethodPost && strings.HasSuffix(path, suffix) {
+			return true
+		}
+	}
+	return false
+}
+
+func TestSessionRoutes(t *testing.T) {
+	h := testRouterWithCharge("secret", "charge-pass")
+	tok, err := testSessions.Issue()
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, rt := range protectedRoutes {
+		got := doSession(h, rt.method, rt.path, tok)
+		if sessionDenied(rt.method, rt.path) {
+			if got != http.StatusUnauthorized {
+				t.Errorf("%s %s Session で通ってはいけない: status = %d, want 401", rt.method, rt.path, got)
+			}
+			continue
+		}
+		if got == http.StatusUnauthorized || got == http.StatusNotFound || got == http.StatusMethodNotAllowed {
+			t.Errorf("%s %s Session: status = %d, want 2xx", rt.method, rt.path, got)
+		}
+	}
+	for _, rt := range chargeRoutes {
+		if got := doSession(h, rt.method, rt.path, tok); got == http.StatusUnauthorized || got == http.StatusNotFound {
+			t.Errorf("%s %s Session: status = %d, want 2xx", rt.method, rt.path, got)
+		}
+	}
+}
+
+func TestSessionRoutesRejectInvalidOrRevoked(t *testing.T) {
+	h := testRouterWithCharge("secret", "charge-pass")
+	all := append(append([]struct{ method, path string }{}, protectedRoutes...), chargeRoutes...)
+	for _, rt := range all {
+		if got := doSession(h, rt.method, rt.path, "forged"); got != http.StatusUnauthorized {
+			t.Errorf("%s %s 不正な Session: status = %d, want 401", rt.method, rt.path, got)
+		}
+	}
+	tok, _ := testSessions.Issue()
+	testSessions.Revoke(tok)
+	if got := doSession(h, http.MethodGet, "/v1/admin/verify", tok); got != http.StatusUnauthorized {
+		t.Errorf("取り消した Session: status = %d, want 401", got)
+	}
+}
+
+// 解除の入口は認証なし（バーコードそのものが認証）。パスワード・Session がなくても届く
+func TestUnlockRouteIsOpen(t *testing.T) {
+	h := testRouter("secret")
+	for _, method := range []string{http.MethodPost, http.MethodDelete} {
+		if got := do(h, method, "/v1/admin/unlock", false, ""); got != http.StatusOK {
+			t.Errorf("%s /v1/admin/unlock: status = %d, want 200", method, got)
 		}
 	}
 }

@@ -17,6 +17,7 @@ import (
 
 	domainpc "sysken-pay-api/app/domain/object/paymentcard"
 	domainuser "sysken-pay-api/app/domain/object/user"
+	"sysken-pay-api/app/ui/api/pkg/failurelimit"
 	"sysken-pay-api/app/usecase/paymentcard"
 
 	"github.com/go-chi/chi/v5"
@@ -148,7 +149,7 @@ func TestResolve_DoesNotLogCode(t *testing.T) {
 func TestResolve_BlocksAfterRepeatedFailures(t *testing.T) {
 	h := NewHandler(nil, fakeResolve{err: paymentcard.ErrCardNotFound}).(*handlerImpl)
 	now := time.Date(2026, 11, 18, 12, 0, 0, 0, time.UTC)
-	h.limiter.now = func() time.Time { return now }
+	h.limiter.SetClock(func() time.Time { return now })
 	r := router(h)
 
 	for i := 0; i < maxFailures; i++ {
@@ -171,8 +172,8 @@ func TestResolve_BlocksAfterRepeatedFailures(t *testing.T) {
 
 func TestLimiter_OldFailuresExpire(t *testing.T) {
 	now := time.Date(2026, 11, 18, 12, 0, 0, 0, time.UTC)
-	l := newFailureLimiter(3, time.Minute, time.Minute)
-	l.now = func() time.Time { return now }
+	l := failurelimit.New(3, time.Minute, time.Minute)
+	l.SetClock(func() time.Time { return now })
 
 	l.Fail()
 	l.Fail()
