@@ -65,6 +65,7 @@ func Run(db *sql.DB) error {
 	updateItemUseCase := item.NewUpdateItemUseCase(itemRepo)
 	findItemByJanCodeUseCase := item.NewFindItemByJanCodeUseCase(itemRepo)
 	getAllItemsUseCase := item.NewGetAllItemsUseCase(itemRepo)
+	setItemDisabledUseCase := item.NewSetItemDisabledUseCase(itemRepo)
 	chargeAmountUseCase := charge.NewChargeAmountUseCase(chargeRepo, memberRepo)
 	chargeCancelUseCase := charge.NewChargeCancelUseCase(chargeRepo)
 	createPurchaseUseCase := purchase.NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, memberRepo, txManager)
@@ -77,7 +78,7 @@ func Run(db *sql.DB) error {
 
 	// Handler
 	userHandler := api_user.NewUserHandler(getUserUseCase, registerUserUseCase, updateUserUseCase)
-	itemHandler := api_item.NewItemHandler(registerItemUseCase, updateItemUseCase, findItemByJanCodeUseCase, getAllItemsUseCase)
+	itemHandler := api_item.NewItemHandler(registerItemUseCase, updateItemUseCase, findItemByJanCodeUseCase, getAllItemsUseCase, setItemDisabledUseCase)
 	chargeHandler := api_charge.NewChargeHandler(chargeAmountUseCase, chargeCancelUseCase)
 	purchaseHandler := api_purchase.NewPurchaseHandler(createPurchaseUseCase, cancelPurchaseUseCase)
 	balanceHandler := api_balance.NewBalanceHandler(getBalanceUseCase, getPurchaseHistoriesUseCase)

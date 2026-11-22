@@ -90,6 +90,7 @@ make migrate-up        # まだのものだけ、番号の順に当てる
 - 新しく作る DB には `db/init.sql` の内容が入るので、テーブルを足したら `init.sql` にも同じものを足す
 - 昔の `make migrate FILE=...` は廃止しました（打つと `make migrate-up` を使うように案内が出て止まります）
 - 本番（ラズパイ）を新しくするときは、`make backup` → `make migrate-up` → API を作り直す、の順にする（`migrate-up` が番号の順にすべて当てるので、途中を飛ばして API が 500 になることを防げます）
+- `006_item_disabled.sql` は `item.deleted_at` を `disabled_at` に改名します（データは変わりません）。**順番を逆にする（API を先に作り直す）と、新しい API が列名違いで 500 になります**。マイグレーションと API の入れ替えの数秒は、古い API が 500 を返すので、無人運転の時間帯を避けます
 
 ### 最初の1回だけ：今の DB に印をつける（`make migrate-baseline`）
 

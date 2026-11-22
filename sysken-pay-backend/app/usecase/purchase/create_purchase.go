@@ -69,7 +69,8 @@ func (s *CreatePurchaseServiceImpl) CreatePurchase(
 		if err != nil {
 			return nil, err
 		}
-		if it == nil {
+		// 無効の商品は買えない（リポジトリも返さないが、ここでも止める）
+		if it == nil || it.Disabled() {
 			return nil, fmt.Errorf("%w: itemID=%d", ErrItemNotFound, input.ItemID)
 		}
 		totalAmount += it.Price() * input.Quantity

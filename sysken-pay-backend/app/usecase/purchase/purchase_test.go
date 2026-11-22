@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	domainbalance "sysken-pay-api/app/domain/object/balance"
 	domainitem "sysken-pay-api/app/domain/object/item"
@@ -46,8 +47,11 @@ func (m *mockItemRepo) InsertItem(ctx context.Context, item *domainitem.Item) (*
 func (m *mockItemRepo) UpdateItem(ctx context.Context, item *domainitem.Item) (*domainitem.Item, error) {
 	return m.updateFunc(ctx, item)
 }
-func (m *mockItemRepo) GetAllItems(ctx context.Context) ([]*domainitem.Item, error) {
+func (m *mockItemRepo) GetAllItems(ctx context.Context, includeDisabled bool) ([]*domainitem.Item, error) {
 	return m.getAllFunc(ctx)
+}
+func (m *mockItemRepo) SetItemDisabled(ctx context.Context, janCode string, disabled bool) (bool, bool, error) {
+	return false, false, nil
 }
 
 type mockBalanceRepo struct {
@@ -236,6 +240,30 @@ func TestCreatePurchase_ItemNotFound(t *testing.T) {
 	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, activeMember(), &mockTxManager{})
 	if _, err := uc.CreatePurchase(context.Background(), "user-1", inputs); !errors.Is(err, ErrItemNotFound) {
 		t.Errorf("CreatePurchase with missing item should return ErrItemNotFound, got: %v", err)
+	}
+}
+
+// 無効の商品は、リポジトリが返してきても買えない（お金は動かず、購入も保存されない）
+func TestCreatePurchase_DisabledItemRefused(t *testing.T) {
+	inputs := []PurchaseItemInput{{ItemID: 1, Quantity: 1}}
+	disabled := newTestItem(100)
+	if err := disabled.SetDisabledAt(time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	itemRepo := &mockItemRepo{
+		getByIDFunc: func(_ context.Context, _ int) (*domainitem.Item, error) { return disabled, nil },
+	}
+	balanceRepo := &mockBalanceRepo{}
+	purchaseRepo := &mockPurchaseRepo{
+		createFunc: func(context.Context, *domainpurchase.Purchase) (*domainpurchase.Purchase, error) {
+			t.Error("無効の商品なのに購入が保存された")
+			return nil, nil
+		},
+	}
+
+	uc := NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, activeMember(), &mockTxManager{})
+	if _, err := uc.CreatePurchase(context.Background(), "user-1", inputs); !errors.Is(err, ErrItemNotFound) {
+		t.Errorf("CreatePurchase with disabled item should return ErrItemNotFound, got: %v", err)
 	}
 }
 

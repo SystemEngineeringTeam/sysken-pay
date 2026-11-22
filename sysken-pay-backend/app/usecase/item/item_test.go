@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"testing"
+	"time"
 
 	domainitem "sysken-pay-api/app/domain/object/item"
 )
@@ -15,7 +16,8 @@ type mockItemRepo struct {
 	updateFunc       func(ctx context.Context, item *domainitem.Item) (*domainitem.Item, error)
 	getByIDFunc      func(ctx context.Context, id int) (*domainitem.Item, error)
 	getByJanCodeFunc func(ctx context.Context, janCode string) (*domainitem.Item, error)
-	getAllFunc        func(ctx context.Context) ([]*domainitem.Item, error)
+	getAllFunc       func(ctx context.Context, includeDisabled bool) ([]*domainitem.Item, error)
+	setDisabledFunc  func(ctx context.Context, janCode string, disabled bool) (bool, bool, error)
 }
 
 func (m *mockItemRepo) InsertItem(ctx context.Context, item *domainitem.Item) (*domainitem.Item, error) {
@@ -30,8 +32,11 @@ func (m *mockItemRepo) GetItemByID(ctx context.Context, id int) (*domainitem.Ite
 func (m *mockItemRepo) GetItemByJanCode(ctx context.Context, janCode string) (*domainitem.Item, error) {
 	return m.getByJanCodeFunc(ctx, janCode)
 }
-func (m *mockItemRepo) GetAllItems(ctx context.Context) ([]*domainitem.Item, error) {
-	return m.getAllFunc(ctx)
+func (m *mockItemRepo) GetAllItems(ctx context.Context, includeDisabled bool) ([]*domainitem.Item, error) {
+	return m.getAllFunc(ctx, includeDisabled)
+}
+func (m *mockItemRepo) SetItemDisabled(ctx context.Context, janCode string, disabled bool) (bool, bool, error) {
+	return m.setDisabledFunc(ctx, janCode, disabled)
 }
 
 const validJAN13 = "4901234567894"
@@ -231,12 +236,12 @@ func TestGetAllItems_Success(t *testing.T) {
 	i1, _ := domainitem.NewItem(validJAN13, "コーラ", 150)
 	i2, _ := domainitem.NewItem(validJAN8, "パン", 200)
 	repo := &mockItemRepo{
-		getAllFunc: func(_ context.Context) ([]*domainitem.Item, error) {
+		getAllFunc: func(_ context.Context, _ bool) ([]*domainitem.Item, error) {
 			return []*domainitem.Item{i1, i2}, nil
 		},
 	}
 	uc := NewGetAllItemsUseCase(repo)
-	result, err := uc.GetAllItems(context.Background())
+	result, err := uc.GetAllItems(context.Background(), false)
 	if err != nil {
 		t.Fatalf("GetAllItems should succeed: %v", err)
 	}
@@ -247,12 +252,12 @@ func TestGetAllItems_Success(t *testing.T) {
 
 func TestGetAllItems_Empty(t *testing.T) {
 	repo := &mockItemRepo{
-		getAllFunc: func(_ context.Context) ([]*domainitem.Item, error) {
+		getAllFunc: func(_ context.Context, _ bool) ([]*domainitem.Item, error) {
 			return []*domainitem.Item{}, nil
 		},
 	}
 	uc := NewGetAllItemsUseCase(repo)
-	result, err := uc.GetAllItems(context.Background())
+	result, err := uc.GetAllItems(context.Background(), false)
 	if err != nil {
 		t.Fatalf("GetAllItems should succeed with empty list: %v", err)
 	}
@@ -263,12 +268,83 @@ func TestGetAllItems_Empty(t *testing.T) {
 
 func TestGetAllItems_RepoError(t *testing.T) {
 	repo := &mockItemRepo{
-		getAllFunc: func(_ context.Context) ([]*domainitem.Item, error) {
+		getAllFunc: func(_ context.Context, _ bool) ([]*domainitem.Item, error) {
 			return nil, errors.New("db error")
 		},
 	}
 	uc := NewGetAllItemsUseCase(repo)
-	if _, err := uc.GetAllItems(context.Background()); err == nil {
+	if _, err := uc.GetAllItems(context.Background(), false); err == nil {
 		t.Error("GetAllItems should propagate repo error")
+	}
+}
+
+// --- Disable / Enable ---
+
+func TestSetItemDisabled(t *testing.T) {
+	tests := []struct {
+		name    string
+		disable bool
+		repo    func(context.Context, string, bool) (bool, bool, error)
+		want    error // nil なら成功
+	}{
+		{"無効にできる", true, func(_ context.Context, _ string, d bool) (bool, bool, error) {
+			if !d {
+				t.Error("disabled=true で呼ばれるはず")
+			}
+			return true, true, nil
+		}, nil},
+		{"有効に戻せる", false, func(_ context.Context, _ string, d bool) (bool, bool, error) {
+			if d {
+				t.Error("disabled=false で呼ばれるはず")
+			}
+			return true, true, nil
+		}, nil},
+		{"商品が無ければ ErrItemNotFound", true, func(context.Context, string, bool) (bool, bool, error) { return false, false, nil }, ErrItemNotFound},
+		{"すでに無効なら ErrAlreadyDisabled", true, func(context.Context, string, bool) (bool, bool, error) { return true, false, nil }, ErrAlreadyDisabled},
+		{"無効でなければ ErrNotDisabled", false, func(context.Context, string, bool) (bool, bool, error) { return true, false, nil }, ErrNotDisabled},
+		{"DB エラーはそのまま返す", true, func(context.Context, string, bool) (bool, bool, error) {
+			return false, false, errors.New("db down")
+		}, errors.New("db down")},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			uc := NewSetItemDisabledUseCase(&mockItemRepo{setDisabledFunc: tt.repo})
+			var err error
+			if tt.disable {
+				err = uc.Disable(context.Background(), validJAN13)
+			} else {
+				err = uc.Enable(context.Background(), validJAN13)
+			}
+			switch {
+			case tt.want == nil && err != nil:
+				t.Errorf("成功するはず: %v", err)
+			case tt.want != nil && err == nil:
+				t.Errorf("%v になるはず", tt.want)
+			case tt.want != nil && errors.Is(tt.want, tt.want) && err.Error() != tt.want.Error() && !errors.Is(err, tt.want):
+				t.Errorf("err = %v, want %v", err, tt.want)
+			}
+		})
+	}
+}
+
+func TestSetItemDisabled_InvalidJanCode(t *testing.T) {
+	// JAN が不正なら DB に触らない（setDisabledFunc が nil のままなので、呼ばれると panic する）
+	uc := NewSetItemDisabledUseCase(&mockItemRepo{})
+	if err := uc.Disable(context.Background(), "20K24132"); !errors.Is(err, ErrInvalidJanCode) {
+		t.Errorf("err = %v, want ErrInvalidJanCode", err)
+	}
+	if err := uc.Enable(context.Background(), ""); !errors.Is(err, ErrInvalidJanCode) {
+		t.Errorf("err = %v, want ErrInvalidJanCode", err)
+	}
+}
+
+// 無効の商品も JAN で引ける（Disabled() で区別する）。未登録は nil のまま
+func TestGetItemByJanCode_ReturnsDisabled(t *testing.T) {
+	it, _ := domainitem.NewItem(validJAN13, "コーラ", 150)
+	_ = it.SetDisabledAt(time.Now())
+	repo := &mockItemRepo{getByJanCodeFunc: func(context.Context, string) (*domainitem.Item, error) { return it, nil }}
+	got, err := NewFindItemByJanCodeUseCase(repo).GetItemByJanCode(context.Background(), validJAN13)
+	if err != nil || got == nil || !got.Disabled() {
+		t.Errorf("got=%v err=%v, 無効の商品が返るはず", got, err)
 	}
 }

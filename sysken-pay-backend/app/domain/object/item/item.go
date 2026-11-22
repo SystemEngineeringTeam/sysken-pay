@@ -14,7 +14,8 @@ type Item struct {
 	price     int
 	createdAt time.Time
 	updatedAt time.Time
-	deletedAt time.Time
+	// disabledAt は無効にした日時。ゼロ値なら有効（買える）
+	disabledAt time.Time
 }
 
 func (p *Item) SetID(id int) error {
@@ -125,21 +126,21 @@ func (u *Item) SetUpdatedAt(updatedAt time.Time) error {
 	return nil
 }
 
-func (u *Item) SetDeletedAt(deletedAt time.Time) error {
+func (u *Item) SetDisabledAt(disabledAt time.Time) error {
 
-	// deletedAtは未来の日付でないこと
-	if deletedAt.After(time.Now()) {
-		return errors.New("deletedAt must not be in the future")
+	// disabledAtは未来の日付でないこと
+	if disabledAt.After(time.Now()) {
+		return errors.New("disabledAt must not be in the future")
 	}
 
-	// deletedAtのタイムゾーンはJSTであること
+	// disabledAtのタイムゾーンはJSTであること
 	jst := time.FixedZone("Asia/Tokyo", 9*60*60)
-	jstDeletedAt := deletedAt.In(jst)
-	if !deletedAt.Equal(jstDeletedAt) {
-		return errors.New("deletedAt must be in JST")
+	jstDisabledAt := disabledAt.In(jst)
+	if !disabledAt.Equal(jstDisabledAt) {
+		return errors.New("disabledAt must be in JST")
 	}
 
-	u.deletedAt = deletedAt
+	u.disabledAt = disabledAt
 
 	return nil
 }
@@ -163,8 +164,13 @@ func (p *Item) CreatedAt() time.Time {
 func (p *Item) UpdatedAt() time.Time {
 	return p.updatedAt
 }
-func (p *Item) DeletedAt() time.Time {
-	return p.deletedAt
+func (p *Item) DisabledAt() time.Time {
+	return p.disabledAt
+}
+
+// Disabled は無効（買えない）かどうか
+func (p *Item) Disabled() bool {
+	return !p.disabledAt.IsZero()
 }
 
 func NewItemFromDB(
@@ -174,15 +180,15 @@ func NewItemFromDB(
 	price int,
 	createdAt time.Time,
 	updatedAt time.Time,
-	deletedAt time.Time,
+	disabledAt time.Time,
 ) (*Item, error) {
 	return &Item{
-		id:        id,
-		janCode:   janCode,
-		name:      name,
-		price:     price,
-		createdAt: createdAt,
-		updatedAt: updatedAt,
-		deletedAt: deletedAt,
+		id:         id,
+		janCode:    janCode,
+		name:       name,
+		price:      price,
+		createdAt:  createdAt,
+		updatedAt:  updatedAt,
+		disabledAt: disabledAt,
 	}, nil
 }

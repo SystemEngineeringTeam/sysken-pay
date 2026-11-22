@@ -573,7 +573,15 @@ paths:
     get:
       tags: [item]
       summary: 全商品取得
+      description: 既定では有効な商品だけを返す（キオスクの一覧用）。`include_disabled=true` で無効の商品も返す
       operationId: getAllItems
+      parameters:
+        - name: include_disabled
+          in: query
+          required: false
+          description: true なら無効の商品も含める
+          schema:
+            type: boolean
       responses:
         "200":
           description: 取得成功
@@ -592,6 +600,9 @@ paths:
     get:
       tags: [item]
       summary: JANコードで商品取得
+      description: |
+        無効の商品も 200 で返し、`disabled: true` で区別する（未登録の 404 とは別）。
+        無効の商品は購入できない。
       operationId: getItemByJanCode
       parameters:
         - name: jan_code
@@ -616,6 +627,93 @@ paths:
                 $ref: "#/components/schemas/ErrorResponse"
         "404":
           description: 商品が存在しない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/item/{jan_code}/disable:
+    post:
+      tags: [item]
+      summary: 商品を無効にする（買えなくする）
+      description: 商品は消さない。`enable` でいつでも有効に戻せる。
+      operationId: disableItem
+      security:
+        - adminBasicAuth: []
+      parameters:
+        - $ref: "#/components/parameters/JanCode"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetItemDisabledResponse"
+        "400":
+          description: JANコードの形式が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: 商品が登録されていない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: すでに無効になっている
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/item/{jan_code}/enable:
+    post:
+      tags: [item]
+      summary: 無効の商品を有効に戻す
+      operationId: enableItem
+      security:
+        - adminBasicAuth: []
+      parameters:
+        - $ref: "#/components/parameters/JanCode"
+      responses:
+        "200":
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SetItemDisabledResponse"
+        "400":
+          description: JANコードの形式が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: 商品が登録されていない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: 無効になっていない
           content:
             application/json:
               schema:
@@ -984,6 +1082,14 @@ components:
         pattern: "^[0-9]{2}[A-Za-z][0-9]+$"
         maxLength: 20
         example: "20K23099"
+    JanCode:
+      name: jan_code
+      in: path
+      required: true
+      description: JANコード（8桁または13桁。チェックデジット検証あり。不正な場合は400を返す）
+      schema:
+        type: string
+        pattern: "^[0-9]{8}$|^[0-9]{13}$"
 
   schemas:
     # ==================== Request Schemas ====================
@@ -1249,6 +1355,21 @@ components:
           type: string
         price:
           type: integer
+        disabled:
+          type: boolean
+          description: true なら無効の商品（買えない）。購入 API は 404 で断る
+
+    SetItemDisabledResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        jan_code:
+          type: string
+        disabled:
+          type: boolean
+          description: 操作したあとの状態（無効にしたら true、有効に戻したら false）
 
     GetAllItemsResponse:
       type: object
@@ -1269,6 +1390,8 @@ components:
                 type: string
               price:
                 type: integer
+              disabled:
+                type: boolean
 
     PostPurchaseResponse:
       type: object

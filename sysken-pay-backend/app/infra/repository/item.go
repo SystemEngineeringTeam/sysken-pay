@@ -29,7 +29,7 @@ func (r *ItemRepositoryImpl) InsertItem(ctx context.Context, i *item.Item) (*ite
 	executor := getExecutor(ctx, r.db)
 
 	query := `
-	INSERT INTO item (jan_code, name, price, deleted_at)
+	INSERT INTO item (jan_code, name, price, disabled_at)
 	VALUES (?, ?, ?, NULL)
 	`
 	result, err := executor.ExecContext(ctx, query,
@@ -74,7 +74,7 @@ func (r *ItemRepositoryImpl) UpdateItem(ctx context.Context, i *item.Item) (*ite
 	query := `
 	UPDATE item
 	SET name = ?, price = ?
-	WHERE jan_code = ? AND deleted_at IS NULL
+	WHERE jan_code = ?
 	`
 	_, err := executor.ExecContext(ctx, query,
 		i.Name(),
@@ -88,7 +88,7 @@ func (r *ItemRepositoryImpl) UpdateItem(ctx context.Context, i *item.Item) (*ite
 
 	row := executor.QueryRowContext(
 		ctx,
-		`SELECT id, created_at, updated_at FROM item WHERE jan_code = ? AND deleted_at IS NULL`,
+		`SELECT id, created_at, updated_at FROM item WHERE jan_code = ?`,
 		i.JanCode(),
 	)
 
@@ -113,36 +113,36 @@ func (r *ItemRepositoryImpl) GetItemByID(ctx context.Context, id int) (*item.Ite
 	executor := getExecutor(ctx, r.db)
 
 	query := `
-	SELECT id, jan_code, name, price, created_at, updated_at, deleted_at
+	SELECT id, jan_code, name, price, created_at, updated_at, disabled_at
 	FROM item
-	WHERE id = ? AND deleted_at IS NULL
+	WHERE id = ? AND disabled_at IS NULL
 	`
 
 	row := executor.QueryRowContext(ctx, query, id)
 
 	var (
-		idDB      int
-		janCodeDB string
-		nameDB    string
-		priceDB   int
-		createdAt time.Time
-		updatedAt time.Time
-		deletedAt sql.NullTime
+		idDB       int
+		janCodeDB  string
+		nameDB     string
+		priceDB    int
+		createdAt  time.Time
+		updatedAt  time.Time
+		disabledAt sql.NullTime
 	)
 
-	if err := row.Scan(&idDB, &janCodeDB, &nameDB, &priceDB, &createdAt, &updatedAt, &deletedAt); err != nil {
+	if err := row.Scan(&idDB, &janCodeDB, &nameDB, &priceDB, &createdAt, &updatedAt, &disabledAt); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
 		return nil, err
 	}
 
-	var deleted time.Time
-	if deletedAt.Valid {
-		deleted = deletedAt.Time
+	var disabled time.Time
+	if disabledAt.Valid {
+		disabled = disabledAt.Time
 	}
 
-	return item.NewItemFromDB(idDB, janCodeDB, nameDB, priceDB, createdAt, updatedAt, deleted)
+	return item.NewItemFromDB(idDB, janCodeDB, nameDB, priceDB, createdAt, updatedAt, disabled)
 }
 
 // TODO GetItemByJanCodeメソッドの実装
@@ -151,21 +151,21 @@ func (r *ItemRepositoryImpl) GetItemByJanCode(ctx context.Context, janCode strin
 	executor := getExecutor(ctx, r.db)
 
 	query := `
-	SELECT id, jan_code, name, price, created_at, updated_at, deleted_at
+	SELECT id, jan_code, name, price, created_at, updated_at, disabled_at
 	FROM item
-	WHERE jan_code = ? AND deleted_at IS NULL
+	WHERE jan_code = ?
 	`
 
 	row := executor.QueryRowContext(ctx, query, janCode)
 
 	var (
-		id        int
-		janCodeDB string
-		nameDB    string
-		priceDB   int
-		createdAt time.Time
-		updatedAt time.Time
-		deletedAt sql.NullTime
+		id         int
+		janCodeDB  string
+		nameDB     string
+		priceDB    int
+		createdAt  time.Time
+		updatedAt  time.Time
+		disabledAt sql.NullTime
 	)
 
 	if err := row.Scan(
@@ -175,7 +175,7 @@ func (r *ItemRepositoryImpl) GetItemByJanCode(ctx context.Context, janCode strin
 		&priceDB,
 		&createdAt,
 		&updatedAt,
-		&deletedAt,
+		&disabledAt,
 	); err != nil {
 
 		if err == sql.ErrNoRows {
@@ -184,10 +184,10 @@ func (r *ItemRepositoryImpl) GetItemByJanCode(ctx context.Context, janCode strin
 		return nil, err
 	}
 
-	// deletedAt が NULL ならゼロ値 time.Time にする
-	var deleted time.Time
-	if deletedAt.Valid {
-		deleted = deletedAt.Time
+	// disabledAt が NULL ならゼロ値 time.Time にする
+	var disabled time.Time
+	if disabledAt.Valid {
+		disabled = disabledAt.Time
 	}
 
 	i, err := item.NewItemFromDB(
@@ -197,7 +197,7 @@ func (r *ItemRepositoryImpl) GetItemByJanCode(ctx context.Context, janCode strin
 		priceDB,
 		createdAt,
 		updatedAt,
-		deleted,
+		disabled,
 	)
 	if err != nil {
 		return nil, err
@@ -207,14 +207,17 @@ func (r *ItemRepositoryImpl) GetItemByJanCode(ctx context.Context, janCode strin
 }
 
 // TODO GetAllItemsメソッドの実装
-func (r *ItemRepositoryImpl) GetAllItems(ctx context.Context) ([]*item.Item, error) {
+func (r *ItemRepositoryImpl) GetAllItems(ctx context.Context, includeDisabled bool) ([]*item.Item, error) {
 	executor := getExecutor(ctx, r.db)
 
 	query := `
-	SELECT id, jan_code, name, price, created_at, updated_at, deleted_at
+	SELECT id, jan_code, name, price, created_at, updated_at, disabled_at
 	FROM item
-	WHERE deleted_at IS NULL
 	`
+	if !includeDisabled {
+		query += "WHERE disabled_at IS NULL\n"
+	}
+	query += "ORDER BY id\n"
 
 	rows, err := executor.QueryContext(ctx, query)
 	if err != nil {
@@ -226,13 +229,13 @@ func (r *ItemRepositoryImpl) GetAllItems(ctx context.Context) ([]*item.Item, err
 
 	for rows.Next() {
 		var (
-			id        int
-			janCodeDB string
-			nameDB    string
-			priceDB   int
-			createdAt time.Time
-			updatedAt time.Time
-			deletedAt sql.NullTime
+			id         int
+			janCodeDB  string
+			nameDB     string
+			priceDB    int
+			createdAt  time.Time
+			updatedAt  time.Time
+			disabledAt sql.NullTime
 		)
 
 		if err := rows.Scan(
@@ -242,15 +245,15 @@ func (r *ItemRepositoryImpl) GetAllItems(ctx context.Context) ([]*item.Item, err
 			&priceDB,
 			&createdAt,
 			&updatedAt,
-			&deletedAt,
+			&disabledAt,
 		); err != nil {
 			return nil, err
 		}
 
-		// deletedAt が NULL ならゼロ値 time.Time にする
-		var deleted time.Time
-		if deletedAt.Valid {
-			deleted = deletedAt.Time
+		// disabledAt が NULL ならゼロ値 time.Time にする
+		var disabled time.Time
+		if disabledAt.Valid {
+			disabled = disabledAt.Time
 		}
 
 		i, err := item.NewItemFromDB(
@@ -260,7 +263,7 @@ func (r *ItemRepositoryImpl) GetAllItems(ctx context.Context) ([]*item.Item, err
 			priceDB,
 			createdAt,
 			updatedAt,
-			deleted,
+			disabled,
 		)
 		if err != nil {
 			return nil, err
@@ -274,4 +277,36 @@ func (r *ItemRepositoryImpl) GetAllItems(ctx context.Context) ([]*item.Item, err
 	}
 
 	return items, nil
+}
+
+// SetItemDisabled は商品を無効／有効にする。すでにその状態なら changed=false（何も書かない）
+func (r *ItemRepositoryImpl) SetItemDisabled(ctx context.Context, janCode string, disabled bool) (bool, bool, error) {
+	executor := getExecutor(ctx, r.db)
+
+	query := "UPDATE item SET disabled_at = NULL WHERE jan_code = ? AND disabled_at IS NOT NULL"
+	if disabled {
+		query = "UPDATE item SET disabled_at = CURRENT_TIMESTAMP WHERE jan_code = ? AND disabled_at IS NULL"
+	}
+	res, err := executor.ExecContext(ctx, query, janCode)
+	if err != nil {
+		return false, false, err
+	}
+	n, err := res.RowsAffected()
+	if err != nil {
+		return false, false, err
+	}
+	if n > 0 {
+		return true, true, nil
+	}
+
+	// 変わらなかった: 商品が無いのか、すでにその状態なのかを区別する
+	var id int
+	err = executor.QueryRowContext(ctx, "SELECT id FROM item WHERE jan_code = ?", janCode).Scan(&id)
+	if err == sql.ErrNoRows {
+		return false, false, nil
+	}
+	if err != nil {
+		return false, false, err
+	}
+	return true, false, nil
 }

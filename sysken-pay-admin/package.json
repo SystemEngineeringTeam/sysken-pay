@@ -14,11 +14,13 @@
   },
   "dependencies": {
     "@zxing/browser": "0.1.5",
-    "@zxing/library": "0.21.3"
+    "@zxing/library": "0.21.3",
+    "qrcode": "^1.5.4"
   },
   "devDependencies": {
     "@cloudflare/vite-plugin": "^2.0.0-rc.0",
     "@types/node": "^24.10.1",
+    "@types/qrcode": "^1.5.6",
     "cf": "1.0.0-rc.1",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",

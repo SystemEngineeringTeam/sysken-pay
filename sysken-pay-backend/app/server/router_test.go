@@ -19,6 +19,8 @@ func (stub) ResisterItem(w http.ResponseWriter, r *http.Request)         { ok(w,
 func (stub) UpdateItem(w http.ResponseWriter, r *http.Request)           { ok(w, r) }
 func (stub) GetItemByJanCode(w http.ResponseWriter, r *http.Request)     { ok(w, r) }
 func (stub) GetAllItems(w http.ResponseWriter, r *http.Request)          { ok(w, r) }
+func (stub) DisableItem(w http.ResponseWriter, r *http.Request)          { ok(w, r) }
+func (stub) EnableItem(w http.ResponseWriter, r *http.Request)           { ok(w, r) }
 func (stub) ChargeAmount(w http.ResponseWriter, r *http.Request)         { ok(w, r) }
 func (stub) ChargeCancel(w http.ResponseWriter, r *http.Request)         { ok(w, r) }
 func (stub) CreatePurchase(w http.ResponseWriter, r *http.Request)       { ok(w, r) }
@@ -63,6 +65,8 @@ var protectedRoutes = []struct{ method, path string }{
 	{http.MethodPost, "/v1/user/20K23099/purchase/cancel"},
 	{http.MethodPost, "/v1/item"},
 	{http.MethodPatch, "/v1/item"},
+	{http.MethodPost, "/v1/item/4901234567894/disable"},
+	{http.MethodPost, "/v1/item/4901234567894/enable"},
 	{http.MethodPost, "/v1/user/20K23099/hri"},
 	{http.MethodGet, "/v1/user"},
 	{http.MethodPost, "/v1/user/20K23099/refund"},

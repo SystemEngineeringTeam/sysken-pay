@@ -166,7 +166,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** 全商品取得 */
+        /**
+         * 全商品取得
+         * @description 既定では有効な商品だけを返す（キオスクの一覧用）。`include_disabled=true` で無効の商品も返す
+         */
         get: operations["getAllItems"];
         put?: never;
         /** 商品登録 */
@@ -185,10 +188,51 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** JANコードで商品取得 */
+        /**
+         * JANコードで商品取得
+         * @description 無効の商品も 200 で返し、`disabled: true` で区別する（未登録の 404 とは別）。
+         *     無効の商品は購入できない。
+         */
         get: operations["getItemByJanCode"];
         put?: never;
         post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/item/{jan_code}/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 商品を無効にする（買えなくする）
+         * @description 商品は消さない。`enable` でいつでも有効に戻せる。
+         */
+        post: operations["disableItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/item/{jan_code}/enable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** 無効の商品を有効に戻す */
+        post: operations["enableItem"];
         delete?: never;
         options?: never;
         head?: never;
@@ -547,6 +591,15 @@ export interface components {
             jan_code?: string;
             item_name?: string;
             price?: number;
+            /** @description true なら無効の商品（買えない）。購入 API は 404 で断る */
+            disabled?: boolean;
+        };
+        SetItemDisabledResponse: {
+            /** @example success */
+            status?: string;
+            jan_code?: string;
+            /** @description 操作したあとの状態（無効にしたら true、有効に戻したら false） */
+            disabled?: boolean;
         };
         GetAllItemsResponse: {
             /** @example success */
@@ -556,6 +609,7 @@ export interface components {
                 jan_code?: string;
                 item_name?: string;
                 price?: number;
+                disabled?: boolean;
             }[];
         };
         PostPurchaseResponse: {
@@ -711,6 +765,8 @@ export interface components {
     parameters: {
         /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
         UserId: string;
+        /** @description JANコード（8桁または13桁。チェックデジット検証あり。不正な場合は400を返す） */
+        JanCode: string;
     };
     requestBodies: never;
     headers: never;
@@ -1321,7 +1377,10 @@ export interface operations {
     };
     getAllItems: {
         parameters: {
-            query?: never;
+            query?: {
+                /** @description true なら無効の商品も含める */
+                include_disabled?: boolean;
+            };
             header?: never;
             path?: never;
             cookie?: never;
@@ -1466,6 +1525,126 @@ export interface operations {
             };
             /** @description 商品が存在しない */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    disableItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description JANコード（8桁または13桁。チェックデジット検証あり。不正な場合は400を返す） */
+                jan_code: components["parameters"]["JanCode"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetItemDisabledResponse"];
+                };
+            };
+            /** @description JANコードの形式が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description 商品が登録されていない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description すでに無効になっている */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    enableItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description JANコード（8桁または13桁。チェックデジット検証あり。不正な場合は400を返す） */
+                jan_code: components["parameters"]["JanCode"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 成功 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SetItemDisabledResponse"];
+                };
+            };
+            /** @description JANコードの形式が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description 商品が登録されていない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 無効になっていない */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

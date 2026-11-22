@@ -58,6 +58,8 @@ type GetItemResponse struct {
 	JanCode  string `json:"jan_code"`
 	ItemName string `json:"item_name"`
 	Price    int    `json:"price"`
+	// Disabled が true なら無効の商品（買えない）
+	Disabled bool `json:"disabled"`
 }
 
 func toGetItemResponse(item *item.Item) *GetItemResponse {
@@ -67,6 +69,7 @@ func toGetItemResponse(item *item.Item) *GetItemResponse {
 		JanCode:  item.JanCode(),
 		ItemName: item.Name(),
 		Price:    item.Price(),
+		Disabled: item.Disabled(),
 	}
 }
 
@@ -76,6 +79,7 @@ type GetAllItemResponse struct {
 	JanCode  string `json:"jan_code"`
 	ItemName string `json:"item_name"`
 	Price    int    `json:"price"`
+	Disabled bool   `json:"disabled"`
 }
 
 func toGetAllItemResponse(item *item.Item) *GetAllItemResponse {
@@ -84,6 +88,7 @@ func toGetAllItemResponse(item *item.Item) *GetAllItemResponse {
 		JanCode:  item.JanCode(),
 		ItemName: item.Name(),
 		Price:    item.Price(),
+		Disabled: item.Disabled(),
 	}
 }
 
@@ -102,4 +107,11 @@ func toGetAllItemsResponse(items []*item.Item) *GetAllItemsResponse {
 		Status: "success",
 		Items:  itemResponses,
 	}
+}
+
+// SetItemDisabledResponse Response: 商品を無効／有効にしたときのレスポンス
+type SetItemDisabledResponse struct {
+	Status   string `json:"status"`
+	JanCode  string `json:"jan_code"`
+	Disabled bool   `json:"disabled"`
 }

@@ -18,14 +18,17 @@ type Handler interface {
 	UpdateItem(w http.ResponseWriter, r *http.Request)
 	GetItemByJanCode(w http.ResponseWriter, r *http.Request)
 	GetAllItems(w http.ResponseWriter, r *http.Request)
+	DisableItem(w http.ResponseWriter, r *http.Request)
+	EnableItem(w http.ResponseWriter, r *http.Request)
 }
 
-func NewItemHandler(registerItemUseCase item.RegisterItemUseCase, updateItemUseCase item.UpdateItemUseCase, findItemByJanCodeUseCase item.FindItemByJanCodeUseCase, getAllItemsUseCase item.GetAllItemsUseCase) Handler {
+func NewItemHandler(registerItemUseCase item.RegisterItemUseCase, updateItemUseCase item.UpdateItemUseCase, findItemByJanCodeUseCase item.FindItemByJanCodeUseCase, getAllItemsUseCase item.GetAllItemsUseCase, setItemDisabledUseCase item.SetItemDisabledUseCase) Handler {
 	return &itemHandlerImpl{
 		registerItemUseCase:      registerItemUseCase,
 		updateItemUseCase:        updateItemUseCase,
 		findItemByJanCodeUseCase: findItemByJanCodeUseCase,
 		getAllItemsUseCase:       getAllItemsUseCase,
+		setItemDisabledUseCase:   setItemDisabledUseCase,
 	}
 }
 
@@ -36,6 +39,7 @@ type itemHandlerImpl struct {
 	updateItemUseCase        item.UpdateItemUseCase
 	findItemByJanCodeUseCase item.FindItemByJanCodeUseCase
 	getAllItemsUseCase       item.GetAllItemsUseCase
+	setItemDisabledUseCase   item.SetItemDisabledUseCase
 }
 
 func (h *itemHandlerImpl) ResisterItem(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +140,7 @@ func (h *itemHandlerImpl) GetItemByJanCode(w http.ResponseWriter, r *http.Reques
 func (h *itemHandlerImpl) GetAllItems(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
 	//ユースケースの呼び出し
-	allItems, err := h.getAllItemsUseCase.GetAllItems(ctx)
+	allItems, err := h.getAllItemsUseCase.GetAllItems(ctx, r.URL.Query().Get("include_disabled") == "true")
 	if err != nil {
 		log.Printf("Failed to get all items: %v", err)
 		apierrors.RespondUseCaseError(w, err)
@@ -150,5 +154,39 @@ func (h *itemHandlerImpl) GetAllItems(w http.ResponseWriter, r *http.Request) {
 	if err := json.NewEncoder(w).Encode(res); err != nil {
 		apierrors.RespondError(w, http.StatusBadRequest, err.Error())
 		return
+	}
+}
+
+func (h *itemHandlerImpl) DisableItem(w http.ResponseWriter, r *http.Request) {
+	h.setDisabled(w, r, true)
+}
+
+func (h *itemHandlerImpl) EnableItem(w http.ResponseWriter, r *http.Request) {
+	h.setDisabled(w, r, false)
+}
+
+// setDisabled は商品を無効／有効にする。成功は 200、商品が無ければ 404、すでにその状態なら 409
+func (h *itemHandlerImpl) setDisabled(w http.ResponseWriter, r *http.Request, disabled bool) {
+	janCode := chi.URLParam(r, "jan_code")
+	var err error
+	if disabled {
+		err = h.setItemDisabledUseCase.Disable(r.Context(), janCode)
+	} else {
+		err = h.setItemDisabledUseCase.Enable(r.Context(), janCode)
+	}
+	switch {
+	case err == nil:
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_ = json.NewEncoder(w).Encode(&SetItemDisabledResponse{Status: "success", JanCode: janCode, Disabled: disabled})
+	case errors.Is(err, item.ErrInvalidJanCode):
+		apierrors.RespondError(w, http.StatusBadRequest, err.Error())
+	case errors.Is(err, item.ErrItemNotFound):
+		apierrors.RespondError(w, http.StatusNotFound, "item not found")
+	case errors.Is(err, item.ErrAlreadyDisabled), errors.Is(err, item.ErrNotDisabled):
+		apierrors.RespondError(w, http.StatusConflict, err.Error())
+	default:
+		log.Printf("Failed to set item disabled=%v: %v", disabled, err)
+		apierrors.RespondUseCaseError(w, err)
 	}
 }
