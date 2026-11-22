@@ -68,4 +68,6 @@ export type ViewContext = {
   api: import("./api").Api;
   /** 画面を離れるときに呼ぶ後始末を登録する（カメラ・タイマー・QR の消去） */
   onLeave: (fn: () => void) => void;
+  /** 学籍番号（X24042）から氏名を Graph で引く。Microsoft でログインしていないときは undefined。引けなければ null */
+  lookupName?: (studentId: string) => Promise<string | null>;
 };

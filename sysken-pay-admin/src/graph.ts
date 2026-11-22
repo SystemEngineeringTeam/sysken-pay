@@ -23,5 +23,20 @@ export const fetchMyPhoto = async (token: string, fetchFn: Fetch = (...a) => fet
   }
 };
 
+/**
+ * UPN の人の表示名（GET /users/{upn}?$select=displayName）。スコープは User.ReadBasic.All。
+ * 権限がない（同意が要る）・見つからない・つながらないときは null（名前は手で入れてもらう）。
+ */
+export const fetchDisplayName = async (token: string, upn: string, fetchFn: Fetch = (...a) => fetch(...a), base: string = GRAPH_BASE): Promise<string | null> => {
+  try {
+    const res = await fetchFn(`${base}/users/${encodeURIComponent(upn)}?$select=displayName`, { headers: { Authorization: `Bearer ${token}` } });
+    if (!res.ok) return null;
+    const b = (await res.json()) as { displayName?: unknown };
+    return typeof b.displayName === "string" && b.displayName.trim() !== "" ? b.displayName.trim() : null;
+  } catch {
+    return null;
+  }
+};
+
 /** 名前のイニシャル（写真がないときの丸に出す 1 文字） */
 export const initialOf = (name: string): string => (name.trim().charAt(0) || "?").toUpperCase();

@@ -167,3 +167,18 @@ describe("createApi", () => {
     await expect(createApi("pw", vi.fn().mockResolvedValue(json(409, { message: "最後の 1 人" }))).removeAdmin("a@aitech.ac.jp")).rejects.toMatchObject({ kind: "request", status: 409 });
   });
 });
+
+describe("registerUser", () => {
+  it("POST /v1/user に学籍番号と名前を送り、201 で終わる", async () => {
+    const f = vi.fn().mockResolvedValue(new Response(null, { status: 201 }));
+    await createApi("pw", f, "https://h").registerUser("20X24042", "愛工 太郎");
+    const [url, init] = f.mock.calls[0];
+    expect(url).toBe("https://h/v1/user");
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(init.body)).toEqual({ user_id: "20X24042", user_name: "愛工 太郎" });
+  });
+  it("すでにいる（409）は request のエラーで、status が付く", async () => {
+    const f = vi.fn().mockResolvedValue(json(409, { error: "dup" }));
+    await expect(createApi("pw", f, "https://h").registerUser("20X24042", "a")).rejects.toMatchObject({ kind: "request", status: 409 });
+  });
+});

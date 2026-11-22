@@ -77,9 +77,12 @@ PC の管理サイト（`sysken-pay-admin`）の管理者パスワードを、**
 2. `feat/admin-site-entra-login`: 管理サイトのログイン・「管理者の許可」画面・CSP
 3. `feat/admin-site-user-register`: Graph とユーザー登録画面
 
+## 確認済み
+
+- Graph のスコープ `User.ReadBasic.All`（委任）は、アプリ登録の画面で「管理者の同意が必要: いいえ」。使う人が最初に 1 回、同意すればよい（管理サイトの「Microsoft で名前を探す」でポップアップが出る）
+
 ## 未決事項（勝手に決めない）
 
-- Graph のスコープ `User.ReadBasic.All` が、管理者の同意なしで使えるか
 - Entra のアプリ登録に必要な設定（SPA のリダイレクト URI、ID トークンの発行、`preferred_username` の任意クレーム）
 - トークンの更新に iframe が要る場合の CSP（`frame-src`）
 - システムアカウントでログインする人と、共有アカウントの多要素認証の扱い

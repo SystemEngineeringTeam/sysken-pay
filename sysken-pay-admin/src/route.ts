@@ -4,6 +4,7 @@ export type Route =
   | { name: "itemNew" }
   | { name: "item"; jan: string }
   | { name: "users" }
+  | { name: "userNew" }
   | { name: "user"; id: string }
   | { name: "userEdit"; id: string }
   | { name: "userIssue"; id: string }
@@ -23,6 +24,7 @@ export const parseRoute = (hash: string): Route => {
   if (a === "admins") return { name: "admins" };
   if (a === "users") {
     if (parts.length === 1) return { name: "users" };
+    if (b === "new" && parts.length === 2) return { name: "userNew" };
     const id = decode(b);
     if (id && parts.length === 2) return { name: "user", id };
     if (id && parts.length === 3 && c === "edit") return { name: "userEdit", id };

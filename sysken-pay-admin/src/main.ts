@@ -4,15 +4,16 @@
 // 通信先は config.ts の内部アドレスだけ。画面は URL のハッシュで切り替える（route.ts）。
 import { type Api, ApiError, createApi } from "./api";
 import { API_TARGETS, baseOf, loadTarget, parseTargetId, saveTarget } from "./config";
-import { createBrowserEntra, type Entra } from "./entra";
-import { fetchMyPhoto, initialOf } from "./graph";
+import { createBrowserEntra, type Entra, LOOKUP_SCOPES } from "./entra";
+import { fetchDisplayName, fetchMyPhoto, initialOf } from "./graph";
+import { toUpn } from "./studentId";
 import { parseRoute, sectionOf } from "./route";
 import { singleFlight } from "./save";
 import { clearSession, loadSession, saveSession } from "./session";
 import { h, type ViewContext } from "./ui";
 import { adminsList } from "./views/admins";
 import { itemEdit, itemRegister, itemsList } from "./views/items";
-import { userDetail, userEdit, userIssue, usersList } from "./views/users";
+import { userDetail, userEdit, userIssue, userNew, usersList } from "./views/users";
 
 const $ = <T extends HTMLElement>(id: string) => document.getElementById(id) as T;
 
@@ -35,7 +36,15 @@ const render = async () => {
   $("nav-items").classList.toggle("active", section === "items");
   $("nav-users").classList.toggle("active", section === "users");
   $("nav-admins").classList.toggle("active", section === "admins");
-  const ctx: ViewContext = { api, onLeave: (fn) => void leave.push(fn) };
+  const e = viaMicrosoft ? entra : null;
+  const lookupName = e
+    ? async (studentId: string) => {
+        const upn = toUpn(studentId);
+        const token = upn ? await e.getGraphToken(LOOKUP_SCOPES, { interactive: true }) : null;
+        return upn && token ? fetchDisplayName(token, upn) : null;
+      }
+    : undefined;
+  const ctx: ViewContext = { api, onLeave: (fn) => void leave.push(fn), lookupName };
   const root = h("div");
   view.append(root);
   switch (route.name) {
@@ -47,6 +56,8 @@ const render = async () => {
       return itemEdit(root, ctx, route.jan);
     case "users":
       return usersList(root, ctx);
+    case "userNew":
+      return userNew(root, ctx);
     case "user":
       return userDetail(root, ctx, route.id);
     case "userEdit":

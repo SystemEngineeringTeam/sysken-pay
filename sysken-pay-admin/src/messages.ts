@@ -3,7 +3,7 @@ import { ApiError } from "./api";
 
 const SESSION = "管理者パスワードの確認が切れました。ログインし直してください。";
 
-export type MemberAction = "list" | "refund" | "stop" | "resume" | "hide" | "unhide" | "delete" | "update" | "issue";
+export type MemberAction = "list" | "refund" | "stop" | "resume" | "hide" | "unhide" | "delete" | "update" | "issue" | "register";
 
 const FALLBACK: Record<MemberAction, string> = {
   list: "ユーザー一覧を読み込めませんでした。もう一度お試しください。",
@@ -15,6 +15,7 @@ const FALLBACK: Record<MemberAction, string> = {
   delete: "削除できませんでした。もう一度お試しください。",
   update: "更新に失敗しました。もう一度お試しください。",
   issue: "QR を作れませんでした。もう一度お試しください。",
+  register: "登録できませんでした。もう一度お試しください。",
 };
 
 export const toMemberErrorMessage = (action: MemberAction, e: unknown): string => {
@@ -22,12 +23,14 @@ export const toMemberErrorMessage = (action: MemberAction, e: unknown): string =
     if (e.kind === "network" || e.kind === "unauthorized") return e.kind === "unauthorized" ? SESSION : e.message;
     switch (e.status) {
       case 400:
+        if (action === "register") return "学籍番号か名前の形が正しくありません。";
         if (action === "update") return "学籍番号か名前の形が正しくありません。学籍番号は「24K01234」の形で入れてください。";
         break;
       case 403:
         if (action === "issue") return "このユーザーは利用停止しています。「ユーザー一覧」から「利用を再開」してください。";
         break;
       case 404:
+        if (action === "register") break;
         return "このユーザーは登録されていません。一覧を読み込み直してください。";
       case 409:
         if (action === "refund") return "残高が 0 円なので、返金するものはありません。";
@@ -36,7 +39,7 @@ export const toMemberErrorMessage = (action: MemberAction, e: unknown): string =
         if (action === "hide") return "非表示にできるのは、利用停止中で残高が 0 円の人だけです。残高が残っているときは先に返金してください。";
         if (action === "unhide") return "このユーザーは非表示になっていません。";
         if (action === "delete") return "購入・チャージ・返金の記録がある人は削除できません。利用停止のままにしてください。";
-        if (action === "update") return "この学籍番号は、もう別のユーザーで登録されています。";
+        if (action === "update" || action === "register") return "この学籍番号は、もう別のユーザーで登録されています。";
         break;
     }
   }

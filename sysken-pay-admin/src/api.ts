@@ -165,6 +165,11 @@ export const createApi = (credentials: Credentials, fetchFn: Fetch = (...a) => f
       await failIfNotOk(res, [200]);
     },
 
+    /** ユーザーを登録する（学籍番号は DB の形。すでにいれば 409） */
+    async registerUser(userId: string, userName: string): Promise<void> {
+      await failIfNotOk(await call("/v1/user", { method: "POST", body: JSON.stringify({ user_id: userId, user_name: userName }) }), [201]);
+    },
+
     /** 名前（と、変えるときだけ学籍番号）を更新する。更新後の学籍番号と名前を返す */
     async updateUser(userId: string, body: { user_name: string; user_id?: string }): Promise<{ user_id: string; user_name: string }> {
       const res = await call(`/v1/user/${encodeURIComponent(userId)}`, { method: "PATCH", body: JSON.stringify(body) });
