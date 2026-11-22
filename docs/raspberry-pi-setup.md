@@ -115,15 +115,18 @@ touch ~/.kiosk-disabled && pkill -f chromium
 ```bash
 cd ~/sysken-pay/sysken-pay-backend
 mkdir -p backups
-./scripts/backup-db.sh    # 手動で1回取って、動くことを確かめる
+sh ../deploy/raspberry-pi/backup-daily.sh    # 手動で1回動かして、動くことを確かめる
 ls -lh backups/
-(crontab -l 2>/dev/null; echo "0 3 * * * cd /home/sysken-pay/sysken-pay/sysken-pay-backend && ./scripts/backup-db.sh >> backups/backup.log 2>&1") | crontab -
-crontab -l    # 0 3 * * * の行が1つだけあること
+(crontab -l 2>/dev/null; echo "0 3 * * * cd /home/sysken-pay/sysken-pay/sysken-pay-backend && sh ../deploy/raspberry-pi/backup-daily.sh >> backups/backup.log 2>&1") | crontab -
+crontab -l    # backup-daily.sh の行が1つだけあること
 ```
 
-- 毎日 3:00 に `backups/` へ保存し、新しい順に30日分を残す。結果は `backups/backup.log`
+- 毎日 3:00 に `backups/` へ保存する。結果は `backups/backup.log`
+- 古い `crontab` の行（`./scripts/backup-db.sh` を直接呼ぶもの）が残っている人は、`crontab -e` でその行を消して、上の行に置き換える（二重に動かさない）
+- ラズパイの中は、14 日より古い `sysken_pay-*.sql.gz` を消す（`backups/deploy/` は消さない）
+- 失敗したときは Slack に知らせる（「12. Slack に連絡する」を済ませておく）
 - バックアップには部員の個人情報と残高が入るので、ファイルは自分だけが読める権限で作られる
-- このままだと SD カードの中にしかない。USB メモリなど、ラズパイの外にもコピーすること（未設定）
+- このままだと SD カードの中にしかない。ラズパイの外（Google Drive）にも送る → 「13. Google Drive にバックアップを送る」
 
 ## 8. IP アドレスを固定する
 
@@ -239,6 +242,53 @@ sh deploy/raspberry-pi/notify-slack.sh ok "テストです（連絡の試し）"
 - スクリプトのテスト：`sh deploy/raspberry-pi/test-notify-slack.sh`（本物の Slack には送らない）
 - Webhook の URL が漏れたら、Slack の画面でその Webhook を削除して作り直し、`notify.env` を書き換える
 
+## 13. Google Drive にバックアップを送る
+
+毎日のバックアップ（`sysken_pay-*.sql.gz`）を、共有の Google Drive に送る。送る道具は rclone。
+`backup.env` が無いあいだは、Drive には送らず、ラズパイの中のバックアップだけを取る（何も壊れない）。
+
+決めたこと:
+
+- 送るのは `sysken_pay-*.sql.gz` だけ（`backups/deploy/` は送らない）
+- **暗号化はしない**。ダンプには部員の学籍番号・氏名・残高が入っているので、保存先の共有範囲は最小限にする
+- Drive 側のファイルは**消さない**（`rclone copy` は送るだけ。すでにあるファイルは上書きもしない）。容量が足りなくなったら人が整理する
+- 送れなかった日があっても、次の日にまとめて送る。送れなかったときは Slack に知らせ、ラズパイ側の古いファイルも消さない
+
+### 準備（1 回だけ・役員がラズパイで行う）
+
+1. rclone を入れる: `sudo apt install rclone`
+2. Google のサービスアカウントの鍵（JSON）を、**リポジトリの外**に置く。例: `~/.config/sysken-pay/drive-key.json`（`chmod 600`。リポジトリには絶対に入れない・チャットに貼らない）
+3. `rclone config` で remote を作る（名前の例: `sysken-drive`）
+   - Storage は `drive`、`service_account_file` に上の JSON のパス
+   - 送り先は**共有ドライブ**を使い、そのサービスアカウントに「編集者」以上の権限を付ける。`team_drive`（共有ドライブの ID）か `root_folder_id` を設定する
+   - **注意**: サービスアカウントは自分の保存容量を持たない。個人の「マイドライブ」のフォルダに送ろうとすると `storageQuotaExceeded` で失敗する。共有ドライブ（または共有ドライブの中のフォルダ）を送り先にする
+4. 設定ファイルを置く:
+   ```bash
+   mkdir -p ~/.config/sysken-pay
+   cp ~/sysken-pay/deploy/raspberry-pi/backup.env.sample ~/.config/sysken-pay/backup.env
+   chmod 600 ~/.config/sysken-pay/backup.env
+   # RCLONE_DEST を、手順 3 で作った remote 名に合わせる（例: sysken-drive:）
+   ```
+5. 確かめる（まだ何も送らない）: `rclone lsd sysken-drive:` がエラーにならないこと
+6. 手動で 1 回動かす:
+   ```bash
+   cd ~/sysken-pay/sysken-pay-backend
+   sh ../deploy/raspberry-pi/backup-daily.sh
+   rclone ls sysken-drive: | grep sysken_pay-    # 今日のファイルが見えること
+   ```
+
+### 送れないとき
+
+- Slack に「Google Drive に送れませんでした」と出たら、`backups/backup.log` を見る
+- `storageQuotaExceeded` → 送り先がマイドライブになっている。共有ドライブにする
+- `403` / `notFound` → サービスアカウントに権限が無い、または ID が違う
+- `rclone: command not found` → rclone が入っていない（手順 1）
+- 直したら手順 6 をもう一度。ラズパイの中に残っている分は、次の実行でまとめて送られる
+
+### Drive から戻すとき
+
+Drive のファイルは暗号化していない普通の `.sql.gz`。ダウンロードして `sysken-pay-backend/backups/` に置けば、これまでどおり `make restore` で戻せる（戻す前に、必ず今の状態を `make backup` で退避する）。
+
 ## 更新するとき（make deploy）
 
 ```bash
@@ -352,7 +402,7 @@ sudo systemctl restart sysken-pay-front
 ### 運用を始める前に
 
 - [ ] 5インチのタッチモニターをつないでの確認（800x480 で全画面になるか、タッチが効くか）
-- [ ] バックアップのラズパイの外（USB メモリなど）への保存
+- [ ] バックアップのラズパイの外（Google Drive）への保存（「13. Google Drive にバックアップを送る」。rclone の設定がまだ）
 - [ ] `sudo apt upgrade` でラズパイを最新にする
 - [ ] 管理者（`ADMIN_PASSWORD`）とチャージ（`CHARGE_PASSWORD`）のパスワードを、`change-me` から役員が決めた別々のものに変えてあるか確かめる
 
