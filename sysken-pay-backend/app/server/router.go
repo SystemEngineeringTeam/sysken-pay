@@ -105,6 +105,9 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 			r.Post("/user/{user_id}/purchase/cancel", h.purchase.CancelPurchase)
 			r.Post("/item", h.item.ResisterItem)
 			r.Patch("/item", h.item.UpdateItem)
+			// 商品は消さずに無効にする（買えなくなる）。有効に戻せる
+			r.Post("/item/{jan_code}/disable", h.item.DisableItem)
+			r.Post("/item/{jan_code}/enable", h.item.EnableItem)
 			// HRI の発行と作り直しは同じ（新しく発行すると古いものは使えなくなる）
 			r.Post("/user/{user_id}/hri", h.paymentCard.Issue)
 			// 退部・卒業のとき（docs/phone-payment.md の「退部・卒業」）。ユーザー一覧は上の GET /user

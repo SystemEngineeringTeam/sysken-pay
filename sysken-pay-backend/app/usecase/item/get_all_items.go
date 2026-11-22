@@ -9,7 +9,8 @@ import (
 //TODO ドメイン層のインターフェースに接続して処理を完成させる
 
 type GetAllItemsUseCase interface {
-	GetAllItems(ctx context.Context) ([]*item.Item, error)
+	// includeDisabled が false なら有効な商品だけ
+	GetAllItems(ctx context.Context, includeDisabled bool) ([]*item.Item, error)
 }
 
 type GetAllItemsServiceImpl struct {
@@ -25,9 +26,9 @@ func NewGetAllItemsUseCase(
 }
 
 func (s *GetAllItemsServiceImpl) GetAllItems(
-	ctx context.Context) ([]*item.Item, error) {
+	ctx context.Context, includeDisabled bool) ([]*item.Item, error) {
 
-	allItems, err := s.itemGetAllRepo.GetAllItems(ctx)
+	allItems, err := s.itemGetAllRepo.GetAllItems(ctx, includeDisabled)
 	if err != nil {
 		return nil, err
 	}
