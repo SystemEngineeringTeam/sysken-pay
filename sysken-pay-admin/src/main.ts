@@ -40,7 +40,7 @@ const render = async () => {
   const lookupName = e
     ? async (studentId: string) => {
         const upn = toUpn(studentId);
-        const token = upn ? await e.getGraphToken(LOOKUP_SCOPES, { interactive: true }) : null;
+        const token = upn ? await e.getGraphToken(LOOKUP_SCOPES) : null;
         return upn && token ? fetchDisplayName(token, upn) : null;
       }
     : undefined;

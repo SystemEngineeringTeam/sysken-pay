@@ -11,7 +11,6 @@ export type EntraClient = {
   loginRedirect(req: { scopes: string[] }): Promise<void>;
   logoutRedirect(req?: { account?: AccountInfo }): Promise<void>;
   acquireTokenSilent(req: { scopes: string[]; account: AccountInfo }): Promise<AuthenticationResult>;
-  acquireTokenPopup(req: { scopes: string[]; account: AccountInfo }): Promise<AuthenticationResult>;
 };
 
 export const SCOPES = ["openid", "profile"];
@@ -19,8 +18,10 @@ export const SCOPES = ["openid", "profile"];
 export const GRAPH_SCOPES = ["User.Read"];
 
 /**
- * 学籍番号から氏名を引くためのスコープ（他の人の基本情報）。ログイン時には求めない。
- * 管理者の同意が要る場合は取れないので、名前を手で入れてもらう（画面側で続けられる）。
+ * 学籍番号から氏名を引くためのスコープ（他の人の基本情報）。同意は**サインインのときにまとめて**取る
+ * （あとから求めるとポップアップが要り、ホーム画面が開いてしまう）。
+ * 同意が取れていないと silent では取れず、名前を手で入れてもらう（画面側で続けられる）。
+ * サインイン済みで同意前の人は、いったんログアウトして入り直すと同意の画面が出る。
  */
 export const LOOKUP_SCOPES = ["User.ReadBasic.All"];
 
@@ -44,7 +45,7 @@ export const createEntra = (client: EntraClient) => {
 
     /** Microsoft のサインイン画面へ移る（戻ってきたら init で拾う） */
     async login(): Promise<void> {
-      await client.loginRedirect({ scopes: [...SCOPES, ...GRAPH_SCOPES] });
+      await client.loginRedirect({ scopes: [...SCOPES, ...GRAPH_SCOPES, ...LOOKUP_SCOPES] });
     },
 
     async logout(): Promise<void> {
@@ -67,19 +68,12 @@ export const createEntra = (client: EntraClient) => {
 
     /**
      * Graph に送るアクセストークン（既定は画像用）。取れなければ null（その機能なしで続ける）。
-     * 同意がまだで silent では取れないとき、interactive: true ならポップアップで同意を求める
-     * （ボタンを押した直後だけ使う。管理者の同意が要る場合はここでも取れず null）。
+     * 同意はサインインのときに取る。ここではポップアップを出さず、silent で取れなければ null。
      */
-    async getGraphToken(scopes: string[] = GRAPH_SCOPES, opts: { interactive?: boolean } = {}): Promise<string | null> {
+    async getGraphToken(scopes: string[] = GRAPH_SCOPES): Promise<string | null> {
       if (!account) return null;
       try {
         const r = await client.acquireTokenSilent({ scopes, account });
-        return r.accessToken || null;
-      } catch {
-        if (!opts.interactive) return null;
-      }
-      try {
-        const r = await client.acquireTokenPopup({ scopes, account });
         return r.accessToken || null;
       } catch {
         return null;
