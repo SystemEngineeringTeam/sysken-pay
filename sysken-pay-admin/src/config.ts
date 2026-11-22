@@ -1,9 +1,10 @@
 // 通信先（バックエンド）。ログイン画面のプルダウンで選ぶ。選択はこのブラウザに保存する。
-// このページは HTTPS で配信されるので、ブラウザの制限（混在コンテンツ）により、
-// 公開ページから呼べるのは HTTPS の通信先だけ（手元で pnpm dev するときの http://localhost は例外）。
+// ラズパイの API は http://sysken-pay.local:8080 で待ち受けている（ポート 8080 が要る。443 では届かない）。
+// ⚠️ 公開ページ（HTTPS）から http:// の通信先を呼ぶと、ブラウザの制限（混在コンテンツ）で止められる。
+// 手元で pnpm dev（http://localhost:5173）するときは通る。ラズパイの API を HTTPS にする方法は未決（docs/raspberry-pi-setup.md）。
 // 通信先を足すときは、ここと index.html の CSP（connect-src）の両方に足す。
 export const API_TARGETS = [
-  { id: "lan", label: "ローカルネットワーク（sysken-pay.local）", base: "https://sysken-pay.local" },
+  { id: "lan", label: "ローカルネットワーク（sysken-pay.local:8080）", base: "http://sysken-pay.local:8080" },
   { id: "local", label: "ローカル（この PC の localhost:8080）", base: "http://localhost:8080" },
 ] as const;
 

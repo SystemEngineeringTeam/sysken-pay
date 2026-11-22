@@ -2,9 +2,9 @@ import { describe, expect, it } from "vitest";
 import { API_TARGETS, DEFAULT_API_BASE, DEFAULT_TARGET, baseOf, loadTarget, parseTargetId, saveTarget } from "./config";
 
 describe("通信先", () => {
-  it("既定は sysken-pay.local（HTTPS）", () => {
+  it("既定は sysken-pay.local:8080（ポートが要る）", () => {
     expect(DEFAULT_TARGET).toBe("lan");
-    expect(DEFAULT_API_BASE).toBe("https://sysken-pay.local");
+    expect(DEFAULT_API_BASE).toBe("http://sysken-pay.local:8080");
   });
   it("ローカルは localhost:8080", () => expect(baseOf("local")).toBe("http://localhost:8080"));
   it("id を重複させない", () => expect(new Set(API_TARGETS.map((t) => t.id)).size).toBe(API_TARGETS.length));
