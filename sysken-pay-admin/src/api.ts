@@ -8,7 +8,13 @@ export type ListedItem = { item_id: number; jan_code: string; item_name: string;
 /** JAN で引いた商品。disabled が true なら無効（買えない） */
 export type FoundItem = Item & { disabled: boolean };
 
-export type ApiErrorKind = "unauthorized" | "network" | "request" | "server";
+export type ApiErrorKind = "unauthorized" | "forbidden" | "network" | "request" | "server";
+
+/** 管理者の許可リストの 1 人 */
+export type AllowedAdmin = { upn: string; student_id: string | null; added_by: string; created_at: string };
+
+/** 認証の方法。文字列なら管理者パスワード（BASIC）、関数なら ID トークンを返すもの（Bearer） */
+export type Credentials = string | (() => Promise<string>);
 
 export class ApiError extends Error {
   constructor(
@@ -39,11 +45,19 @@ const errorMessage = async (res: Response): Promise<string> => {
   return `エラーが返りました（${res.status}）。`;
 };
 
-export const createApi = (password: string, fetchFn: Fetch = (...a) => fetch(...a), base: string = DEFAULT_API_BASE) => {
-  const auth = basicAuth(ADMIN_USER, password);
+export const createApi = (credentials: Credentials, fetchFn: Fetch = (...a) => fetch(...a), base: string = DEFAULT_API_BASE) => {
+  const bearer = typeof credentials === "function";
+  const authHeader = async (): Promise<string> => {
+    if (!bearer) return basicAuth(ADMIN_USER, credentials);
+    try {
+      return `Bearer ${await credentials()}`;
+    } catch {
+      throw new ApiError("unauthorized", "Microsoft のログインが切れました。ログインし直してください。");
+    }
+  };
 
   const call = async (path: string, init: RequestInit = {}): Promise<Response> => {
-    const headers: Record<string, string> = { Authorization: auth };
+    const headers: Record<string, string> = { Authorization: await authHeader() };
     if (init.body !== undefined) headers["Content-Type"] = "application/json";
     let res: Response;
     try {
@@ -51,7 +65,9 @@ export const createApi = (password: string, fetchFn: Fetch = (...a) => fetch(...
     } catch {
       throw new ApiError("network", "ラズパイにつながりません。部室のネットワークにいるか確かめてください。");
     }
-    if (res.status === 401) throw new ApiError("unauthorized", "パスワードが違います。");
+    if (res.status === 401) {
+      throw new ApiError("unauthorized", bearer ? "Microsoft のログインが切れました。ログインし直してください。" : "パスワードが違います。");
+    }
     return res;
   };
 
@@ -67,9 +83,29 @@ export const createApi = (password: string, fetchFn: Fetch = (...a) => fetch(...
   };
 
   return {
-    /** パスワードが正しいか。違えば ApiError("unauthorized") */
+    /** ログインできるか。違えば ApiError("unauthorized")。Microsoft で入れても許可リストにいなければ "forbidden" */
     async verify(): Promise<void> {
-      await failIfNotOk(await call("/v1/admin/verify"), [204]);
+      const res = await call("/v1/admin/verify");
+      if (bearer && res.status === 403) throw new ApiError("forbidden", "この Microsoft アカウントは、管理者として許可されていません。", 403);
+      await failIfNotOk(res, [204]);
+    },
+
+    /** 管理者の許可リストと、いまログインしている人（パスワードなら null） */
+    async listAdmins(): Promise<{ admins: AllowedAdmin[]; current: string | null }> {
+      const res = await call("/v1/admin/allowlist");
+      await failIfNotOk(res, [200]);
+      const b = (await res.json()) as { admins?: AllowedAdmin[]; current?: string | null };
+      return { admins: b.admins ?? [], current: b.current || null };
+    },
+
+    /** UPN を許可リストに足す */
+    async addAdmin(upn: string): Promise<void> {
+      await failIfNotOk(await call("/v1/admin/allowlist", { method: "POST", body: JSON.stringify({ upn }) }), [201]);
+    },
+
+    /** UPN を許可リストから外す */
+    async removeAdmin(upn: string): Promise<void> {
+      await failIfNotOk(await call(`/v1/admin/allowlist/${encodeURIComponent(upn)}`, { method: "DELETE" }), [200]);
     },
 
     /** JAN の商品（無効のものも返す）。登録されていなければ null */

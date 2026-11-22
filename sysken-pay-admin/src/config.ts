@@ -38,3 +38,17 @@ export const saveTarget = (id: ApiTargetId, storage: Pick<Storage, "setItem"> = 
     // 保存できなくても、このページを開いている間は使える
   }
 };
+
+// Entra ID（Microsoft アカウントでのログイン）。どちらも秘密ではない ID（ビルド時に VITE_ENTRA_* で渡す）。
+// 空のままなら「Microsoft でログイン」は出さず、パスワードだけで入る。
+export const ENTRA = {
+  tenantId: (import.meta.env.VITE_ENTRA_TENANT_ID as string | undefined) ?? "",
+  clientId: (import.meta.env.VITE_ENTRA_CLIENT_ID as string | undefined) ?? "",
+};
+
+export const entraConfigured = (e: { tenantId: string; clientId: string } = ENTRA): boolean => e.tenantId !== "" && e.clientId !== "";
+
+// システムアカウント。許可リストに最初から入っていて、外せない（バックエンドの aitid.SystemAccountUPN と同じ値）
+export const SYSTEM_ACCOUNT_UPN = "sysken@aitech.ac.jp";
+
+export const GRAPH_BASE = "https://graph.microsoft.com/v1.0";

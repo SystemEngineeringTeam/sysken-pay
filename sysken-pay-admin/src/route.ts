@@ -6,7 +6,8 @@ export type Route =
   | { name: "users" }
   | { name: "user"; id: string }
   | { name: "userEdit"; id: string }
-  | { name: "userIssue"; id: string };
+  | { name: "userIssue"; id: string }
+  | { name: "admins" };
 
 const decode = (s: string): string | null => {
   try {
@@ -19,6 +20,7 @@ const decode = (s: string): string | null => {
 export const parseRoute = (hash: string): Route => {
   const parts = hash.replace(/^#\/?/, "").split("/").filter(Boolean);
   const [a, b, c] = parts;
+  if (a === "admins") return { name: "admins" };
   if (a === "users") {
     if (parts.length === 1) return { name: "users" };
     const id = decode(b);
@@ -36,4 +38,4 @@ export const parseRoute = (hash: string): Route => {
 };
 
 /** ナビで強調する区分 */
-export const sectionOf = (r: Route): "items" | "users" => (r.name.startsWith("user") ? "users" : "items");
+export const sectionOf = (r: Route): "items" | "users" | "admins" => (r.name === "admins" ? "admins" : r.name.startsWith("user") ? "users" : "items");

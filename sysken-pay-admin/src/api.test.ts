@@ -124,4 +124,46 @@ describe("createApi", () => {
     await expect(createApi("pw", vi.fn().mockResolvedValue(json(404, { message: "x" }))).enableItem("4901777018884")).rejects.toMatchObject({ status: 404 });
     await expect(createApi("bad", vi.fn().mockResolvedValue(json(401, {}))).enableItem("4901777018884")).rejects.toMatchObject({ kind: "unauthorized" });
   });
+
+  it("Bearer: トークンを Authorization に付ける", async () => {
+    const f = vi.fn().mockResolvedValue(new Response(null, { status: 204 }));
+    await createApi(async () => "tok", f, "https://x").verify();
+    expect(f.mock.calls[0][1].headers.Authorization).toBe("Bearer tok");
+  });
+
+  it("Bearer: トークンを取れなければ unauthorized（通信しない）", async () => {
+    const f = vi.fn();
+    await expect(createApi(async () => Promise.reject(new Error("x")), f).verify()).rejects.toMatchObject({ kind: "unauthorized" });
+    expect(f).not.toHaveBeenCalled();
+  });
+
+  it("Bearer: 401 は再ログイン、verify の 403 は許可されていない", async () => {
+    const tok = async () => "tok";
+    await expect(createApi(tok, vi.fn().mockResolvedValue(json(401, {}))).verify()).rejects.toMatchObject({ kind: "unauthorized", message: expect.stringContaining("Microsoft") });
+    await expect(createApi(tok, vi.fn().mockResolvedValue(json(403, {}))).verify()).rejects.toMatchObject({ kind: "forbidden", status: 403 });
+  });
+
+  it("パスワード: verify の 403 は forbidden にしない", async () => {
+    await expect(createApi("pw", vi.fn().mockResolvedValue(json(403, {}))).verify()).rejects.toMatchObject({ kind: "request" });
+  });
+
+  it("許可リスト：URL・メソッド・応答", async () => {
+    const row = { upn: "a@aitech.ac.jp", student_id: null, added_by: "password", created_at: "t" };
+    const f = vi
+      .fn()
+      .mockResolvedValueOnce(json(200, { status: "success", admins: [row], current: "" }))
+      .mockResolvedValueOnce(json(201, { status: "success", upn: "a@aitech.ac.jp" }))
+      .mockResolvedValueOnce(json(200, { status: "success", upn: "a@aitech.ac.jp" }));
+    const api = createApi("pw", f, "https://x");
+    expect(await api.listAdmins()).toEqual({ admins: [row], current: null });
+    await api.addAdmin("a@aitech.ac.jp");
+    await api.removeAdmin("a@aitech.ac.jp");
+    expect(f.mock.calls[0][0]).toBe("https://x/v1/admin/allowlist");
+    expect(f.mock.calls[1]).toEqual(["https://x/v1/admin/allowlist", expect.objectContaining({ method: "POST", body: JSON.stringify({ upn: "a@aitech.ac.jp" }) })]);
+    expect(f.mock.calls[2]).toEqual(["https://x/v1/admin/allowlist/a%40aitech.ac.jp", expect.objectContaining({ method: "DELETE" })]);
+  });
+
+  it("許可リスト：409（最後の 1 人など）は request", async () => {
+    await expect(createApi("pw", vi.fn().mockResolvedValue(json(409, { message: "最後の 1 人" }))).removeAdmin("a@aitech.ac.jp")).rejects.toMatchObject({ kind: "request", status: 409 });
+  });
 });

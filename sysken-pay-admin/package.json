@@ -13,6 +13,7 @@
     "deploy": "cf deploy"
   },
   "dependencies": {
+    "@azure/msal-browser": "^5.30.0",
     "@zxing/browser": "0.1.5",
     "@zxing/library": "0.21.3",
     "qrcode": "^1.5.4"

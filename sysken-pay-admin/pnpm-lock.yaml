@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@azure/msal-browser':
+        specifier: ^5.30.0
+        version: 5.30.0
       '@zxing/browser':
         specifier: 0.1.5
         version: 0.1.5(@zxing/library@0.21.3)
@@ -41,6 +44,14 @@ importers:
         version: 4.1.12(@types/node@24.19.2)(vite@7.3.8(@types/node@24.19.2))
 
 packages:
+
+  '@azure/msal-browser@5.30.0':
+    resolution: {integrity: sha512-o/ADxWxEFcVrE65a7ssOGuxnivq8lcy+2hSGlOOwtn0gGd6iiwl3q8/BMVRorYE81UB/r4B+8WGEUxWnqP7ryA==, tarball: https://registry.npmjs.org/@azure/msal-browser/-/msal-browser-5.30.0.tgz}
+    engines: {node: '>=0.8.0'}
+
+  '@azure/msal-common@16.17.0':
+    resolution: {integrity: sha512-rNvtEm7Axzj18neIk0C8kjr1ZXbJsHkWDqGedCfOiLVBjSCxWBcbJ26/I7g9owoeGKUoyrOgs73cIk7WxLd9qA==, tarball: https://registry.npmjs.org/@azure/msal-common/-/msal-common-16.17.0.tgz}
+    engines: {node: '>=0.8.0'}
 
   '@cloudflare/build-output-utils@1.0.0-rc.1':
     resolution: {integrity: sha512-IrzZL1UEdVMZPRarrKu2VpnL3MIeNVhCItTebB88SwQ1YJ4mLAe1kQtXmIH7MpdgDYnxAsTZXMtuw9q5jRWCcw==, tarball: https://registry.npmjs.org/@cloudflare/build-output-utils/-/build-output-utils-1.0.0-rc.1.tgz}
@@ -1098,6 +1109,12 @@ packages:
     resolution: {integrity: sha512-4UmzQUF5fxvfcYHlbjBmejU+w+hbDnWFx4aS8kBx7nPBHcO2SqPbpAG8snbdg+Xse4pRefR98hgjFgIMCI/UhA==, tarball: https://registry.npmjs.org/zod/-/zod-4.6.6.tgz}
 
 snapshots:
+
+  '@azure/msal-browser@5.30.0':
+    dependencies:
+      '@azure/msal-common': 16.17.0
+
+  '@azure/msal-common@16.17.0': {}
 
   '@cloudflare/build-output-utils@1.0.0-rc.1':
     dependencies:
