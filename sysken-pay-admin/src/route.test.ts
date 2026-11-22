@@ -14,6 +14,10 @@ describe("parseRoute", () => {
     expect(parseRoute("#/users/24K00001/edit")).toEqual({ name: "userEdit", id: "24K00001" });
     expect(parseRoute("#/users/24K00001/issue")).toEqual({ name: "userIssue", id: "24K00001" });
   });
+  it("管理者の許可", () => {
+    expect(parseRoute("#/admins")).toEqual({ name: "admins" });
+    expect(sectionOf({ name: "admins" })).toBe("admins");
+  });
   it("不正な形は一覧に戻す", () => {
     expect(parseRoute("#/users/%E0%A4%A")).toEqual({ name: "users" });
     expect(parseRoute("#/users/a/b/c")).toEqual({ name: "users" });

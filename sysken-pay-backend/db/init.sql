@@ -133,3 +133,23 @@ CREATE TABLE IF NOT EXISTS refund (
     FOREIGN KEY (user_id) REFERENCES `user`(id),
     FOREIGN KEY (balance_id) REFERENCES balance(id)
 );
+
+-- ---------------------------------
+-- 9. admin_allowlist テーブル (管理者の許可リスト)
+-- ---------------------------------
+-- 管理サイトに Microsoft アカウント（UPN）でログインできる人。管理サイトの「管理者の許可」画面で編集する。
+-- 最初の 1 人は、予備の管理者パスワードで管理サイトに入って足す。
+-- upn は小文字で入れる。student_id は学籍番号（sysken@aitech.ac.jp のようなシステムアカウントは NULL）。
+-- added_by は足した人の UPN（予備のパスワードで足したときは 'password'）。
+CREATE TABLE IF NOT EXISTS admin_allowlist (
+    upn VARCHAR(255) NOT NULL,
+    student_id VARCHAR(20) NULL DEFAULT NULL,
+    added_by VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (upn)
+);
+
+-- システムアカウント（sysken@aitech.ac.jp）は最初から許可リストに入れ、外せない（アプリ側でも拒否する）。
+-- 値は app/domain/object/aitid の SystemAccountUPN と同じ。学籍番号は持たないので NULL。
+INSERT IGNORE INTO admin_allowlist (upn, student_id, added_by) VALUES ('sysken@aitech.ac.jp', NULL, 'system');

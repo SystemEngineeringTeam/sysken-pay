@@ -9,7 +9,7 @@
     <meta name="referrer" content="no-referrer" />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src blob:; connect-src https://sysken-pay.local http://localhost:8080; base-uri 'none'; form-action 'none'"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; media-src blob:; connect-src https://sysken-pay.local http://localhost:8080 https://login.microsoftonline.com https://graph.microsoft.com; base-uri 'none'; form-action 'none'"
     />
     <meta name="robots" content="noindex" />
     <meta name="theme-color" content="#5398E1" />
@@ -23,17 +23,24 @@
       <nav id="nav" hidden>
         <a id="nav-items" href="#/items">商品</a>
         <a id="nav-users" href="#/users">ユーザー</a>
+        <a id="nav-admins" href="#/admins">管理者の許可</a>
       </nav>
+      <span id="me" class="me" hidden><span id="me-avatar" class="avatar" aria-hidden="true"></span><span id="me-name"></span></span>
       <button id="logout" type="button" class="link" hidden>ログアウト</button>
     </header>
 
     <main>
       <section id="login" class="panel column">
-        <h2>管理者パスワード</h2>
+        <h2>ログイン</h2>
         <p class="note">部室のネットワークにつないだ PC で使ってください。</p>
+        <label for="api-target">つなぐ先</label>
+        <select id="api-target"></select>
+        <div id="ms-login-box" hidden>
+          <button type="button" id="ms-login" class="primary">Microsoft でログイン</button>
+          <p class="note">大学の Microsoft アカウントでログインします（管理者として許可された人だけ）。</p>
+        </div>
         <form id="login-form" autocomplete="off">
-          <label for="api-target">つなぐ先</label>
-          <select id="api-target"></select>
+          <h3 id="password-heading">管理者パスワード</h3>
           <label for="password">パスワード</label>
           <input id="password" type="password" autocomplete="off" required />
           <button type="submit" id="login-submit" class="primary">ログイン</button>

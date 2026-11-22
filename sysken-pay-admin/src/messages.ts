@@ -63,3 +63,20 @@ export const isValidStudentId = (id: string): boolean => {
   const v = id.trim();
   return v.length <= 20 && STUDENT_ID.test(v);
 };
+
+export type AdminAction = "list" | "add" | "remove";
+
+/** 管理者の許可リストを読む・足す・外すときのエラー */
+export const toAdminErrorMessage = (action: AdminAction, e: unknown): string => {
+  if (e instanceof ApiError) {
+    if (e.kind === "unauthorized") return SESSION;
+    if (e.kind === "network") return e.message;
+    if (e.status === 400 && action === "add") return "UPN の形が正しくありません（例: x24042xx@aitech.ac.jp）。";
+    if (e.status === 404 && action === "remove") return "この人はすでに許可リストにいません。一覧を読み込み直してください。";
+    if (e.status === 409) {
+      if (action === "add") return "この人は、すでに許可されています。";
+      if (action === "remove") return "システムアカウント、最後の 1 人、いまログインしている自分自身は外せません。";
+    }
+  }
+  return { list: "許可リストを読み込めませんでした。もう一度お試しください。", add: "許可に追加できませんでした。もう一度お試しください。", remove: "外せませんでした。もう一度お試しください。" }[action];
+};

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ApiError } from "./api";
-import { isValidStudentId, toItemErrorMessage, toMemberErrorMessage } from "./messages";
+import { isValidStudentId, toAdminErrorMessage, toItemErrorMessage, toMemberErrorMessage } from "./messages";
 
 describe("toMemberErrorMessage", () => {
   it("409 は操作ごとに文言が変わる", () => {
@@ -46,5 +46,19 @@ describe("toItemErrorMessage", () => {
     expect(toItemErrorMessage("disable", new ApiError("unauthorized", "x"))).toContain("ログインし直して");
     expect(toItemErrorMessage("disable", new Error("boom"))).toContain("無効にできませんでした");
     expect(toItemErrorMessage("enable", new Error("boom"))).toContain("有効にできませんでした");
+  });
+});
+
+describe("toAdminErrorMessage", () => {
+  it("409 は足す・外すで文言が変わる", () => {
+    const e = new ApiError("request", "x", 409);
+    expect(toAdminErrorMessage("add", e)).toContain("すでに許可");
+    expect(toAdminErrorMessage("remove", e)).toContain("システムアカウント");
+  });
+  it("400（足す）・404（外す）・その他", () => {
+    expect(toAdminErrorMessage("add", new ApiError("request", "x", 400))).toContain("UPN");
+    expect(toAdminErrorMessage("remove", new ApiError("request", "x", 404))).toContain("すでに許可リストにいません");
+    expect(toAdminErrorMessage("list", new Error("boom"))).toContain("読み込めません");
+    expect(toAdminErrorMessage("add", new ApiError("unauthorized", "x"))).toContain("ログインし直して");
   });
 });

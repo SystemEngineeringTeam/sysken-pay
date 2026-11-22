@@ -20,6 +20,8 @@ make login    # MySQL にログイン
 | `CHARGE_PASSWORD` | チャージの画面のパスワード（管理者パスワードとは別にする）。チャージしかできない。未設定だとチャージの画面には管理者パスワードでしか入れない |
 | `ADMIN_USER` | BASIC 認証のユーザー名（既定 `admin`。フロントは `admin` で送るので通常は変えない） |
 | `ALLOWED_ORIGINS` | CORS で許可するフロントの配信元（カンマ区切り）。未設定なら `localhost:5173` / `localhost:3000` |
+| `ENTRA_TENANT_ID` | 管理サイトの Entra ID ログインで受け入れるテナントの ID。**`ENTRA_CLIENT_ID` とどちらか未設定だと、Bearer（Entra のトークン）はすべて 401**。設計は `../docs/admin-entra-login.md` |
+| `ENTRA_CLIENT_ID` | 管理サイトの Entra アプリ登録のクライアント ID（ID トークンの `aud`） |
 | `API_BIND_ADDR` | API をどこから届くようにするか。既定 `127.0.0.1`（ラズパイの中だけ）。フロントを別の PC で動かすときだけ `0.0.0.0` |
 
 ## 認証
@@ -27,7 +29,7 @@ make login    # MySQL にログイン
 お金を動かす・登録内容を変える API は BASIC 認証（ユーザー名は `ADMIN_USER`）が必要です。
 
 - チャージ用パスワード（`CHARGE_PASSWORD`）か管理者パスワードで通る: チャージ、`GET /v1/charge/verify`
-- 管理者パスワード（`ADMIN_PASSWORD`）だけで通る: それ以外のすべて（ユーザー登録・更新・一覧・返金・利用停止、商品登録・更新、バーコードの発行、チャージ取消、購入取消、`GET /v1/admin/verify` など）
+- 管理者パスワード（`ADMIN_PASSWORD`）か、Entra の ID トークン（`Authorization: Bearer`。許可リストにいる人だけ）で通る: それ以外のすべて（許可リストの編集 `/v1/admin/allowlist` も含む。ユーザー登録・更新・一覧・返金・利用停止、商品登録・更新、バーコードの発行、チャージ取消、購入取消、`GET /v1/admin/verify` など）。Entra は PC の管理サイトだけが使い、ラズパイとチャージの画面は今まで通りパスワード。許可リスト（`admin_allowlist`、migration `007`）の最初の 1 人は、管理者パスワードで管理サイトに入って足す
 - 認証なし（キオスクで部員が使う）: ユーザー・残高・履歴・商品の取得、購入、ヘルスチェック
 
 MySQL（53306）はラズパイの中からだけ届きます。

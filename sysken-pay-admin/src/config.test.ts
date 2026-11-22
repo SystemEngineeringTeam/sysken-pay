@@ -31,3 +31,12 @@ describe("loadTarget / saveTarget", () => {
     expect(loadTarget({ getItem: () => { throw new Error("denied"); } })).toBe("lan");
   });
 });
+
+describe("entraConfigured", () => {
+  it("テナントとクライアント ID が両方あるときだけ true", async () => {
+    const { entraConfigured } = await import("./config");
+    expect(entraConfigured({ tenantId: "t", clientId: "c" })).toBe(true);
+    expect(entraConfigured({ tenantId: "", clientId: "c" })).toBe(false);
+    expect(entraConfigured({ tenantId: "t", clientId: "" })).toBe(false);
+  });
+});

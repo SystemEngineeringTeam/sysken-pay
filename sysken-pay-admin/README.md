@@ -10,6 +10,10 @@ PC で使う管理画面（静的サイト。商品の一覧（有効／無効�
 - 返金・利用停止・削除・まとめて停止は確認ダイアログを挟み、実行中はボタンを無効にして二重送信を防ぐ。「返金して利用停止」は返金が失敗したら停止しない
 - バーコードの再発行は、詳細画面から（PC には学生証リーダーがない）。QR は 2 分で消え、画面を離れても消える。QR の行き先が不正なら、発行より先に断る
 - ユーザー登録（`user-register`）と、その続きの `phone-register` は、まだラズパイの画面で行う
+- **Microsoft（Entra ID）でログイン**できる（`@azure/msal-browser`、リダイレクト方式）。パスワードは予備として残す。許可されるのは、「管理者の許可」画面（`#/admins`）の一覧にいる人だけ（最初の 1 人はパスワードで入って足す）。トークンは MSAL に任せ、localStorage には置かない。ログイン中の人の名前とプロフィール画像（Graph の `/me/photo/$value`。なければイニシャル）を右上に出す。`sysken@aitech.ac.jp` は許可リストに最初から入っていて外せない。設計は `../docs/admin-entra-login.md`
+  - ビルド時に `VITE_ENTRA_TENANT_ID` と `VITE_ENTRA_CLIENT_ID`（秘密ではない ID）を渡す。空なら「Microsoft でログイン」は出ず、パスワードだけで入る。バックエンドにも同じ ID を `ENTRA_TENANT_ID` / `ENTRA_CLIENT_ID` で渡す
+  - Entra のアプリ登録は SPA 型で、リダイレクト URI に `http://localhost:5173` と `https://admin.pay.sysken.net` を足す
+- 管理サイトでのユーザー登録（Graph で氏名を引く）と、許可リストへの足し方の「学籍番号で探す」は、これから作る
 
 ## 使う
 

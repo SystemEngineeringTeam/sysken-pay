@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"time"
 
+	api_adminallow "sysken-pay-api/app/ui/api/adminallow"
 	api_balance "sysken-pay-api/app/ui/api/balance"
 	api_charge "sysken-pay-api/app/ui/api/charge"
 	api_item "sysken-pay-api/app/ui/api/item"
@@ -29,6 +30,8 @@ type handlers struct {
 	paymentCard api_paymentcard.Handler
 	// member はユーザー一覧と、退部・卒業のとき（返金・利用停止・再開）
 	member api_member.Handler
+	// adminAllow は管理サイトに Entra でログインしてよい人（許可リスト）の編集
+	adminAllow api_adminallow.Handler
 	// health は DB につながっているかまで確かめる（health.NewCheck）
 	health http.HandlerFunc
 }
@@ -40,11 +43,15 @@ type routerConfig struct {
 	chargePassword string
 	allowedOrigins []string
 	timeout        time.Duration
+	// entra は Entra の ID トークンの検証器。nil（未設定）なら Bearer はすべて拒否する
+	entra apimw.TokenVerifier
+	// adminAllowlist は Entra でログインした人が許可リストにいるかの確認
+	adminAllowlist apimw.AllowChecker
 }
 
 // newRouter はルーティングを組み立てる。
 //
-// 管理者パスワードが必要な操作（お金を動かす・登録内容を変える）は adminOnly の中に置く:
+// 管理者の認証（Entra か管理者パスワード）が必要な操作（お金を動かす・登録内容を変える）は adminOnly の中に置く:
 //   - ユーザー登録・更新、商品登録・更新、チャージ、チャージ取消、購入取消、支払い用バーコードの発行
 //
 // 部員がキオスクでそのまま使う操作は認証なし:
@@ -62,7 +69,11 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 	// リクエストがタイムアウトした場合、ctx.Done()を通じて通知し、以降の処理を停止する
 	r.Use(middleware.Timeout(cfg.timeout))
 
-	adminOnly := apimw.BasicAuth(cfg.adminUser, cfg.adminPassword)
+	// 管理者の認証: Bearer（Entra の ID トークン + 許可リスト）か、BASIC（予備のパスワード）のどちらでも通す
+	adminOnly := apimw.AdminAuth(
+		apimw.BasicAuth(cfg.adminUser, cfg.adminPassword),
+		apimw.EntraAuth(cfg.entra, cfg.adminAllowlist),
+	)
 	// チャージはチャージ用パスワードか管理者パスワードのどちらでも通す
 	if cfg.chargePassword == "" {
 		slog.Warn("CHARGE_PASSWORD が設定されていないため、チャージは管理者パスワードでしか入れません")
@@ -99,6 +110,10 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 		r.Group(func(r chi.Router) {
 			r.Use(adminOnly)
 			r.Get("/admin/verify", apimw.Verify)
+			// 管理サイトに Entra でログインしてよい人。最後の1人と自分自身は消せない
+			r.Get("/admin/allowlist", h.adminAllow.ListAllowed)
+			r.Post("/admin/allowlist", h.adminAllow.AddAllowed)
+			r.Delete("/admin/allowlist/{upn}", h.adminAllow.RemoveAllowed)
 			r.Post("/user", h.user.RegisterUser)
 			r.Patch("/user/{user_id}", h.user.UpdateUser)
 			r.Post("/user/{user_id}/charge/cancel", h.charge.ChargeCancel)

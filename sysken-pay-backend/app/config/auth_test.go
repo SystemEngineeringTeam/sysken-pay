@@ -28,3 +28,19 @@ func TestAdminUser(t *testing.T) {
 		t.Errorf("設定あり: got %q", got)
 	}
 }
+
+func TestEntra設定(t *testing.T) {
+	t.Setenv("ENTRA_TENANT_ID", "")
+	t.Setenv("ENTRA_CLIENT_ID", "")
+	if EntraTenantID() != "" || EntraClientID() != "" {
+		t.Error("未設定は空のはず")
+	}
+	t.Setenv("ENTRA_TENANT_ID", " tenant-1 ")
+	t.Setenv("ENTRA_CLIENT_ID", "client-1\n")
+	if got := EntraTenantID(); got != "tenant-1" {
+		t.Errorf("tenant: %q", got)
+	}
+	if got := EntraClientID(); got != "client-1" {
+		t.Errorf("client: %q", got)
+	}
+}
