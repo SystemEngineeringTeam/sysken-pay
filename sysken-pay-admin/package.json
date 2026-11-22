@@ -1,0 +1,27 @@
+{
+  "name": "sysken-pay-admin",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "商品を PC のカメラで読んで登録する管理画面（ラズパイの外でホスティングし、通信は内部アドレスだけに向ける）",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "test": "vitest run",
+    "deploy": "cf deploy"
+  },
+  "dependencies": {
+    "@zxing/browser": "0.1.5",
+    "@zxing/library": "0.21.3"
+  },
+  "devDependencies": {
+    "@cloudflare/vite-plugin": "^2.0.0-rc.0",
+    "@types/node": "^24.10.1",
+    "cf": "1.0.0-rc.1",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^4.1.4"
+  }
+}

@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="referrer" content="no-referrer" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src blob:; connect-src https://sysken-pay.local http://localhost:8080; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#5398E1" />
+    <title>シス研Pay 管理画面</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <span class="brand">シス研Pay</span>
+      <span class="topbar-title">商品の登録</span>
+      <button id="logout" type="button" class="link" hidden>ログアウト</button>
+    </header>
+
+    <main>
+      <section id="login" class="panel column">
+        <h2>管理者パスワード</h2>
+        <p class="note">部室のネットワークにつないだ PC で使ってください。</p>
+        <form id="login-form" autocomplete="off">
+          <label for="api-target">つなぐ先</label>
+          <select id="api-target"></select>
+          <label for="password">パスワード</label>
+          <input id="password" type="password" autocomplete="off" required />
+          <button type="submit" id="login-submit" class="primary">ログイン</button>
+        </form>
+        <p id="login-error" class="error-message" role="alert" hidden></p>
+      </section>
+
+      <section id="app" hidden>
+        <div class="panel column">
+          <h2>1. バーコードを読む</h2>
+          <video id="video" class="video" muted playsinline hidden></video>
+          <button id="camera-toggle" type="button" class="primary">カメラを開始</button>
+          <p id="camera-error" class="error-message" role="alert" hidden></p>
+          <p class="note">読めないときは、下の JAN コード欄に手で入力してもかまいません。</p>
+        </div>
+
+        <form id="item-form" class="panel column" autocomplete="off">
+          <h2>2. 商品の情報</h2>
+          <label for="jan">JAN コード</label>
+          <input id="jan" inputmode="numeric" maxlength="13" required />
+          <p id="existing" class="note existing" hidden></p>
+          <label for="name">商品名</label>
+          <input id="name" required />
+          <label for="price">値段（円）</label>
+          <input id="price" inputmode="numeric" required />
+          <button id="save" type="submit" class="primary">登録する</button>
+          <p id="result" class="result" role="status" hidden></p>
+          <p id="form-error" class="error-message" role="alert" hidden></p>
+        </form>
+      </section>
+    </main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

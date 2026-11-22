@@ -1,0 +1,191 @@
+/* シス研Pay のラズパイの画面と同じ色（sysken-pay-front/src/styles/scss/_design-primitive.scss） */
+:root {
+  --blue-40: #5398e1;
+  --blue-10: #eaf3fc;
+  --gray-5: #f9f9fc;
+  --gray-10: #e8e9eb;
+  --gray-70: #636a74;
+  --gray-100: #454a53;
+  --white: #fff;
+  --white-10: #fffdfb;
+  --red-10: rgba(239, 68, 68, 0.1);
+  --red-100: #ef4444;
+  --shadow-40: rgba(31, 41, 55, 0.08);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  /* ラズパイの画面と同じ背景色 */
+  background: var(--white-10);
+  color: var(--gray-100);
+  font-family: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 上の帯（ラズパイの画面のヘッダーと同じく、ロゴ色の文字） */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: calc(12px + env(safe-area-inset-top)) 20px 12px;
+  background: var(--white-10);
+  box-shadow: 0 1px 0 var(--gray-10);
+}
+
+.brand {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--blue-40);
+}
+
+.topbar-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-70);
+}
+
+main {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 16px 16px calc(32px + env(safe-area-inset-bottom));
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--gray-100);
+}
+
+p {
+  margin: 0 0 8px;
+}
+
+ul,
+ol {
+  margin: 0 0 8px;
+  padding-left: 20px;
+}
+
+li {
+  margin-bottom: 4px;
+}
+
+code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-weight: 700;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 12px;
+  padding: 16px;
+  background: var(--white);
+  border: 1px solid var(--gray-10);
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(31, 41, 55, 0.1);
+}
+
+.note {
+  margin: 4px 0 0;
+  color: var(--gray-70);
+  font-size: 14px;
+}
+
+.error-message {
+  margin: 12px 0 0;
+  padding: 12px 16px;
+  background: var(--red-10);
+  border: 2px solid var(--red-100);
+  border-radius: 12px;
+  color: var(--red-100);
+  font-weight: 700;
+}
+.topbar .link {
+  margin-left: auto;
+  padding: 0;
+  background: none;
+  border: 0;
+  color: var(--blue-40);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+label {
+  margin: 12px 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gray-70);
+}
+
+input,
+select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--gray-10);
+  border-radius: 12px;
+  background: var(--white);
+  color: var(--gray-100);
+  font: inherit;
+}
+
+input:focus-visible,
+button:focus-visible {
+  outline: 3px solid var(--blue-40);
+  outline-offset: 2px;
+}
+
+button.primary {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--blue-40);
+  color: var(--white);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+button.primary:disabled {
+  background: var(--gray-70);
+  cursor: not-allowed;
+}
+
+.video {
+  width: 100%;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  background: #000;
+}
+
+.existing {
+  color: var(--blue-40);
+  font-weight: 700;
+}
+
+.result {
+  margin: 12px 0 0;
+  padding: 12px 16px;
+  background: var(--blue-10);
+  border: 2px solid var(--blue-40);
+  border-radius: 12px;
+  font-weight: 700;
+}
+
