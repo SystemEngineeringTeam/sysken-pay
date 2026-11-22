@@ -1,6 +1,12 @@
 // バックエンド（内部アドレス）の API を呼ぶ。fetch は差し替えられるようにして、テストできるようにする。
 import { ADMIN_USER, DEFAULT_API_BASE } from "./config";
 import type { Item } from "./form";
+import type { Member } from "./members";
+
+export type ListedItem = { item_id: number; jan_code: string; item_name: string; price: number; disabled: boolean };
+
+/** JAN で引いた商品。disabled が true なら無効（買えない） */
+export type FoundItem = Item & { disabled: boolean };
 
 export type ApiErrorKind = "unauthorized" | "network" | "request" | "server";
 
@@ -8,6 +14,8 @@ export class ApiError extends Error {
   constructor(
     readonly kind: ApiErrorKind,
     message: string,
+    /** HTTP ステータス（通信できなかったときは 0）。画面で文言を出し分けるのに使う */
+    readonly status: number = 0,
   ) {
     super(message);
   }
@@ -49,7 +57,13 @@ export const createApi = (password: string, fetchFn: Fetch = (...a) => fetch(...
 
   const failIfNotOk = async (res: Response, okStatuses: number[]): Promise<void> => {
     if (okStatuses.includes(res.status)) return;
-    throw new ApiError(res.status >= 500 ? "server" : "request", await errorMessage(res));
+    throw new ApiError(res.status >= 500 ? "server" : "request", await errorMessage(res), res.status);
+  };
+
+  const post = async (path: string, okStatus = 200): Promise<unknown> => {
+    const res = await call(path, { method: "POST" });
+    await failIfNotOk(res, [okStatus]);
+    return res.json();
   };
 
   return {
@@ -58,13 +72,75 @@ export const createApi = (password: string, fetchFn: Fetch = (...a) => fetch(...
       await failIfNotOk(await call("/v1/admin/verify"), [204]);
     },
 
-    /** JAN の商品。登録されていなければ null */
-    async getItem(jan: string): Promise<Item | null> {
+    /** JAN の商品（無効のものも返す）。登録されていなければ null */
+    async getItem(jan: string): Promise<FoundItem | null> {
       const res = await call(`/v1/item/${encodeURIComponent(jan)}`);
       if (res.status === 404) return null;
       await failIfNotOk(res, [200]);
-      const b = (await res.json()) as Item & { price: number };
-      return { jan_code: b.jan_code, item_name: b.item_name, price: b.price };
+      const b = (await res.json()) as Item & { disabled?: boolean };
+      return { jan_code: b.jan_code, item_name: b.item_name, price: b.price, disabled: b.disabled === true };
+    },
+
+    /** 商品の全件（無効のものも含む） */
+    async listItems(): Promise<ListedItem[]> {
+      const res = await call("/v1/item?include_disabled=true");
+      await failIfNotOk(res, [200]);
+      const b = (await res.json()) as { items?: ListedItem[] };
+      return b.items ?? [];
+    },
+
+    /** 全員（止めた人も含む）を、残高・状態つきで */
+    async listUsers(): Promise<Member[]> {
+      const res = await call("/v1/user");
+      await failIfNotOk(res, [200]);
+      const b = (await res.json()) as { users?: Member[] };
+      return b.users ?? [];
+    },
+
+    /** 残高ちょうどを返金する。返した額を返す */
+    async refund(userId: string): Promise<number> {
+      const b = (await post(`/v1/user/${encodeURIComponent(userId)}/refund`)) as { refunded_amount: number };
+      return b.refunded_amount;
+    },
+
+    /** 利用停止にする。残っている残高を返す */
+    async stop(userId: string): Promise<number> {
+      const b = (await post(`/v1/user/${encodeURIComponent(userId)}/stop`)) as { balance: number };
+      return b.balance;
+    },
+
+    async resume(userId: string): Promise<void> {
+      await post(`/v1/user/${encodeURIComponent(userId)}/resume`);
+    },
+
+    /** 記録が1件もない停止中の人を消す（取り消せない） */
+    async remove(userId: string): Promise<void> {
+      const res = await call(`/v1/user/${encodeURIComponent(userId)}`, { method: "DELETE" });
+      await failIfNotOk(res, [200]);
+    },
+
+    /** 名前（と、変えるときだけ学籍番号）を更新する。更新後の学籍番号と名前を返す */
+    async updateUser(userId: string, body: { user_name: string; user_id?: string }): Promise<{ user_id: string; user_name: string }> {
+      const res = await call(`/v1/user/${encodeURIComponent(userId)}`, { method: "PATCH", body: JSON.stringify(body) });
+      await failIfNotOk(res, [200]);
+      const b = (await res.json()) as { user_id?: string; user_name?: string };
+      return { user_id: b.user_id ?? body.user_id ?? userId, user_name: b.user_name ?? body.user_name };
+    },
+
+    /** 支払い用バーコード（HRI）を発行する。古いものは使えなくなる。hri はこのときにしか取り出せない */
+    async issueHri(userId: string): Promise<{ hri: string; user_name: string }> {
+      const b = (await post(`/v1/user/${encodeURIComponent(userId)}/hri`, 201)) as { hri: string; user_name: string };
+      return { hri: b.hri, user_name: b.user_name };
+    },
+
+    /** 商品を無効にする（買えなくなる。消さないので、有効に戻せる） */
+    async disableItem(jan: string): Promise<void> {
+      await post(`/v1/item/${encodeURIComponent(jan)}/disable`);
+    },
+
+    /** 無効の商品を有効に戻す */
+    async enableItem(jan: string): Promise<void> {
+      await post(`/v1/item/${encodeURIComponent(jan)}/enable`);
     },
 
     async register(item: Item): Promise<void> {

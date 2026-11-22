@@ -19,7 +19,11 @@
   <body>
     <header class="topbar">
       <span class="brand">シス研Pay</span>
-      <span class="topbar-title">商品の登録</span>
+      <span class="topbar-title">管理画面</span>
+      <nav id="nav" hidden>
+        <a id="nav-items" href="#/items">商品</a>
+        <a id="nav-users" href="#/users">ユーザー</a>
+      </nav>
       <button id="logout" type="button" class="link" hidden>ログアウト</button>
     </header>
 
@@ -37,29 +41,7 @@
         <p id="login-error" class="error-message" role="alert" hidden></p>
       </section>
 
-      <section id="app" hidden>
-        <div class="panel column">
-          <h2>1. バーコードを読む</h2>
-          <video id="video" class="video" muted playsinline hidden></video>
-          <button id="camera-toggle" type="button" class="primary">カメラを開始</button>
-          <p id="camera-error" class="error-message" role="alert" hidden></p>
-          <p class="note">読めないときは、下の JAN コード欄に手で入力してもかまいません。</p>
-        </div>
-
-        <form id="item-form" class="panel column" autocomplete="off">
-          <h2>2. 商品の情報</h2>
-          <label for="jan">JAN コード</label>
-          <input id="jan" inputmode="numeric" maxlength="13" required />
-          <p id="existing" class="note existing" hidden></p>
-          <label for="name">商品名</label>
-          <input id="name" required />
-          <label for="price">値段（円）</label>
-          <input id="price" inputmode="numeric" required />
-          <button id="save" type="submit" class="primary">登録する</button>
-          <p id="result" class="result" role="status" hidden></p>
-          <p id="form-error" class="error-message" role="alert" hidden></p>
-        </form>
-      </section>
+      <div id="view" hidden></div>
     </main>
     <script type="module" src="/src/main.ts"></script>
   </body>
