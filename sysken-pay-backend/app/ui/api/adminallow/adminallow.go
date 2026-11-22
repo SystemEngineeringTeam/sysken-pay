@@ -122,6 +122,8 @@ func respondError(w http.ResponseWriter, action string, err error) {
 		apierrors.RespondError(w, http.StatusNotFound, "not in allowlist")
 	case errors.Is(err, adminallow.ErrLastAdmin):
 		apierrors.RespondError(w, http.StatusConflict, "cannot remove the last admin")
+	case errors.Is(err, adminallow.ErrSystemAccount):
+		apierrors.RespondError(w, http.StatusConflict, "cannot remove the system account")
 	case errors.Is(err, adminallow.ErrSelf):
 		apierrors.RespondError(w, http.StatusConflict, "cannot remove yourself")
 	default:

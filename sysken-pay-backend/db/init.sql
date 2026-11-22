@@ -149,3 +149,7 @@ CREATE TABLE IF NOT EXISTS admin_allowlist (
 
     PRIMARY KEY (upn)
 );
+
+-- システムアカウント（sysken@aitech.ac.jp）は最初から許可リストに入れ、外せない（アプリ側でも拒否する）。
+-- 値は app/domain/object/aitid の SystemAccountUPN と同じ。学籍番号は持たないので NULL。
+INSERT IGNORE INTO admin_allowlist (upn, student_id, added_by) VALUES ('sysken@aitech.ac.jp', NULL, 'system');

@@ -17,6 +17,8 @@ var (
 	ErrNotFound = errors.New("not in allowlist")
 	// ErrLastAdmin は最後の1人を消そうとした（API では 409。誰も入れなくなるため）
 	ErrLastAdmin = errors.New("cannot remove the last admin")
+	// ErrSystemAccount はシステムアカウント（sysken@aitech.ac.jp）を消そうとした（API では 409。不変）
+	ErrSystemAccount = errors.New("cannot remove the system account")
 	// ErrSelf は自分自身を消そうとした（API では 409）
 	ErrSelf = errors.New("cannot remove yourself")
 )
@@ -68,6 +70,9 @@ func (u *useCase) Remove(ctx context.Context, upn, by string) error {
 	normalized, err := aitid.NormalizeUPN(upn)
 	if err != nil {
 		return derrors.Invalid("upn is invalid")
+	}
+	if normalized == aitid.SystemAccountUPN {
+		return ErrSystemAccount
 	}
 	if normalized == by {
 		return ErrSelf

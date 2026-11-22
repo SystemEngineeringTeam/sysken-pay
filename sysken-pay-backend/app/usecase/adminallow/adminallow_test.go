@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"sysken-pay-api/app/domain/derrors"
+	"sysken-pay-api/app/domain/object/aitid"
 	"sysken-pay-api/app/domain/repository"
 )
 
@@ -106,6 +107,17 @@ func TestRemove(t *testing.T) {
 			t.Fatal("消してはいけない")
 		}
 	})
+	t.Run("システムアカウントは、ほかに誰がいても消せない", func(t *testing.T) {
+		f := newFake(aitid.SystemAccountUPN, a, b)
+		for _, by := range []string{"password", a} {
+			if err := NewUseCase(f, fakeTx{}).Remove(context.Background(), "SYSKEN@aitech.ac.jp", by); !errors.Is(err, ErrSystemAccount) {
+				t.Fatalf("by=%s err=%v", by, err)
+			}
+		}
+		if f.deleteHit != 0 || len(f.rows) != 3 {
+			t.Fatal("消してはいけない")
+		}
+	})
 	t.Run("自分自身は消せない", func(t *testing.T) {
 		f := newFake(a, b)
 		if err := NewUseCase(f, fakeTx{}).Remove(context.Background(), a, a); !errors.Is(err, ErrSelf) {
@@ -117,7 +129,7 @@ func TestRemove(t *testing.T) {
 	})
 	t.Run("いない人は NotFound", func(t *testing.T) {
 		f := newFake(a, b)
-		if err := NewUseCase(f, fakeTx{}).Remove(context.Background(), "sysken@aitech.ac.jp", "password"); !errors.Is(err, ErrNotFound) {
+		if err := NewUseCase(f, fakeTx{}).Remove(context.Background(), "e24001ee@aitech.ac.jp", "password"); !errors.Is(err, ErrNotFound) {
 			t.Fatalf("err=%v", err)
 		}
 	})

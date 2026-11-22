@@ -106,6 +106,7 @@ func TestRemove(t *testing.T) {
 		{"消せる", nil, 200},
 		{"最後の1人", uc.ErrLastAdmin, 409},
 		{"自分自身", uc.ErrSelf, 409},
+		{"システムアカウント", uc.ErrSystemAccount, 409},
 		{"いない", uc.ErrNotFound, 404},
 	}
 	for _, c := range cases {
