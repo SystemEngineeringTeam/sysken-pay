@@ -17,7 +17,7 @@ import {
   looksLikePaymentCode,
   toPaymentScanErrorMessage,
 } from "../services/paymentScan";
-import { PRODUCT_NOT_REGISTERED, toProductScanErrorMessage } from "../services/productScanErrorMessage";
+import { PRODUCT_DISABLED, PRODUCT_NOT_REGISTERED, toProductScanErrorMessage } from "../services/productScanErrorMessage";
 import styles from "./useBarcodeReader.module.scss";
 
 function useScanGuards() {
@@ -71,6 +71,11 @@ export function useProductScan() {
       if (!isMountedRef.current) return;
       if (!data?.item_id) {
         setError(PRODUCT_NOT_REGISTERED);
+        return;
+      }
+      // 無効の商品は買えない（有効にするのは管理画面。ラズパイからはさせない）
+      if (data.disabled) {
+        setError(PRODUCT_DISABLED);
         return;
       }
       addItem(data);
@@ -199,6 +204,11 @@ export function useCartScan() {
       if (!isMountedRef.current) return;
       if (!data?.item_id) {
         setError(PRODUCT_NOT_REGISTERED);
+        return;
+      }
+      // 無効の商品は買えない（有効にするのは管理画面。ラズパイからはさせない）
+      if (data.disabled) {
+        setError(PRODUCT_DISABLED);
         return;
       }
       addItem(data);

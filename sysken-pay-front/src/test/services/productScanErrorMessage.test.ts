@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ApiError } from "../../adapter/api/ApiError";
-import { PRODUCT_NOT_REGISTERED, toProductScanErrorMessage } from "../../services/productScanErrorMessage";
+import { PRODUCT_DISABLED, PRODUCT_NOT_REGISTERED, toProductScanErrorMessage } from "../../services/productScanErrorMessage";
 
 describe("toProductScanErrorMessage", () => {
   it("404 は未登録の商品", () => {
@@ -20,5 +20,10 @@ describe("toProductScanErrorMessage", () => {
     expect(toProductScanErrorMessage(new TypeError("Failed to fetch"))).toBe(
       "商品の取得に失敗しました。もう一度かざしてください。"
     );
+  });
+
+  it("無効の案内は、未登録の案内と文言が違う", () => {
+    expect(PRODUCT_DISABLED).not.toBe(PRODUCT_NOT_REGISTERED);
+    expect(PRODUCT_DISABLED).toContain("無効");
   });
 });

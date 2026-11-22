@@ -1,5 +1,6 @@
+import { PRODUCT_DISABLED } from "../../services/productScanErrorMessage";
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { renderHook, act } from "@testing-library/react";
+import { renderHook, act, render } from "@testing-library/react";
 import { useCartScan } from "../../hooks/useBarcodeReader";
 import { useCartStore } from "../../store/useCartStore";
 import { ApiError } from "../../adapter/api/ApiError";
@@ -96,6 +97,14 @@ describe("useCartScan", () => {
     expect(mockGetBalance).toHaveBeenCalledWith("24K01234");
     expect(mockNavigate).not.toHaveBeenCalled();
     expect(useCartStore.getState().cartItems).toHaveLength(1);
+  });
+
+  it("無効の商品をかざしても、カートには足さず「無効」の案内を出す", async () => {
+    mockGetItem.mockResolvedValue({ ...chips, disabled: true });
+    const result = await scan("4901330502881");
+    expect(useCartStore.getState().cartItems).toEqual([]);
+    const { container } = render(<result.current.ErrorMessage />);
+    expect(container.textContent).toBe(PRODUCT_DISABLED);
   });
 
   it("学生証は API に送らない", async () => {
