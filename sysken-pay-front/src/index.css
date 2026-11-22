@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap');
+@import '@fontsource-variable/noto-sans-jp';
 
 /*
  * 画面サイズの設定（Raspberry Pi 5 + 5インチ DSI タッチモニター 800x480）
@@ -28,7 +28,7 @@ body {
   height: 100%;
   margin: 0;
   padding: 0;
-  font-family: 'Noto Sans JP', sans-serif;
+  font-family: 'Noto Sans JP Variable', 'Noto Sans JP', sans-serif;
   overflow: hidden;
   display: flex;
   align-items: center;
