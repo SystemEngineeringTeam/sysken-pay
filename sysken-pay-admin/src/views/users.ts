@@ -1,6 +1,6 @@
 import QRCode from "qrcode";
 import { stopMember, stopMembers } from "../actions";
-import { countMembers, filterMembers, formatYen, MEMBER_TABS, memberBadge, searchMembers, type Member, type MemberTab } from "../members";
+import { canHide, countMembers, filterMembers, formatYen, MEMBER_TABS, memberBadge, searchMembers, type Member, type MemberTab } from "../members";
 import { isValidStudentId, toMemberErrorMessage, type MemberAction } from "../messages";
 import { buildQrUrl, formatRemaining, QR_DISPLAY_SECONDS, QR_ENDPOINT } from "../qr";
 import { singleFlight } from "../save";
@@ -29,6 +29,7 @@ export const usersList = async (root: HTMLElement, { api }: ViewContext) => {
     const allTabs: { key: MemberTab; label: string }[] = [
       ...MEMBER_TABS,
       { key: "stopped", label: "停止中" },
+      { key: "hidden", label: "非表示" },
     ];
     tabs.replaceChildren(
       ...allTabs.map(({ key, label }) =>
@@ -149,6 +150,16 @@ export const userDetail = async (root: HTMLElement, { api }: ViewContext, userId
     } else {
       rows.push(action("利用を再開する", "resume", async () => (await api.resume(m.user_id), "利用を再開しました。"), "primary"));
     }
+    if (m.hidden)
+      rows.push(action("非表示をやめる", "unhide", async () => (await api.unhide(m.user_id), "非表示をやめました。停止中の一覧に戻りました。")));
+    else if (canHide(m))
+      rows.push(
+        action("非表示にする", "hide", async () => {
+          if (!(await confirmDialog(`${m.user_name} さんを一覧から非表示にします。記録は消えません。「非表示」のタブから戻せます。`, "非表示にする"))) return null;
+          await api.hide(m.user_id);
+          return "非表示にしました。「非表示」のタブから戻せます。";
+        }),
+      );
     // 削除は取り消せないので、他の操作から離して一番下に置く
     const removeButtons: HTMLElement[] = [];
     if (m.deletable)

@@ -113,6 +113,16 @@ export const createApi = (password: string, fetchFn: Fetch = (...a) => fetch(...
       await post(`/v1/user/${encodeURIComponent(userId)}/resume`);
     },
 
+    /** 停止中で残高 0 の人を、一覧から非表示にする（記録は消えない） */
+    async hide(userId: string): Promise<void> {
+      await post(`/v1/user/${encodeURIComponent(userId)}/hide`);
+    },
+
+    /** 非表示をやめて、停止中の一覧に戻す */
+    async unhide(userId: string): Promise<void> {
+      await post(`/v1/user/${encodeURIComponent(userId)}/unhide`);
+    },
+
     /** 記録が1件もない停止中の人を消す（取り消せない） */
     async remove(userId: string): Promise<void> {
       const res = await call(`/v1/user/${encodeURIComponent(userId)}`, { method: "DELETE" });

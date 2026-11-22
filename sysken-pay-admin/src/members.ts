@@ -13,7 +13,7 @@ export type Member = {
   deletable: boolean;
 };
 
-export type MemberTab = "all" | "unrefunded" | "graduation" | "stopped";
+export type MemberTab = "all" | "unrefunded" | "graduation" | "stopped" | "hidden";
 
 export const MEMBER_TABS: { key: "all" | "unrefunded" | "graduation"; label: string }[] = [
   { key: "all", label: "全員" },
@@ -28,8 +28,10 @@ export const filterMembers = (members: Member[], tab: MemberTab): Member[] => {
     case "graduation":
       return members.filter((m) => m.graduation_candidate);
     case "stopped":
-      // 以前に「非表示」にした人も、停止中に入れる（非表示の機能はやめた）
-      return members.filter((m) => m.status === "stopped");
+      // 「非表示」にした人は、ここから外して「非表示」のタブに分ける
+      return members.filter((m) => m.status === "stopped" && !m.hidden);
+    case "hidden":
+      return members.filter((m) => m.status === "stopped" && m.hidden);
     default:
       // 「全員」は使える人だけ。止めた人は「停止中」に分ける
       return members.filter((m) => m.status !== "stopped");
@@ -41,7 +43,11 @@ export const countMembers = (members: Member[]): Record<MemberTab, number> => ({
   unrefunded: filterMembers(members, "unrefunded").length,
   graduation: filterMembers(members, "graduation").length,
   stopped: filterMembers(members, "stopped").length,
+  hidden: filterMembers(members, "hidden").length,
 });
+
+/** 「非表示にする」を出せる人（停止中で残高 0、まだ隠していない）。サーバーも同じ決まりで 409 を返す */
+export const canHide = (m: Member): boolean => m.status === "stopped" && m.balance === 0 && !m.hidden;
 
 /** 名前か学籍番号に、検索の文字が入っている人だけにする（大文字・小文字は区別しない） */
 export const searchMembers = (members: Member[], query: string): Member[] => {
@@ -56,7 +62,7 @@ export const formatYen = (amount: number): string => `¥${amount.toLocaleString(
 /** 一覧の行に出す状態の札。出さないときは null */
 export const memberBadge = (m: Member): { label: string; tone: "red" | "gray" | "blue" } | null => {
   if (m.unrefunded) return { label: "未返金", tone: "red" };
-  if (m.status === "stopped") return { label: "停止中", tone: "gray" };
+  if (m.status === "stopped") return { label: m.hidden ? "非表示" : "停止中", tone: "gray" };
   if (!m.has_payment_card) return { label: "バーコードなし", tone: "blue" };
   return null;
 };

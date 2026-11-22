@@ -3,13 +3,15 @@ import { ApiError } from "./api";
 
 const SESSION = "管理者パスワードの確認が切れました。ログインし直してください。";
 
-export type MemberAction = "list" | "refund" | "stop" | "resume" | "delete" | "update" | "issue";
+export type MemberAction = "list" | "refund" | "stop" | "resume" | "hide" | "unhide" | "delete" | "update" | "issue";
 
 const FALLBACK: Record<MemberAction, string> = {
   list: "ユーザー一覧を読み込めませんでした。もう一度お試しください。",
   refund: "返金できませんでした。もう一度お試しください。",
   stop: "利用停止できませんでした。もう一度お試しください。",
   resume: "利用を再開できませんでした。もう一度お試しください。",
+  hide: "非表示にできませんでした。もう一度お試しください。",
+  unhide: "非表示をやめられませんでした。もう一度お試しください。",
   delete: "削除できませんでした。もう一度お試しください。",
   update: "更新に失敗しました。もう一度お試しください。",
   issue: "QR を作れませんでした。もう一度お試しください。",
@@ -31,6 +33,8 @@ export const toMemberErrorMessage = (action: MemberAction, e: unknown): string =
         if (action === "refund") return "残高が 0 円なので、返金するものはありません。";
         if (action === "stop") return "このユーザーは、すでに利用停止しています。";
         if (action === "resume") return "このユーザーは利用停止していません。";
+        if (action === "hide") return "非表示にできるのは、利用停止中で残高が 0 円の人だけです。残高が残っているときは先に返金してください。";
+        if (action === "unhide") return "このユーザーは非表示になっていません。";
         if (action === "delete") return "購入・チャージ・返金の記録がある人は削除できません。利用停止のままにしてください。";
         if (action === "update") return "この学籍番号は、もう別のユーザーで登録されています。";
         break;

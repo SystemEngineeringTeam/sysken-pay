@@ -65,6 +65,8 @@ describe("createApi", () => {
       .mockResolvedValueOnce(json(200, {}))
       .mockResolvedValueOnce(json(201, { hri: "SP7Q2K", user_name: "山田" }))
       .mockResolvedValueOnce(json(200, { user_id: "24K00009", user_name: "山田" }))
+      .mockResolvedValueOnce(json(200, {}))
+      .mockResolvedValueOnce(json(200, {}))
       .mockResolvedValueOnce(json(200, {}));
     const api = createApi("pw", f, "https://x");
     expect(await api.listUsers()).toHaveLength(1);
@@ -74,6 +76,8 @@ describe("createApi", () => {
     expect(await api.issueHri("24K00001")).toEqual({ hri: "SP7Q2K", user_name: "山田" });
     expect(await api.updateUser("24K00001", { user_name: "山田", user_id: "24K00009" })).toEqual({ user_id: "24K00009", user_name: "山田" });
     await api.remove("24K00009");
+    await api.hide("24K00001");
+    await api.unhide("24K00001");
     const calls = f.mock.calls.map((c) => [c[0], c[1].method ?? "GET"]);
     expect(calls).toEqual([
       ["https://x/v1/user", "GET"],
@@ -83,6 +87,8 @@ describe("createApi", () => {
       ["https://x/v1/user/24K00001/hri", "POST"],
       ["https://x/v1/user/24K00001", "PATCH"],
       ["https://x/v1/user/24K00009", "DELETE"],
+      ["https://x/v1/user/24K00001/hide", "POST"],
+      ["https://x/v1/user/24K00001/unhide", "POST"],
     ]);
   });
 
