@@ -10,5 +10,18 @@ export default defineConfig({
     assets: {
       notFoundHandling: "single-page-application",
     },
+    domains: [
+      {
+        hostname: "qr.pay.sysken.net",
+        production: true,
+        previews: false,
+      },
+    ],
+    previewUrls: false,
+    env: {
+      ASSETS: {
+        type: "assets",
+      },
+    },
   },
 });
