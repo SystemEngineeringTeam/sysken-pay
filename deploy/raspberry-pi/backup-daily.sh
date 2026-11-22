@@ -6,7 +6,7 @@
 # - Drive 側は消さない（rclone copy は、送るだけで消さない。すでにあるファイルは上書きもしない）
 # - ラズパイの中は、14 日より古い sysken_pay-*.sql.gz を消す（Drive に送れたとき、または Drive 未設定のときだけ）
 # - Drive の設定（~/.config/sysken-pay/backup.env）が無ければ、Drive には送らない（ローカルのバックアップだけ）
-# - 失敗したら Slack に知らせる（短い文だけ。保存先の名前・パスワードは送らない）
+# - 成功しても失敗しても Slack に知らせる（短い文だけ。保存先の名前・パスワード・ファイル名は送らない）
 #
 # 環境変数（ふだんは触らない。テスト用）:
 #   BACKUP_CMD / NOTIFY_CMD / RCLONE_CMD / BACKUP_DIR / BACKUP_ENV / KEEP_DAYS
@@ -36,6 +36,7 @@ fi
 
 # 2) Drive に送る（設定があるときだけ）
 UPLOADED=ok
+DRIVE=none
 RCLONE_DEST=""
 if [ -f "$BACKUP_ENV" ]; then
   # shellcheck disable=SC1090
@@ -48,6 +49,7 @@ else
   if "$RCLONE_CMD" copy "$BACKUP_DIR" "$RCLONE_DEST" \
     --max-depth 1 --include 'sysken_pay-*.sql.gz' --ignore-existing; then
     echo "Google Drive に送りました"
+    DRIVE=sent
   else
     UPLOADED=ng
     echo "Google Drive に送れませんでした" >&2
@@ -62,4 +64,12 @@ if [ "$UPLOADED" = "ok" ]; then
 fi
 
 [ "$UPLOADED" = "ok" ] || exit 1
+
+# 4) 成功を Slack に知らせる
+if [ "$DRIVE" = "sent" ]; then
+  notify ok "毎日のバックアップが成功しました（ラズパイに保存し、Google Drive に送りました）"
+else
+  notify warn "毎日のバックアップは取れましたが、Google Drive には送っていません（設定が無いため）" \
+    "手順書の「13. Google Drive にバックアップを送る」を行う"
+fi
 exit 0

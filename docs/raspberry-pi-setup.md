@@ -124,7 +124,7 @@ crontab -l    # backup-daily.sh の行が1つだけあること
 - 毎日 3:00 に `backups/` へ保存する。結果は `backups/backup.log`
 - 古い `crontab` の行（`./scripts/backup-db.sh` を直接呼ぶもの）が残っている人は、`crontab -e` でその行を消して、上の行に置き換える（二重に動かさない）
 - ラズパイの中は、14 日より古い `sysken_pay-*.sql.gz` を消す（`backups/deploy/` は消さない）
-- 失敗したときは Slack に知らせる（「12. Slack に連絡する」を済ませておく）
+- 毎日の結果を Slack に知らせる（成功 ✅・Drive に送っていない ⚠️・失敗 🚨。「12. Slack に連絡する」を済ませておく）
 - バックアップには部員の個人情報と残高が入るので、ファイルは自分だけが読める権限で作られる
 - このままだと SD カードの中にしかない。ラズパイの外（Google Drive）にも送る → 「13. Google Drive にバックアップを送る」
 

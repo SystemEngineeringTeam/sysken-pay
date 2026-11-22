@@ -60,7 +60,7 @@ old_file sysken_pay-old.sql.gz
 ( BACKUP_ENV="$WORK/none.env"; export BACKUP_ENV; run ); rc=$?
 check "設定なし: 成功する" test "$rc" -eq 0
 check "設定なし: rclone を呼ばない" test ! -f "$WORK/rclone.log"
-check "設定なし: Slack に送らない" test ! -f "$WORK/notify.log"
+check "設定なし: Slack に warn を送る（Drive に送っていない）" has "$WORK/notify.log" "^warn "
 check "設定なし: 古いローカルは消える" test ! -f "$DIR/sysken_pay-old.sql.gz"
 check "設定なし: 新しいバックアップは残る" test -f "$DIR/sysken_pay-new.sql.gz"
 check "件数での整理を無効にして呼ぶ" has "$WORK/backup.log" "KEEP=100000"
@@ -75,7 +75,10 @@ check "直下だけ（--max-depth 1）" has "$WORK/rclone.log" "--max-depth 1"
 check "上書きしない（--ignore-existing）" has "$WORK/rclone.log" "--ignore-existing"
 check "sync を使わない" hasnt "$WORK/rclone.log" "sync"
 check "delete / move を使わない" hasnt "$WORK/rclone.log" "delete\|move"
-check "成功時は Slack に送らない" test ! -f "$WORK/notify.log"
+check "成功時は Slack に ok を送る" has "$WORK/notify.log" "^ok "
+check "成功時に fail は送らない" hasnt "$WORK/notify.log" "^fail "
+check "成功の文に保存先の名前を入れない" hasnt "$WORK/notify.log" "secret-remote-name"
+check "成功の文にファイル名を入れない" hasnt "$WORK/notify.log" "sql.gz"
 
 # 3) rclone 失敗: Slack fail、ローカルは消さない
 setup
@@ -83,6 +86,7 @@ old_file sysken_pay-old.sql.gz
 ( BACKUP_ENV="$WORK/backup.env"; TEST_RCLONE_EXIT=1; export BACKUP_ENV TEST_RCLONE_EXIT; run ); rc=$?
 check "rclone 失敗: 失敗で終わる" test "$rc" -ne 0
 check "rclone 失敗: Slack に fail を送る" has "$WORK/notify.log" "^fail "
+check "rclone 失敗: ok は送らない" hasnt "$WORK/notify.log" "^ok "
 check "rclone 失敗: 古いローカルも消さない" test -f "$DIR/sysken_pay-old.sql.gz"
 check "Slack の文に保存先の名前を入れない" hasnt "$WORK/notify.log" "secret-remote-name"
 check "出力にも保存先の名前を出さない" hasnt "$WORK/out.log" "secret-remote-name"
@@ -93,6 +97,7 @@ setup
 check "バックアップ失敗: 失敗で終わる" test "$rc" -ne 0
 check "バックアップ失敗: Drive に送らない" test ! -f "$WORK/rclone.log"
 check "バックアップ失敗: Slack に fail を送る" has "$WORK/notify.log" "^fail "
+check "バックアップ失敗: ok は送らない" hasnt "$WORK/notify.log" "^ok "
 
 # 5) rclone が入っていない（設定あり）: Slack fail
 setup
@@ -121,6 +126,7 @@ printf '# 空\n' >"$WORK/backup.env"
 ( BACKUP_ENV="$WORK/backup.env"; export BACKUP_ENV; run ); rc=$?
 check "RCLONE_DEST が空: 成功する" test "$rc" -eq 0
 check "RCLONE_DEST が空: rclone を呼ばない" test ! -f "$WORK/rclone.log"
+check "RCLONE_DEST が空: Slack に warn を送る" has "$WORK/notify.log" "^warn "
 
 echo
 echo "合格 $PASS / 失敗 $FAIL"
