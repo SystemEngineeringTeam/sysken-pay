@@ -19,7 +19,7 @@ export default function PaymentStartPage(): JSX.Element {
 
   return (
     <div className={styles.container}>
-      <Header title="現金支払い" right="toTop" />
+      <Header title="現金支払い" confirmHome />
       <Total title="お金を箱に入れてください" label="合計" showButton />
       <ArrowButton variant="prev" onClick={() => navigate("/buy/list")}>
         戻る

@@ -25,7 +25,7 @@ export default function BuyListPage(): JSX.Element {
 
   return (
     <div className={styles.container}>
-      <Header title="商品購入" right="toTop" />
+      <Header title="商品購入" confirmHome />
       <HiddenBarcodeInput onScan={onScan} />
       <div className={styles.content}>
         <ItemList
