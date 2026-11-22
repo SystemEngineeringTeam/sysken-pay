@@ -1,5 +1,5 @@
 import type { JSX } from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../components/layouts/Header/index";
 import Button from "../../components/ui/Button/index";
@@ -17,11 +17,18 @@ export default function ChargePage(): JSX.Element {
   const [authenticated, setAuthenticated] = useState(false);
   const { login, isLoading, error: errorMessage, clearError } = useAdminLogin("charge");
 
+  const formRef = useRef<HTMLDivElement | null>(null);
+
   const handleSubmit = async () => {
     if (isLoading) return;
     if (await login(password)) {
       setAuthenticated(true);
+      return;
     }
+    // 失敗したら、入力欄を空にして、次のバーコードをすぐ読めるようにフォーカスを戻す
+    // （空にしないと、次に読んだ文字が前の文字の後ろにつながってしまう）
+    setPassword("");
+    window.setTimeout(() => formRef.current?.querySelector("input")?.focus(), 0);
   }
 
   const handlePasswordChange = (value: string) => {
@@ -41,7 +48,7 @@ export default function ChargePage(): JSX.Element {
               <p className={styles.scanText}>管理者のシス研Payバーコードをかざす</p>
             </div>
             <p className={styles.or}>または パスワードを入力</p>
-            <div className={styles.inputWrapper}>
+            <div className={styles.inputWrapper} ref={formRef}>
               <Input
               type="password"
               autoFocus

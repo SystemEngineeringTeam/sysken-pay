@@ -55,6 +55,14 @@ export function Input(props: InputProps): JSX.Element {
     className,
   } = props;
 
+  // autoFocus: react-aria の既定だと、画面遷移の直後にフォーカスが付かないことがあるため、自分でも付ける
+  useEffect(() => {
+    if (props.autoFocus !== true) return;
+    const id = window.setTimeout(() => ref.current?.focus(), 0);
+    return () => window.clearTimeout(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     if (ref.current != null && value !== undefined) {
       ref.current.value = value.toString();
