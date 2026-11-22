@@ -254,34 +254,56 @@ sh deploy/raspberry-pi/notify-slack.sh ok "テストです（連絡の試し）"
 - Drive 側のファイルは**消さない**（`rclone copy` は送るだけ。すでにあるファイルは上書きもしない）。容量が足りなくなったら人が整理する
 - 送れなかった日があっても、次の日にまとめて送る。送れなかったときは Slack に知らせ、ラズパイ側の古いファイルも消さない
 
-### 準備（1 回だけ・役員がラズパイで行う）
+### 準備（1 回だけ）
 
-1. rclone を入れる: `sudo apt install rclone`
-2. Google のサービスアカウントの鍵（JSON）を、**リポジトリの外**に置く。例: `~/.config/sysken-pay/drive-key.json`（`chmod 600`。リポジトリには絶対に入れない・チャットに貼らない）
-3. `rclone config` で remote を作る（名前の例: `sysken-drive`）
-   - Storage は `drive`、`service_account_file` に上の JSON のパス
-   - 送り先は**共有ドライブ**を使い、そのサービスアカウントに「編集者」以上の権限を付ける。`team_drive`（共有ドライブの ID）か `root_folder_id` を設定する
-   - **注意**: サービスアカウントは自分の保存容量を持たない。個人の「マイドライブ」のフォルダに送ろうとすると `storageQuotaExceeded` で失敗する。共有ドライブ（または共有ドライブの中のフォルダ）を送り先にする
-4. 設定ファイルを置く:
+認証は **Google アカウントでのログイン（OAuth）**。ブラウザが要るので、ログインは Mac で行い、できた設定ファイルをラズパイに持っていく。
+
+**Mac で行う**
+
+1. rclone を入れる: `brew install rclone`
+2. `rclone config` で remote を作る（名前: `sysken-pay-backup`）
+   - Storage は `drive`、`client_id` / `client_secret` は Google Cloud Console で作った OAuth クライアントの値
+   - `scope` は `drive`、`root_folder_id` に送り先フォルダの ID（フォルダの URL の末尾）
+   - 最後に「自動認証しますか」に `y` → ブラウザが開くので、**バックアップ用の共有アカウント**でログインして許可する
+3. 確かめる（読むだけ）: `rclone lsd sysken-pay-backup:` または `rclone lsf sysken-pay-backup: --max-depth 1`
+4. 設定ファイルの場所: `rclone config file`（Mac では `~/.config/rclone/rclone.conf`）
+
+**ラズパイに持っていく**（cron を動かすのと同じユーザーで）
+
+5. ラズパイで: `mkdir -p ~/.config/rclone ~/.config/sysken-pay`
+6. Mac から `rclone.conf` をコピーする（`<ユーザー>` と `<ラズパイ>` はいつも SSH で使っている接続先）:
    ```bash
-   mkdir -p ~/.config/sysken-pay
+   scp ~/.config/rclone/rclone.conf <ユーザー>@<ラズパイ>:~/.config/rclone/rclone.conf
+   ```
+   USB メモリで渡してもよい。OAuth 方式は鍵ファイルが無く、`rclone.conf` の中に `token` が入っているので、**これ 1 つ**を持っていく
+7. ラズパイで: `chmod 600 ~/.config/rclone/rclone.conf`（`sudo rclone config` はしない。cron から見えなくなる）
+8. 設定ファイルを置く:
+   ```bash
    cp ~/sysken-pay/deploy/raspberry-pi/backup.env.sample ~/.config/sysken-pay/backup.env
    chmod 600 ~/.config/sysken-pay/backup.env
-   # RCLONE_DEST を、手順 3 で作った remote 名に合わせる（例: sysken-drive:）
+   # RCLONE_DEST を remote 名に合わせる（例: sysken-pay-backup:）
    ```
-5. 確かめる（まだ何も送らない）: `rclone lsd sysken-drive:` がエラーにならないこと
-6. 手動で 1 回動かす:
-   ```bash
-   cd ~/sysken-pay/sysken-pay-backend
-   sh ../deploy/raspberry-pi/backup-daily.sh
-   rclone ls sysken-drive: | grep sysken_pay-    # 今日のファイルが見えること
-   ```
+9. 確かめる（まだ何も送らない）: `rclone lsf sysken-pay-backup: --max-depth 1` がエラーにならないこと
+10. 手動で 1 回動かす:
+    ```bash
+    cd ~/sysken-pay/sysken-pay-backend
+    sh ../deploy/raspberry-pi/backup-daily.sh
+    rclone lsf sysken-pay-backup: | grep sysken_pay-    # 今日のファイルが見えること
+    ```
+
+**秘密情報の扱い**
+
+- `rclone.conf`（`client_secret` と `token` が入る）は秘密。リポジトリに入れない・チャットや Slack に貼らない。もし貼ってしまったら、Google Cloud Console で `client_secret` を作り直し、`rclone config reconnect` で入れ直す
+- `scope = drive` は、そのアカウントの Drive 全体を読み書きできる権限。**バックアップ専用の共有アカウント**を使い、個人のアカウントは使わない
+- 使い終わった Mac 側の `rclone.conf` は、必要なければ自分で消す
+- `token` は、そのアカウントのパスワード変更や、アクセス権の取り消しで使えなくなる。使えなくなったら、Mac で `rclone config reconnect sysken-pay-backup:` をして、`rclone.conf` を持っていき直す
 
 ### 送れないとき
 
 - Slack に「Google Drive に送れませんでした」と出たら、`backups/backup.log` を見る
-- `storageQuotaExceeded` → 送り先がマイドライブになっている。共有ドライブにする
-- `403` / `notFound` → サービスアカウントに権限が無い、または ID が違う
+- `storageQuotaExceeded` / `quota` → 送り先のアカウントの Drive の空きが無い。空きを作る（Drive 側のファイルは自動では消さない）
+- `invalid_grant` / `token expired` / `empty token` → ログインが切れた。Mac で `rclone config reconnect sysken-pay-backup:` をして、`rclone.conf` を持っていき直す
+- `403` / `notFound` → そのアカウントにフォルダの権限が無い、または `root_folder_id` が違う
 - `rclone: command not found` → rclone が入っていない（手順 1）
 - 直したら手順 6 をもう一度。ラズパイの中に残っている分は、次の実行でまとめて送られる
 
