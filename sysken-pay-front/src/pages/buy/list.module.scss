@@ -45,11 +45,13 @@
   max-width: 120rem;
   margin-top: auto;
   margin-bottom: 11rem;
+  flex-shrink: 0;
   padding: 0 4rem;
   box-sizing: border-box;
 }
 
 .hint {
+  flex-shrink: 0;
   margin: 0;
   font-size: 2rem;
   color: $gray-70;

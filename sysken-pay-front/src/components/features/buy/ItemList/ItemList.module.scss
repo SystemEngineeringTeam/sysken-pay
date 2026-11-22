@@ -4,6 +4,10 @@
   align-items: center;
   width: 100%;
   padding: 1.25rem 3rem;
+  box-sizing: border-box;
+  // 残りの高さに収める。商品が増えても、下の合計を押し出さず、一覧の中だけスクロールする
+  flex: 1 1 0;
+  min-height: 0;
 }
 
 .heading {
@@ -12,6 +16,7 @@
   justify-content: center;
   gap: 1.5rem;
   margin-bottom: 3rem;
+  flex-shrink: 0;
 }
 
 .title {
@@ -41,7 +46,14 @@
   gap: 1.5rem;
   width: 100%;
   max-width: 88rem;
-  max-height: 68.5rem;
+  flex: 1 1 0;
+  min-height: 0;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+
+  // 商品が増えても、カードを縮めずにスクロールさせる
+  > * {
+    flex-shrink: 0;
+  }
   margin-left: 10rem;
 }
