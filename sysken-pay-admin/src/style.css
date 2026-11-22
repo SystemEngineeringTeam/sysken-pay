@@ -656,3 +656,13 @@ form.panel > button.secondary {
   padding-top: 16px;
   border-top: 1px solid var(--gray-10);
 }
+
+/* 上の帯は、画面の左端に寄せる */
+.topbar {
+  padding-inline: 20px;
+}
+
+/* ナビは帯の中央寄りに置く（余白をナビの左右とログアウトの左で分け合う） */
+#nav {
+  margin-left: auto;
+}
