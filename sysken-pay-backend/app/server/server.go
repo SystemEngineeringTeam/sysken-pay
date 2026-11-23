@@ -73,7 +73,6 @@ func Run(db *sql.DB) error {
 	getAllItemsUseCase := item.NewGetAllItemsUseCase(itemRepo)
 	setItemDisabledUseCase := item.NewSetItemDisabledUseCase(itemRepo)
 	chargeAmountUseCase := charge.NewChargeAmountUseCase(chargeRepo, memberRepo, txManager)
-	chargeCancelUseCase := charge.NewChargeCancelUseCase(chargeRepo)
 	createPurchaseUseCase := purchase.NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, memberRepo, txManager)
 	cancelPurchaseUseCase := purchase.NewCancelPurchaseUseCase(purchaseRepo)
 	getBalanceUseCase := balance.NewGetBalanceUseCase(balanceRepo)
@@ -86,7 +85,7 @@ func Run(db *sql.DB) error {
 	// Handler
 	userHandler := api_user.NewUserHandler(getUserUseCase, registerUserUseCase, updateUserUseCase)
 	itemHandler := api_item.NewItemHandler(registerItemUseCase, updateItemUseCase, findItemByJanCodeUseCase, getAllItemsUseCase, setItemDisabledUseCase)
-	chargeHandler := api_charge.NewChargeHandler(chargeAmountUseCase, chargeCancelUseCase)
+	chargeHandler := api_charge.NewChargeHandler(chargeAmountUseCase)
 	purchaseHandler := api_purchase.NewPurchaseHandler(createPurchaseUseCase, cancelPurchaseUseCase)
 	balanceHandler := api_balance.NewBalanceHandler(getBalanceUseCase, getPurchaseHistoriesUseCase)
 	paymentCardHandler := api_paymentcard.NewHandler(issuePaymentCardUseCase, resolvePaymentCardUseCase)

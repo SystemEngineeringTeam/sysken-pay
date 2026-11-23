@@ -12,8 +12,4 @@ type ChargeRepository interface {
 	// お金をチャージする
 	// チャージに成功した場合はチャージした金額を返す
 	ChargeAmount(ctx context.Context, c *charge.Charge) (*charge.Charge, error)
-
-	// お金をチャージキャンセルする
-	// チャージキャンセルに成功した場合はキャンセルした金額を返す
-	ChargeCancel(ctx context.Context, c *charge.Charge) (*charge.Charge, error)
 }

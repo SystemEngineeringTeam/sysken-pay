@@ -318,45 +318,6 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
-  /v1/user/{user_id}/charge/cancel:
-    post:
-      tags: [charge]
-      summary: チャージキャンセル
-      operationId: chargeCancel
-      security:
-        - adminBasicAuth: []
-        - entraBearer: []
-        - adminSession: []
-      parameters:
-        - $ref: "#/components/parameters/UserId"
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/PostChargeCancelRequest"
-      responses:
-        "200":
-          description: キャンセル成功
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ChargeCancelResponse"
-        "400":
-          description: リクエスト不正
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-        "401":
-          $ref: "#/components/responses/Unauthorized"
-        "500":
-          description: サーバーエラー
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ErrorResponse"
-
   # ==================== Purchase ====================
   /v1/user/{user_id}/purchase:
     post:
@@ -1247,15 +1208,6 @@ components:
           enum: [500, 1000, 2000]
           description: チャージ金額（500, 1000, 2000 のいずれか）
 
-    PostChargeCancelRequest:
-      type: object
-      required: [amount]
-      properties:
-        amount:
-          type: integer
-          enum: [500, 1000, 2000]
-          description: キャンセル金額（500, 1000, 2000 のいずれか）
-
     PostItemRequest:
       type: object
       required: [jan_code, item_name, price]
@@ -1378,25 +1330,6 @@ components:
         charge_id:
           type: integer
         charge_amount:
-          type: integer
-        user_id:
-          type: string
-        balance:
-          type: integer
-        created_at:
-          type: string
-          format: date-time
-          example: "2025-01-01T09:00:00.000+09:00"
-
-    ChargeCancelResponse:
-      type: object
-      properties:
-        status:
-          type: string
-          example: "success"
-        charge_id:
-          type: integer
-        canceled_amount:
           type: integer
         user_id:
           type: string

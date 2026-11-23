@@ -133,7 +133,6 @@ func newRouter(h handlers, cfg routerConfig) http.Handler {
 			r.Post("/user", h.user.RegisterUser)
 			// HRI の発行と作り直しは同じ。バーコードの Session でも通す（ラズパイの再発行用。リスクは docs/phone-payment.md）（新しく発行すると古いものは使えなくなる）
 			r.Post("/user/{user_id}/hri", h.paymentCard.Issue)
-			r.Post("/user/{user_id}/charge/cancel", h.charge.ChargeCancel)
 			r.Post("/user/{user_id}/purchase/cancel", h.purchase.CancelPurchase)
 			r.Post("/item", h.item.ResisterItem)
 			r.Patch("/item", h.item.UpdateItem)

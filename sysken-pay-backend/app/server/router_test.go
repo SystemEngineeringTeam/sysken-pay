@@ -26,7 +26,6 @@ func (stub) GetAllItems(w http.ResponseWriter, r *http.Request)          { ok(w,
 func (stub) DisableItem(w http.ResponseWriter, r *http.Request)          { ok(w, r) }
 func (stub) EnableItem(w http.ResponseWriter, r *http.Request)           { ok(w, r) }
 func (stub) ChargeAmount(w http.ResponseWriter, r *http.Request)         { ok(w, r) }
-func (stub) ChargeCancel(w http.ResponseWriter, r *http.Request)         { ok(w, r) }
 func (stub) CreatePurchase(w http.ResponseWriter, r *http.Request)       { ok(w, r) }
 func (stub) CancelPurchase(w http.ResponseWriter, r *http.Request)       { ok(w, r) }
 func (stub) GetBalance(w http.ResponseWriter, r *http.Request)           { ok(w, r) }
@@ -83,7 +82,6 @@ var protectedRoutes = []struct{ method, path string }{
 	{http.MethodDelete, "/v1/admin/allowlist/k23099kk@aitech.ac.jp"},
 	{http.MethodPost, "/v1/user"},
 	{http.MethodPatch, "/v1/user/20K23099"},
-	{http.MethodPost, "/v1/user/20K23099/charge/cancel"},
 	{http.MethodPost, "/v1/user/20K23099/purchase/cancel"},
 	{http.MethodPost, "/v1/item"},
 	{http.MethodPatch, "/v1/item"},
@@ -368,5 +366,18 @@ func TestUnlockRouteIsOpen(t *testing.T) {
 		if got := do(h, method, "/v1/admin/unlock", false, ""); got != http.StatusOK {
 			t.Errorf("%s /v1/admin/unlock: status = %d, want 200", method, got)
 		}
+	}
+}
+
+// チャージ取消 API は廃止した（#77）。管理者として入っても、ルートが無いので 404 になる
+func TestChargeCancelRouteIsRemoved(t *testing.T) {
+	h := testRouter("secret")
+	path := "/v1/user/20K23099/charge/cancel"
+	if got := do(h, http.MethodPost, path, true, "secret"); got != http.StatusNotFound && got != http.StatusMethodNotAllowed {
+		t.Errorf("POST %s: status = %d, want 404 (廃止済み)", path, got)
+	}
+	// チャージ本体は今までどおり使える
+	if got := do(h, http.MethodPost, "/v1/user/20K23099/charge", true, "secret"); got != http.StatusOK {
+		t.Errorf("POST /v1/user/20K23099/charge: status = %d, want 200", got)
 	}
 }
