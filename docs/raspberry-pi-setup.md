@@ -123,6 +123,7 @@ crontab -l    # backup-daily.sh の行が1つだけあること
 
 - 毎日 3:00 に `backups/` へ保存する。結果は `backups/backup.log`
 - 古い `crontab` の行（`./scripts/backup-db.sh` を直接呼ぶもの）が残っている人は、`crontab -e` でその行を消して、上の行に置き換える（二重に動かさない）
+- **すでに動いているラズパイは、必ず `crontab -l` で確かめる。** 古い行のままだと、ラズパイの中に保存するだけで、Google Drive に送られず、Slack にも知らせず、古いファイルの整理（14 日）もされない（ログに「保存しました」しか出ない）。`git pull` では crontab は変わらないので、手で置き換える必要がある。置き換えたあとは、`sh ../deploy/raspberry-pi/backup-daily.sh` を1回動かして「Google Drive に送りました」と出ることを確かめる
 - ラズパイの中は、14 日より古い `sysken_pay-*.sql.gz` を消す（`backups/deploy/` は消さない）
 - 毎日の結果を Slack に知らせる（成功 ✅・Drive に送っていない ⚠️・失敗 🚨。「12. Slack に連絡する」を済ませておく）
 - バックアップには部員の個人情報と残高が入るので、ファイルは自分だけが読める権限で作られる
