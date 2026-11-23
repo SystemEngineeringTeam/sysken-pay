@@ -74,23 +74,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/v1/user/{user_id}/charge/cancel": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** チャージキャンセル */
-        post: operations["chargeCancel"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/v1/user/{user_id}/purchase": {
         parameters: {
             query?: never;
@@ -480,13 +463,6 @@ export interface components {
              */
             amount: 500 | 1000 | 2000;
         };
-        PostChargeCancelRequest: {
-            /**
-             * @description キャンセル金額（500, 1000, 2000 のいずれか）
-             * @enum {integer}
-             */
-            amount: 500 | 1000 | 2000;
-        };
         PostItemRequest: {
             /** @description JANコード（8桁または13桁） */
             jan_code: string;
@@ -553,19 +529,6 @@ export interface components {
             status?: string;
             charge_id?: number;
             charge_amount?: number;
-            user_id?: string;
-            balance?: number;
-            /**
-             * Format: date-time
-             * @example 2025-01-01T09:00:00.000+09:00
-             */
-            created_at?: string;
-        };
-        ChargeCancelResponse: {
-            /** @example success */
-            status?: string;
-            charge_id?: number;
-            canceled_amount?: number;
             user_id?: string;
             balance?: number;
             /**
@@ -1148,52 +1111,6 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorResponse"];
                 };
             };
-            /** @description サーバーエラー */
-            500: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-        };
-    };
-    chargeCancel: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description ユーザーID（学籍番号フォーマット: 2桁の入学年度数字 + 1文字のアルファベット + 数字の連番） */
-                user_id: components["parameters"]["UserId"];
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["PostChargeCancelRequest"];
-            };
-        };
-        responses: {
-            /** @description キャンセル成功 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ChargeCancelResponse"];
-                };
-            };
-            /** @description リクエスト不正 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ErrorResponse"];
-                };
-            };
-            401: components["responses"]["Unauthorized"];
             /** @description サーバーエラー */
             500: {
                 headers: {

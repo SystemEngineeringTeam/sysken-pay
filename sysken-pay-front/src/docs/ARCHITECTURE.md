@@ -23,7 +23,7 @@ src/
 │
 ├── hooks/                      # 【Connect】 UIとRepositoryを繋ぐフック
 │   ├── useCart.ts              # カート操作・購入実行
-│   ├── useCharge.ts            # チャージ・キャンセル
+│   ├── useCharge.ts            # チャージ
 │   ├── useTotalPrice.ts        # カート合計金額
 │   └── useBarcodeReader.ts     # バーコードスキャン → API呼び出し
 │
