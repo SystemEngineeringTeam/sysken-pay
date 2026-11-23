@@ -72,7 +72,7 @@ func Run(db *sql.DB) error {
 	findItemByJanCodeUseCase := item.NewFindItemByJanCodeUseCase(itemRepo)
 	getAllItemsUseCase := item.NewGetAllItemsUseCase(itemRepo)
 	setItemDisabledUseCase := item.NewSetItemDisabledUseCase(itemRepo)
-	chargeAmountUseCase := charge.NewChargeAmountUseCase(chargeRepo, memberRepo)
+	chargeAmountUseCase := charge.NewChargeAmountUseCase(chargeRepo, memberRepo, txManager)
 	chargeCancelUseCase := charge.NewChargeCancelUseCase(chargeRepo)
 	createPurchaseUseCase := purchase.NewCreatePurchaseUseCase(purchaseRepo, itemRepo, balanceRepo, memberRepo, txManager)
 	cancelPurchaseUseCase := purchase.NewCancelPurchaseUseCase(purchaseRepo)

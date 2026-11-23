@@ -37,8 +37,12 @@ func (r *ChargeRepositoryImpl) ChargeAmount(ctx context.Context, c *charge.Charg
 	if err != nil {
 		return nil, err
 	}
-	c.SetID(int(chargeID))
-	c.SetCreatedAt(createdAt)
+	if err := c.SetID(int(chargeID)); err != nil {
+		return nil, err
+	}
+	if err := c.SetCreatedAt(createdAt); err != nil {
+		return nil, err
+	}
 
 	// 2. balance テーブルへ挿入 (残高追加)
 	queryBalance := `INSERT INTO balance (user_id, charge_id, amount, created_at) VALUES (?, ?, ?, ?)`
@@ -54,7 +58,9 @@ func (r *ChargeRepositoryImpl) ChargeAmount(ctx context.Context, c *charge.Charg
 		return nil, err
 	}
 
-	c.SetBalance(currentBalance)
+	if err := c.SetBalance(currentBalance); err != nil {
+		return nil, err
+	}
 
 	return c, nil
 }
