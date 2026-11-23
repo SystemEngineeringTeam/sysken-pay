@@ -13,19 +13,4 @@ export const ChargeRepositoryImpl = {
     if (error) throw new Error(error.message);
     return data;
   },
-
-  chargeCancel: async (
-    userId: string,
-    body: components["schemas"]["PostChargeCancelRequest"]
-  ): Promise<components["schemas"]["ChargeCancelResponse"]> => {
-    const { data, error } = await apiClient.POST(
-      "/v1/user/{user_id}/charge/cancel",
-      {
-        params: { path: { user_id: userId } },
-        body,
-      }
-    );
-    if (error) throw new Error(error.message);
-    return data;
-  },
 };
