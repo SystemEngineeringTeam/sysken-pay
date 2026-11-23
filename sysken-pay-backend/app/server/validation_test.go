@@ -36,7 +36,6 @@ func TestInvalidInputReturns400(t *testing.T) {
 	)
 	ch := api_charge.NewChargeHandler(
 		charge.NewChargeAmountUseCase(nil, nil, nil),
-		charge.NewChargeCancelUseCase(nil),
 	)
 	ph := api_purchase.NewPurchaseHandler(
 		purchase.NewCreatePurchaseUseCase(nil, nil, nil, nil, nil),
@@ -48,7 +47,6 @@ func TestInvalidInputReturns400(t *testing.T) {
 	r.Post("/v1/user", uh.RegisterUser)
 	r.Patch("/v1/user/{user_id}", uh.UpdateUser)
 	r.Post("/v1/user/{user_id}/charge", ch.ChargeAmount)
-	r.Post("/v1/user/{user_id}/charge/cancel", ch.ChargeCancel)
 	r.Post("/v1/user/{user_id}/purchase", ph.CreatePurchase)
 	r.Post("/v1/user/{user_id}/purchase/cancel", ph.CancelPurchase)
 	r.Post("/v1/item", ih.ResisterItem)
@@ -60,7 +58,6 @@ func TestInvalidInputReturns400(t *testing.T) {
 		{"ユーザー登録: 名前が空", http.MethodPost, "/v1/user", `{"user_id":"20K23099","user_name":""}`},
 		{"ユーザー更新: 名前が空", http.MethodPatch, "/v1/user/20K23099", `{"user_name":""}`},
 		{"チャージ: 許可されていない金額", http.MethodPost, "/v1/user/20K23099/charge", `{"amount":123}`},
-		{"チャージ取消: 許可されていない金額", http.MethodPost, "/v1/user/20K23099/charge/cancel", `{"amount":123}`},
 		{"商品登録: JANコードが不正", http.MethodPost, "/v1/item", `{"jan_code":"123","item_name":"コーラ","price":100}`},
 		{"商品登録: 価格がマイナス", http.MethodPost, "/v1/item", `{"jan_code":"4901234567894","item_name":"コーラ","price":-1}`},
 		{"購入: 数量が0", http.MethodPost, "/v1/user/20K23099/purchase", `{"items":[{"item_id":1,"quantity":0}]}`},
