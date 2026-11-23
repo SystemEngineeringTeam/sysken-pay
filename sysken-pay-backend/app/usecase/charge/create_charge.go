@@ -23,15 +23,18 @@ type ChargeAmountUseCase interface {
 type ChargeAmountServiceImpl struct {
 	chargeAmountRepo repository.ChargeRepository
 	memberRepo       repository.MemberRepository
+	txManager        repository.Transaction
 }
 
 func NewChargeAmountUseCase(
 	chargeAmountRepo repository.ChargeRepository,
 	memberRepo repository.MemberRepository,
+	txManager repository.Transaction,
 ) *ChargeAmountServiceImpl {
 	return &ChargeAmountServiceImpl{
 		chargeAmountRepo: chargeAmountRepo,
 		memberRepo:       memberRepo,
+		txManager:        txManager,
 	}
 }
 
@@ -43,22 +46,29 @@ func (s *ChargeAmountServiceImpl) ChargeAmount(
 		return nil, err
 	}
 
-	// 利用停止した人・いない人にはチャージしない
-	status, found, err := s.memberRepo.LockMember(ctx, userID)
+	// ロック → charge の INSERT → balance の INSERT → 残高の集計 を 1 つのトランザクションで行う。
+	// どこかで失敗したらすべてロールバックされ、charge だけ残ることはない。
+	// LockMember の FOR UPDATE も、コミットまでロックを持ち続ける（利用停止・返金と同時に走っても守られる）
+	var charged *charge.Charge
+	err = s.txManager.Do(ctx, func(ctx context.Context) error {
+		// 利用停止した人・いない人にはチャージしない
+		status, found, err := s.memberRepo.LockMember(ctx, userID)
+		if err != nil {
+			return err
+		}
+		if !found {
+			return fmt.Errorf("%w: userID=%s", ErrUserNotFound, userID)
+		}
+		if status == domainmember.StatusStopped {
+			return fmt.Errorf("%w: userID=%s", ErrUserStopped, userID)
+		}
+
+		charged, err = s.chargeAmountRepo.ChargeAmount(ctx, c)
+		return err
+	})
 	if err != nil {
 		return nil, err
 	}
-	if !found {
-		return nil, fmt.Errorf("%w: userID=%s", ErrUserNotFound, userID)
-	}
-	if status == domainmember.StatusStopped {
-		return nil, fmt.Errorf("%w: userID=%s", ErrUserStopped, userID)
-	}
 
-	chargedAmount, err := s.chargeAmountRepo.ChargeAmount(ctx, c)
-	if err != nil {
-		return nil, err
-	}
-
-	return chargedAmount, nil
+	return charged, nil
 }

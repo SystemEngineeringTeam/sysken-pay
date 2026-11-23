@@ -35,7 +35,7 @@ func TestInvalidInputReturns400(t *testing.T) {
 		item.NewSetItemDisabledUseCase(nil),
 	)
 	ch := api_charge.NewChargeHandler(
-		charge.NewChargeAmountUseCase(nil, nil),
+		charge.NewChargeAmountUseCase(nil, nil, nil),
 		charge.NewChargeCancelUseCase(nil),
 	)
 	ph := api_purchase.NewPurchaseHandler(
