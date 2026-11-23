@@ -323,7 +323,7 @@ Drive のファイルは暗号化していない普通の `.sql.gz`。ダウン�
    - `API_BIND_ADDR=0.0.0.0`（既定は `127.0.0.1` で、ラズパイの外から届かない。API のポートは 8080）
 2. API を作り直す：`cd ~/sysken-pay/sysken-pay-backend && docker compose up -d --build`（`.env` を変えただけでは反映されない）
 3. 確認：同じネットワークの PC から `curl -i http://sysken-pay.local:8080/v1/health` が `200` を返すこと。返らないときは、ラズパイの名前（avahi が動いているか）と `API_BIND_ADDR` を確かめる
-4. 管理サイトを出す（PC で。変更があったときだけ）：`cd sysken-pay-admin && pnpm install && pnpm build && pnpm deploy`
+4. 管理サイトを出す（PC で。変更があったときだけ）：`cd sysken-pay-admin && pnpm install && pnpm build && cf deploy`
 
 - 管理サイトの入口は管理者パスワード（`ADMIN_PASSWORD`）。公開されたページに打つので、使い終わったらログアウトする
 - ⚠️ **未決**：公開ページ（HTTPS）から呼べるのは HTTPS の通信先だけ（混在コンテンツ）。ラズパイの API を HTTPS にする方法は決まっていない。決まるまでは、PC で `pnpm dev` を開き（`http://localhost:5173`）、通信先を「ローカル」にして試す。決まる前に、勝手に決めて入れない（`docs/phone-payment.md` と同じ扱い）

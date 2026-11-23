@@ -22,7 +22,7 @@ pnpm install
 pnpm dev        # http://localhost:5173（localhost ならカメラも使える）
 pnpm test
 pnpm build
-pnpm deploy     # cf deploy
+cf deploy     # 出る先: https://admin.pay.sysken.net
 ```
 
 ## 前提
