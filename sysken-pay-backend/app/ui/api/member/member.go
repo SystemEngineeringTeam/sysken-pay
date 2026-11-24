@@ -1,5 +1,5 @@
-// Package member は管理者画面のユーザー一覧と、退部・卒業のとき（返金・利用停止・再開）の API。
-// どれも管理者パスワードが必要（router.go の adminOnly の中に置く）。
+// Package member は管理者画面のユーザー一覧と、退部・卒業のとき（返金・利用停止・再開・非表示・削除）の API。
+// 一覧は router.go の adminOrSession、それ以外は adminOnly（Entra か管理者パスワード）の中に置く。
 package member
 
 import (

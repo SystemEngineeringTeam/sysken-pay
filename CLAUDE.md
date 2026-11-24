@@ -14,7 +14,7 @@ pnpm exec vitest run src/test    # 単体テスト（`pnpm test` は Storybook �
 pnpm lint
 pnpm build
 pnpm generate:api                # docs/openapi.yaml から src/types/api-schema.d.ts を生成
-pnpm preview:pi                  # ラズパイでの公開用（0.0.0.0:3000）
+pnpm preview:pi                  # 同じ LAN のほかの PC から見る確認用（0.0.0.0:3000）。ラズパイの本番は deploy/raspberry-pi/sysken-pay-front.service（127.0.0.1:3000）
 
 # バック（sysken-pay-backend）
 make up                          # docker compose で API と MySQL を起動

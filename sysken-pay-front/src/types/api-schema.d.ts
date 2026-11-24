@@ -391,6 +391,53 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/admin/allowlist": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 管理サイトに Entra でログインしてよい人（許可リスト）の一覧
+         * @description PC の管理サイト（sysken-pay-admin）の「管理者の許可」画面で使う。
+         *     管理者バーコードの Session では通らない（Entra か管理者パスワードだけ）。
+         */
+        get: operations["listAdminAllowlist"];
+        put?: never;
+        /**
+         * 許可リストに足す
+         * @description UPN は学生のアカウント（例 x24042xx@aitech.ac.jp）かシステムアカウントだけ。
+         *     権限を増やす操作なので、管理者バーコードの Session では通らない（Entra か管理者パスワードだけ）。
+         */
+        post: operations["addAdminAllowlist"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/admin/allowlist/{upn}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 許可リストから外す
+         * @description 最後の 1 人、自分自身、システムアカウントは外せない（409）。
+         *     管理者バーコードの Session では通らない（Entra か管理者パスワードだけ）。
+         */
+        delete: operations["removeAdminAllowlist"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/v1/charge/verify": {
         parameters: {
             query?: never;
@@ -732,6 +779,38 @@ export interface components {
             user_id: string;
             /** @example シス研太郎 */
             user_name: string;
+        };
+        AdminAllowlistEntry: {
+            /** @example x24042xx@aitech.ac.jp */
+            upn: string;
+            /**
+             * @description 学籍番号（システムアカウントなどは null）
+             * @example X24042
+             */
+            student_id: string | null;
+            /** @description 足した人の UPN。予備のパスワードで足したときは "password" */
+            added_by: string;
+            /**
+             * Format: date-time
+             * @example 2025-01-01T09:00:00.000+09:00
+             */
+            created_at: string;
+        };
+        AdminAllowlistResponse: {
+            /** @example success */
+            status: string;
+            admins: components["schemas"]["AdminAllowlistEntry"][];
+            /** @description いま操作している人の UPN。予備のパスワードなら "password" */
+            current: string;
+        };
+        PostAdminAllowlistRequest: {
+            /** @example x24042xx@aitech.ac.jp */
+            upn: string;
+        };
+        AdminAllowlistStatusResponse: {
+            /** @example success */
+            status: string;
+            upn: string;
         };
         ErrorResponse: {
             /** @example error */
@@ -2069,6 +2148,148 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    listAdminAllowlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 一覧 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAllowlistResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    addAdminAllowlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PostAdminAllowlistRequest"];
+            };
+        };
+        responses: {
+            /** @description 足した */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAllowlistStatusResponse"];
+                };
+            };
+            /** @description リクエストの形式が不正、または UPN の形式に合わない */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description すでに許可リストにいる */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+        };
+    };
+    removeAdminAllowlist: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 外す人の UPN（@ はパスの中でエスケープして送る） */
+                upn: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 外した */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminAllowlistStatusResponse"];
+                };
+            };
+            /** @description UPN が不正 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            401: components["responses"]["Unauthorized"];
+            /** @description 許可リストにいない */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description 最後の 1 人・自分自身・システムアカウントなので外せない */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
+            };
+            /** @description サーバーエラー */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorResponse"];
+                };
             };
         };
     };
