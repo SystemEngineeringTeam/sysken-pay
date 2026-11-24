@@ -34,6 +34,37 @@ describe("useCartStore", () => {
     expect(useCartStore.getState().cartItems).toEqual([{ item: item2, quantity: 1 }]);
   });
 
+  it("decrementItem: 2個のときは1個に減る", () => {
+    useCartStore.getState().addItem(item1);
+    useCartStore.getState().addItem(item1);
+    useCartStore.getState().decrementItem(1);
+    expect(useCartStore.getState().cartItems).toEqual([{ item: item1, quantity: 1 }]);
+  });
+
+  it("decrementItem: 1個のときは行ごと消え、0個や負の数の行は残らない", () => {
+    useCartStore.getState().addItem(item1);
+    useCartStore.getState().decrementItem(1);
+    expect(useCartStore.getState().cartItems).toEqual([]);
+  });
+
+  it("decrementItem: ほかの商品の数量は変わらない", () => {
+    useCartStore.getState().addItem(item1);
+    useCartStore.getState().addItem(item1);
+    useCartStore.getState().addItem(item2);
+    useCartStore.getState().addItem(item2);
+    useCartStore.getState().decrementItem(1);
+    expect(useCartStore.getState().cartItems).toEqual([
+      { item: item1, quantity: 1 },
+      { item: item2, quantity: 2 },
+    ]);
+  });
+
+  it("decrementItem: カートにない商品を指定しても何も変わらない", () => {
+    useCartStore.getState().addItem(item1);
+    useCartStore.getState().decrementItem(99);
+    expect(useCartStore.getState().cartItems).toEqual([{ item: item1, quantity: 1 }]);
+  });
+
   it("clearCart: カートを空にできる", () => {
     useCartStore.getState().addItem(item1);
     useCartStore.getState().addItem(item2);

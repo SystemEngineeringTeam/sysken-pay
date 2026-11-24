@@ -12,6 +12,8 @@ type CartStore = {
   cartItems: CartItem[];
   addItem: (item: Item) => void;
   removeItem: (itemId: number) => void;
+  /** 数量を1つ減らす。1個のときは行ごと消す（読み間違いを1回分だけ取り消すため） */
+  decrementItem: (itemId: number) => void;
   clearCart: () => void;
 };
 
@@ -32,6 +34,12 @@ export const useCartStore = create<CartStore>((set) => ({
   removeItem: (itemId) =>
     set((state) => ({
       cartItems: state.cartItems.filter((c) => c.item.item_id !== itemId),
+    })),
+  decrementItem: (itemId) =>
+    set((state) => ({
+      cartItems: state.cartItems
+        .map((c) => (c.item.item_id === itemId ? { ...c, quantity: c.quantity - 1 } : c))
+        .filter((c) => c.quantity > 0),
     })),
   clearCart: () => set({ cartItems: [] }),
 }));

@@ -19,6 +19,16 @@ export const WithDelete: Story = {
   },
 };
 
+export const WithDecrement: Story = {
+  name: "−1 ボタン（2個以上のとき）",
+  args: {
+    title: "コカ・コーラ × 2",
+    price: 200,
+    onDelete: () => alert("−1"),
+    deleteLabel: "−1",
+  },
+};
+
 export const WithoutDelete: Story = {
   name: "削除ボタンなし",
   args: {
