@@ -24,7 +24,11 @@ services:
         condition: service_healthy
 
   db:
-    image: mysql:8
+    # バージョンを固定する。mysql:8 のままだと、ラズパイを作り直したときなどに知らないうちに新しいバージョンが入る。
+    # 上げるときは、今のバージョンを docker exec sysken-db mysqld --version で確かめ、make backup を取ってから
+    # ここを書き換えて docker compose up -d する（ラズパイでは main に入れて make deploy でもよい）。
+    # 上げるのは 8.4.x の中だけにする。9.x などへ移すときは、先に MySQL の公式のアップグレード手順を確かめる
+    image: mysql:8.4.13
     container_name: sysken-db
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}

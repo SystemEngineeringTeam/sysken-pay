@@ -31,7 +31,7 @@ go list -m -u all
 ```
 
 - **OpenAPI と実装のずれ**: `docs/openapi.yaml` のパス一覧と `app/server/router.go` のルーティングを突き合わせ、片方にしか無いエンドポイントがないか
-- **Docker**: `Dockerfile` の `golang:x.y.z-alpine` が `go.mod` の go バージョンと合っているか、大きく古くなっていないか。`mysql:8` のタグが固定されていない点も報告する
+- **Docker**: `Dockerfile` の `golang:x.y.z-alpine` が `go.mod` の go バージョンと合っているか、大きく古くなっていないか。`docker-compose.yaml` の `mysql:8.4.x`（バージョンを固定している）が 8.4 系の最新から大きく遅れていないか。上げる手順は `docker-compose.yaml` の db のコメントにある（`make backup` を取ってから）
 - **DB の永続化**: `docker-compose.yaml` の `db` サービスに `/var/lib/mysql` のボリュームがマウントされているか（されていなければ「今すぐ対応」）
 - 未コミットの変更（`git status -- .`）、未 push のコミット
 
