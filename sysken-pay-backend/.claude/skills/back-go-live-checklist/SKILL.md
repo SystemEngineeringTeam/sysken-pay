@@ -32,7 +32,7 @@ description: バックエンド（sysken-pay-backend の Go API・MySQL）を部
 - `MYSQL_ROOT_PASSWORD` が推測しやすい値でないか（値そのものはユーザーに確認してもらう。Claude は `.env` を読まない）
 
 **認証・認可（お金を動かす API）**
-- 管理系 API（ユーザー登録/更新・商品登録/更新・チャージ・チャージ取消・購入取消）が BASIC 認証の中にあるか（ルーティングは `app/server/router.go`、テストは `router_test.go`）。新しく足した API がお金や登録内容を変えるのに `adminOnly` の外に置かれていないか
+- 管理系 API（ユーザー登録/更新・商品登録/更新・チャージ・購入取消・返金・利用停止）が認証の中にあるか（ルーティングは `app/server/router.go`、テストは `router_test.go`）。新しく足した API がお金や登録内容を変えるのに、`adminOnly`・`adminOrSession`・`chargeOrAdmin` のどれの中にも置かれていないことがないか。返金・ユーザーの更新や削除・許可リストの編集が、管理者バーコードの Session でも通る `adminOrSession` に入っていないか
 - 本番の `.env` で `ADMIN_PASSWORD` が設定されていて、推測しにくい値か（値そのものはユーザーに確認してもらう）
 - 購入（`POST /v1/user/{user_id}/purchase`）は認証なし。API に届く人は他人の学籍番号で購入できるので、API を LAN 以上に公開するなら「直してから運用すべき」に分類する
 - 学生証のバーコード（学籍番号）だけで本人として購入できる。運用上許容できるか確認する

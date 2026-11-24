@@ -74,7 +74,7 @@ pnpm build
 pnpm preview
 ```
 
-Raspberry Pi等での公開用（0.0.0.0:3000）:
+同じ LAN のほかの PC から見て確かめるとき（0.0.0.0:3000 で待つ）。ラズパイの本番では使わず、`deploy/raspberry-pi/sysken-pay-front.service` が 127.0.0.1:3000 で動かす。
 
 ```bash
 pnpm preview:pi

@@ -20,7 +20,7 @@ DB のデータは docker ボリューム `mysql_data` に保存される。`mak
 
 - API 仕様 → `docs/openapi.yaml`（変えたらフロントで `pnpm generate:api`）
 - DB スキーマ → `db/init.sql`（最初にコンテナを作るときだけ実行される）
-- ルーティングと認証の有無 → `app/server/router.go`（管理系 API は `adminOnly` の中）
+- ルーティングと認証の有無 → `app/server/router.go`（管理系 API は `adminOnly`（Entra か管理者パスワード）か `adminOrSession`（そのほかに管理者バーコードの Session も通す）の中。チャージは `chargeOrAdmin`）
 
 ## スキル
 
