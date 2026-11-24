@@ -1071,6 +1071,129 @@ paths:
         "204":
           description: 取り消した
 
+  /v1/admin/allowlist:
+    get:
+      tags: [admin]
+      summary: 管理サイトに Entra でログインしてよい人（許可リスト）の一覧
+      description: |
+        PC の管理サイト（sysken-pay-admin）の「管理者の許可」画面で使う。
+        管理者バーコードの Session では通らない（Entra か管理者パスワードだけ）。
+      operationId: listAdminAllowlist
+      security:
+        - adminBasicAuth: []
+        - entraBearer: []
+      responses:
+        "200":
+          description: 一覧
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAllowlistResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    post:
+      tags: [admin]
+      summary: 許可リストに足す
+      description: |
+        UPN は学生のアカウント（例 x24042xx@aitech.ac.jp）かシステムアカウントだけ。
+        権限を増やす操作なので、管理者バーコードの Session では通らない（Entra か管理者パスワードだけ）。
+      operationId: addAdminAllowlist
+      security:
+        - adminBasicAuth: []
+        - entraBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PostAdminAllowlistRequest"
+      responses:
+        "201":
+          description: 足した
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAllowlistStatusResponse"
+        "400":
+          description: リクエストの形式が不正、または UPN の形式に合わない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: すでに許可リストにいる
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /v1/admin/allowlist/{upn}:
+    delete:
+      tags: [admin]
+      summary: 許可リストから外す
+      description: |
+        最後の 1 人、自分自身、システムアカウントは外せない（409）。
+        管理者バーコードの Session では通らない（Entra か管理者パスワードだけ）。
+      operationId: removeAdminAllowlist
+      security:
+        - adminBasicAuth: []
+        - entraBearer: []
+      parameters:
+        - name: upn
+          in: path
+          required: true
+          description: 外す人の UPN（@ はパスの中でエスケープして送る）
+          schema:
+            type: string
+            example: "x24042xx@aitech.ac.jp"
+      responses:
+        "200":
+          description: 外した
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminAllowlistStatusResponse"
+        "400":
+          description: UPN が不正
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: 許可リストにいない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: 最後の 1 人・自分自身・システムアカウントなので外せない
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
   /v1/charge/verify:
     get:
       tags: [admin]
@@ -1120,7 +1243,7 @@ components:
       scheme: basic
       description: |
         管理者パスワードによる BASIC 認証（ユーザー名は ADMIN_USER、既定 "admin"）。
-        ユーザー登録・更新、商品登録・更新、チャージ、チャージ取消、購入取消で必要。
+        お金を動かす・登録内容を変える API で使う。どの API で通るかは、それぞれの security を見る。
     entraBearer:
       type: http
       scheme: bearer
@@ -1653,6 +1776,56 @@ components:
         user_name:
           type: string
           example: "シス研太郎"
+
+    AdminAllowlistEntry:
+      type: object
+      required: [upn, student_id, added_by, created_at]
+      properties:
+        upn:
+          type: string
+          example: "x24042xx@aitech.ac.jp"
+        student_id:
+          type: string
+          nullable: true
+          description: 学籍番号（システムアカウントなどは null）
+          example: "X24042"
+        added_by:
+          type: string
+          description: 足した人の UPN。予備のパスワードで足したときは "password"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-01-01T09:00:00.000+09:00"
+    AdminAllowlistResponse:
+      type: object
+      required: [status, admins, current]
+      properties:
+        status:
+          type: string
+          example: success
+        admins:
+          type: array
+          items:
+            $ref: "#/components/schemas/AdminAllowlistEntry"
+        current:
+          type: string
+          description: いま操作している人の UPN。予備のパスワードなら "password"
+    PostAdminAllowlistRequest:
+      type: object
+      required: [upn]
+      properties:
+        upn:
+          type: string
+          example: "x24042xx@aitech.ac.jp"
+    AdminAllowlistStatusResponse:
+      type: object
+      required: [status, upn]
+      properties:
+        status:
+          type: string
+          example: success
+        upn:
+          type: string
 
     ErrorResponse:
       type: object

@@ -325,7 +325,7 @@ Drive のファイルは暗号化していない普通の `.sql.gz`。ダウン�
 3. 確認：同じネットワークの PC から `curl -i http://sysken-pay.local:8080/v1/health` が `200` を返すこと。返らないときは、ラズパイの名前（avahi が動いているか）と `API_BIND_ADDR` を確かめる
 4. 管理サイトを出す（PC で。変更があったときだけ）：`cd sysken-pay-admin && pnpm install && pnpm build && cf deploy`
 
-- 管理サイトの入口は管理者パスワード（`ADMIN_PASSWORD`）。公開されたページに打つので、使い終わったらログアウトする
+- 管理サイトには Microsoft アカウント（「管理者の許可」に載っている人だけ）か、予備の管理者パスワード（`ADMIN_PASSWORD`）でログインする。Microsoft のログインは `ENTRA_TENANT_ID` / `ENTRA_CLIENT_ID` を設定したときだけ使える（設計は `docs/admin-entra-login.md`）。公開されたページで使うので、使い終わったらログアウトする
 - ⚠️ **未決**：公開ページ（HTTPS）から呼べるのは HTTPS の通信先だけ（混在コンテンツ）。ラズパイの API を HTTPS にする方法は決まっていない。決まるまでは、PC で `pnpm dev` を開き（`http://localhost:5173`）、通信先を「ローカル」にして試す。決まる前に、勝手に決めて入れない（`docs/phone-payment.md` と同じ扱い）
 
 ## 更新するとき（make deploy）
