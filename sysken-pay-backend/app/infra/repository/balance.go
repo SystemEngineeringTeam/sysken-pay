@@ -3,9 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"time"
 	domainbalance "sysken-pay-api/app/domain/object/balance"
 	"sysken-pay-api/app/domain/repository"
+	"time"
 )
 
 var _ repository.BalanceRepository = (*BalanceRepositoryImpl)(nil)
