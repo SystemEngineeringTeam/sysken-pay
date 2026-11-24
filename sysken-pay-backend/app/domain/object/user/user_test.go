@@ -41,13 +41,13 @@ func TestSetUserID_Over20Chars(t *testing.T) {
 func TestSetUserID_InvalidFormat(t *testing.T) {
 	u := &User{}
 	cases := []string{
-		"abcdef",              // アルファベットのみ
-		"user123",             // 数字2桁スタートでない
-		"123",                 // 全数字
-		"20K",                 // 末尾の数字なし
-		"20KK23099",           // アルファベット2文字
-		"K20K23099",           // 先頭が数字でない
-		"2-K23099",            // 記号混入
+		"abcdef",               // アルファベットのみ
+		"user123",              // 数字2桁スタートでない
+		"123",                  // 全数字
+		"20K",                  // 末尾の数字なし
+		"20KK23099",            // アルファベット2文字
+		"K20K23099",            // 先頭が数字でない
+		"2-K23099",             // 記号混入
 		strings.Repeat("あ", 8), // マルチバイトはフォーマット違反
 	}
 	for _, id := range cases {
