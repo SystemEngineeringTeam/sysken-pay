@@ -20,8 +20,7 @@ src/
 │       ├── ChargeRepositoryImpl.ts
 │       ├── PurchaseRepositoryImpl.ts
 │       ├── HistoryRepositoryImpl.ts
-│       ├── HriRepositoryImpl.ts      # 支払い用バーコード（HRI）の発行と照合
-│       └── MemberRepositoryImpl.ts   # ユーザー一覧・返金・利用停止など（画面は管理サイトへ移し、いまは使っていない）
+│       └── HriRepositoryImpl.ts      # 支払い用バーコード（HRI）の発行と照合
 │
 ├── services/                   # 【Domain Service】 純粋なビジネスロジック
 │   ├── CartService.ts          # 合計金額計算・APIリクエスト形式への変換
@@ -30,7 +29,7 @@ src/
 │   ├── barcodeText.ts          # 全角で入った英数字を半角にする
 │   ├── qrUrl.ts                # スマホ登録の QR の URL と表示時間
 │   ├── phoneRegisterState.ts   # スマホ登録の画面に渡す情報
-│   ├── memberList.ts           # 金額の表示（formatYen）と、ユーザー一覧の名残
+│   ├── formatYen.ts            # 金額を「¥1,230」の形で表示する
 │   └── *ErrorMessage.ts        # API のエラーを画面に出す日本語にする（購入・商品・ユーザー・スマホ登録・管理者バーコード）
 │
 ├── hooks/                      # 【Connect】 UIとRepositoryを繋ぐフック
@@ -45,8 +44,7 @@ src/
 │   ├── useCartStore.ts         # カート内商品（CartItem[]）
 │   ├── useUserStore.ts         # スキャンしたユーザー情報
 │   ├── useBalanceStore.ts      # ユーザー残高
-│   ├── useChargeStore.ts       # 選択中チャージ金額
-│   └── useMemberStore.ts       # ユーザー一覧のタブ（画面は管理サイトへ移し、いまは使っていない）
+│   └── useChargeStore.ts       # 選択中チャージ金額
 │
 ├── pages/                      # 【UI】 ページコンポーネント（Generouted自動ルーティング）
 │   ├── index.tsx               # / トップ

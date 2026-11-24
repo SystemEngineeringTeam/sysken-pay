@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Button from "../../components/ui/Button";
 import type { PurchaseResult } from "../../hooks/useBarcodeReader";
-import { formatYen } from "../../services/memberList";
+import { formatYen } from "../../services/formatYen";
 import styles from "./complete.module.scss";
 
 /** 完了画面を出しておく秒数。過ぎたらホームに戻る（次の人がすぐ使えるように） */
