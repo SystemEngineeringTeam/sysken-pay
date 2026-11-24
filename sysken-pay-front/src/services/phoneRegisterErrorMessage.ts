@@ -1,11 +1,12 @@
 import { ApiError } from "../adapter/api/ApiError";
+import { ADMIN_USER_STOPPED_MESSAGE } from "./userScanErrorMessage";
 
 /** スマホ登録（支払い用バーコードを発行する）ときのエラーを、画面に出す日本語のメッセージにする */
 export const toPhoneRegisterErrorMessage = (e: unknown): string => {
   if (e instanceof ApiError) {
     switch (e.status) {
       case 403:
-        return "このユーザーは利用停止しています。「ユーザー一覧」から「利用を再開」してください。";
+        return ADMIN_USER_STOPPED_MESSAGE;
       case 404:
         return "登録されていない学生証です。先にユーザー登録をしてください。";
       case 400:
