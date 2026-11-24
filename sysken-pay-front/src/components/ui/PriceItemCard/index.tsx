@@ -4,9 +4,11 @@ type Props = {
   title: string;
   price: number;
   onDelete?: () => void;
+  /** ボタンの文言。省略すると「削除 ✕」 */
+  deleteLabel?: string;
 };
 
-export const PriceItemCard = ({ title, price, onDelete }: Props) => {
+export const PriceItemCard = ({ title, price, onDelete, deleteLabel }: Props) => {
   return (
     <div className={styles.wrapper}>
       <div className={styles.card}>
@@ -26,7 +28,11 @@ export const PriceItemCard = ({ title, price, onDelete }: Props) => {
           onClick={onDelete}
           type="button"
         >
-          削除<span className={styles.closeIcon}>✕</span>
+          {deleteLabel ?? (
+            <>
+              削除<span className={styles.closeIcon}>✕</span>
+            </>
+          )}
         </button>
       )}
     </div>

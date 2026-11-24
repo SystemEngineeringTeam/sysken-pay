@@ -18,7 +18,7 @@ import styles from "./list.module.scss";
  */
 export default function BuyListPage(): JSX.Element {
   const navigate = useNavigate();
-  const { cartItems: items, removeItem, clearCart } = useCartStore();
+  const { cartItems: items, decrementItem, clearCart } = useCartStore();
   const totalPrice = useTotalPrice();
   const itemCount = items.reduce((sum, { quantity }) => sum + quantity, 0);
   const { onScan, ErrorMessage } = useCartScan();
@@ -30,7 +30,7 @@ export default function BuyListPage(): JSX.Element {
       <div className={styles.content}>
         <ItemList
           Items={items}
-          onDelete={removeItem}
+          onDelete={decrementItem}
           title="シス研Payバーコードをかざして購入"
           emphasis
           icon="/icons/Barcord.svg"
